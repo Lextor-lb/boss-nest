@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Song {
+  id    Int    @id @default(autoincrement())
+  title String
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  email       String    @unique
+  role        UserRole  @default(STUFF)
+  password    String
+  phoneNumber Int
+  mediaId     Int? // nullable field
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @map("updated_at")
+  isArchived  DateTime? // nullable field
+
+  // Relations
+  media Media? @relation(fields: [mediaId], references: [id])
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  STUFF
+}
+
+model Media {
+  id Int @id @default(autoincrement())
+  // other fields...
+
+  users User[] // Relation to User model
+}
