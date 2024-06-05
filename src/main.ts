@@ -1,21 +1,24 @@
-import { NestFactory } from '@nestjs/core';
+// src/main.ts
+
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true, // Strip properties that do not have decorators
-      forbidNonWhitelisted: true, // Throw an error if non-whitelisted properties are found
-      transform: true, // Automatically transform payloads to be objects typed according to their DTO classes
-    }),
-  );
-  const cors = {
-    origin: ['http://localhost:3000'],
-    methods: 'GET,HEAD,PATCH,PUT,POST,DELETE,OPTIONS',
-  };
-  app.enableCors(cors);
+
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+
+  const config = new DocumentBuilder()
+    .setTitle('Median')
+    .setDescription('The Median API description')
+    .setVersion('0.1')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+
   await app.listen(3000);
 }
 bootstrap();

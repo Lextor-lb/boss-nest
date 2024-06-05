@@ -1,25 +1,22 @@
-import { IsString, IsEmail, IsEnum, IsInt, MinLength } from 'class-validator';
-import { UserRole } from '@prisma/client';
+// src/users/dto/create-user.dto.ts
 
-// enum UserRole {
-//   ADMIN = 'admin',
-//   STUFF = 'stuff',
-// }
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
   name: string;
 
-  @IsEmail()
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
   email: string;
 
-  @IsEnum(UserRole) // Use the imported UserRole directly
-  role: UserRole;
-
   @IsString()
-  @MinLength(8)
+  @IsNotEmpty()
+  @MinLength(6)
+  @ApiProperty()
   password: string;
-
-  @IsInt()
-  phoneNumber: number;
 }

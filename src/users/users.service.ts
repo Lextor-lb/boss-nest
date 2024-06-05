@@ -1,46 +1,44 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+// src/users/users.service.ts
+import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PrismaService } from 'src/prisma.service';
-import { User } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
-  async getAllUser() {
-    return this.prisma.user.findMany();
-  }
 
-  async create(
-    // where: Prisma.UserWhereUniqueInput,
-    createUserDto: CreateUserDto,
-  ): Promise<User> {
-    const existing = await this.prisma.user.findFirst({
-      where: { name: createUserDto.name },
-    });
+  async create(createUserDto: CreateUserDto) {
+    const hashedPassword = await argon2.hash(createUserDto.password);
 
-    if (existing) {
-      throw new ConflictException('Username already exists'); // Capitalize "Username" for consistency
-    }
+    createUserDto.password = hashedPassword;
 
-    return await this.prisma.user.create({
+    return this.prisma.user.create({
       data: createUserDto,
     });
   }
 
-  async findAll() {
-    return await this.prisma.user.findMany();
+  findAll() {
+    return this.prisma.user.findMany();
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} user`;
+    return this.prisma.user.findUnique({ where: { id } });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    if (updateUserDto.password) {
+      updateUserDto.password = await argon2.hash(updateUserDto.password);
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: updateUserDto,
+    });
   }
 
   remove(id: number) {
-    return `This action removes a #${id} user`;
+    return this.prisma.user.delete({ where: { id } });
   }
 }
