@@ -33,10 +33,25 @@ async function main() {
     },
   });
 
-  console.log({ user1, user2 });
-
   // Create three dummy posts
   // ... (Add your post creation logic here)
+  const productSizing1 = await prisma.productSizing.create({
+    data: {
+      name: 'YourProductSizingName1',
+      createdByUserId: user1.id,
+      updatedByUserId: user2.id,
+    },
+  });
+
+  const productSizing2 = await prisma.productSizing.create({
+    data: {
+      name: 'YourProductSizingName2',
+      createdByUserId: user2.id,
+      updatedByUserId: user1.id,
+    },
+  });
+
+  console.log({ user1, user2, productSizing1, productSizing2 });
 }
 
 // Execute the main function
