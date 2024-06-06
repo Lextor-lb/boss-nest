@@ -31,8 +31,10 @@ model User {
   updatedAt DateTime  @updatedAt
   articles  Article[]
 
-  createdProductSizings ProductSizing[] @relation("CreatedProductSizings")
-  updatedProductSizings ProductSizing[] @relation("UpdatedProductSizings")
+  createdProductSizings  ProductSizing[]  @relation("CreatedProductSizings")
+  updatedProductSizings  ProductSizing[]  @relation("UpdatedProductSizings")
+  createdProductFittings ProductFitting[] @relation("CreatedProductFittings")
+  updatedProductFittings ProductFitting[] @relation("UpdatedProductFittings")
 }
 
 model ProductSizing {
@@ -41,9 +43,34 @@ model ProductSizing {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  createdByUser   User?     @relation("CreatedProductSizings", fields: [createdByUserId], references: [id])
-  createdByUserId Int?
-  updatedByUser   User?     @relation("UpdatedProductSizings", fields: [updatedByUserId], references: [id])
-  updatedByUserId Int?
-  isArchived      DateTime?
+  createdByUser               User?                         @relation("CreatedProductSizings", fields: [createdByUserId], references: [id])
+  createdByUserId             Int?
+  updatedByUser               User?                         @relation("UpdatedProductSizings", fields: [updatedByUserId], references: [id])
+  updatedByUserId             Int?
+  isArchived                  DateTime?
+  productFittings             ProductFitting[]
+  ProductFittingProductSizing ProductFittingProductSizing[]
+}
+
+model ProductFitting {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdByUser               User?                         @relation("CreatedProductFittings", fields: [createdByUserId], references: [id])
+  createdByUserId             Int?
+  updatedByUser               User?                         @relation("UpdatedProductFittings", fields: [updatedByUserId], references: [id])
+  updatedByUserId             Int?
+  isArchived                  DateTime?
+  productSizings              ProductSizing[]
+  ProductFittingProductSizing ProductFittingProductSizing[]
+}
+
+model ProductFittingProductSizing {
+  id               Int            @id @default(autoincrement())
+  productSizing    ProductSizing  @relation(fields: [productSizingId], references: [id])
+  productSizingId  Int
+  productFitting   ProductFitting @relation(fields: [productFittingId], references: [id])
+  productFittingId Int
 }
