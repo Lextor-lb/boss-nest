@@ -18,6 +18,7 @@ import { CreateProductSizingDto } from './dto/create-product-sizing.dto';
 import { ProductSizingEntity } from './entity/product-sizing.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UpdateProductSizingDto } from './dto/update-product-sizing.dto';
+import { RemoveManyProductSizingDto } from './dto/removeMany-product-sizing.dto';
 
 @Controller('product-sizings')
 @UseGuards(JwtAuthGuard)
@@ -141,7 +142,16 @@ export class ProductSizingsController {
   }
 
   @Delete()
-  async removeMany(@Body() ids: number[]) {
-    return this.productSizingsService.removeMany(ids);
+  async removeMany(
+    @Body() removeManyProductSizingDto: RemoveManyProductSizingDto,
+  ) {
+    const result = await this.productSizingsService.removeMany(
+      removeManyProductSizingDto,
+    );
+    return {
+      status: true,
+      message: 'Deleted Successfully!',
+      data: result,
+    };
   }
 }

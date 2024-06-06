@@ -1,9 +1,19 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateProductFittingDto {
   @IsNotEmpty()
   @IsString()
   name: string;
+
+  @IsArray()
+  @IsInt({ each: true })
+  productSizingIds: number[];
 
   @IsOptional()
   //   @IsNumber()

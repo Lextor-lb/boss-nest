@@ -21,6 +21,8 @@ export class ProductFittingEntity implements ProductFitting {
 
   updatedByUser?: UserEntity;
 
+  productSizingIds?: number[];
+
   @Expose()
   get date(): string {
     return this.formatDate(this.updatedAt);
@@ -29,6 +31,7 @@ export class ProductFittingEntity implements ProductFitting {
   constructor({
     createdByUser = null,
     updatedByUser = null,
+    productSizingIds = [],
     ...data
   }: Partial<ProductFittingEntity>) {
     Object.assign(this, data);
@@ -40,7 +43,10 @@ export class ProductFittingEntity implements ProductFitting {
     if (updatedByUser) {
       this.updatedByUser = new UserEntity(updatedByUser);
     }
+
+    this.productSizingIds = productSizingIds;
   }
+
   private formatDate(date: Date): string {
     const options: Intl.DateTimeFormatOptions = {
       day: '2-digit',

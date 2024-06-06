@@ -3,12 +3,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductSizingDto } from './dto/create-product-sizing.dto';
 import { Prisma } from '@prisma/client';
 import { UpdateProductSizingDto } from './dto/update-product-sizing.dto';
+import { RemoveManyProductSizingDto } from './dto/removeMany-product-sizing.dto';
 
 @Injectable()
 export class ProductSizingsService {
   constructor(private prisma: PrismaService) {}
 
-  whereClause: Prisma.ProductSizingWhereInput = {
+  whereCheckingNullClause: Prisma.ProductSizingWhereInput = {
     isArchived: null,
   };
 
@@ -42,13 +43,13 @@ export class ProductSizingsService {
     orderDirection: 'asc' | 'desc' = 'desc',
   ) {
     const total = await this.prisma.productSizing.count({
-      where: this.whereClause,
+      where: this.whereCheckingNullClause,
     });
     const skip = (page - 1) * limit;
 
     const productSizings = await this.prisma.productSizing.findMany({
       where: {
-        ...this.whereClause,
+        ...this.whereCheckingNullClause,
         name: {
           contains: searchName || '',
         },
@@ -64,13 +65,13 @@ export class ProductSizingsService {
 
   findOne(id: number) {
     return this.prisma.productSizing.findUnique({
-      where: { id, AND: this.whereClause },
+      where: { id, AND: this.whereCheckingNullClause },
     });
   }
 
   async update(id: number, updateProductSizingDto: UpdateProductSizingDto) {
     const existingProductSizing = await this.prisma.productSizing.findUnique({
-      where: { id, AND: this.whereClause },
+      where: { id, AND: this.whereCheckingNullClause },
     });
 
     if (!existingProductSizing) {
@@ -89,16 +90,22 @@ export class ProductSizingsService {
     });
   }
 
-  async removeMany(ids: number[]) {
+  async removeMany(removeManyProductSizingDto: RemoveManyProductSizingDto) {
+    const { ids } = removeManyProductSizingDto;
+
     const { count } = await this.prisma.productSizing.updateMany({
-      where: { id: { in: ids } },
-      data: { isArchived: new Date() },
+      where: {
+        id: { in: ids },
+      },
+      data: {
+        isArchived: new Date(),
+      },
     });
 
     return {
       status: true,
       message: `Deleted ${count} product sizings successfully.`,
+      archivedIds: ids,
     };
   }
 }
-//for commit
