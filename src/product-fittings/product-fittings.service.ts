@@ -43,15 +43,8 @@ export class ProductFittingsService {
       });
     }
 
-    // Fetch the created list of productSizingIds
-    const associatedProductSizings =
-      await this.prisma.productFittingProductSizing.findMany({
-        where: { productFittingId: createdProductFitting.id },
-        select: { productSizingId: true },
-      });
-
-    const createdProductSizingIds = associatedProductSizings.map(
-      (association) => association.productSizingId,
+    const createdProductSizingIds = await this.getProductSizingIds(
+      createdProductFitting.id,
     );
 
     // Return the created ProductFitting as a ProductFittingEntity with productSizingIds
@@ -183,16 +176,7 @@ export class ProductFittingsService {
       });
     }
 
-    // Fetch the updated list of productSizingIds
-    const associatedProductSizings =
-      await this.prisma.productFittingProductSizing.findMany({
-        where: { productFittingId: id },
-        select: { productSizingId: true },
-      });
-
-    const updatedProductSizingIds = associatedProductSizings.map(
-      (association) => association.productSizingId,
-    );
+    const updatedProductSizingIds = await this.getProductSizingIds(id);
 
     // Return the updated ProductFitting as a ProductFittingEntity with productSizingIds
     return new ProductFittingEntity({
@@ -218,5 +202,19 @@ export class ProductFittingsService {
       message: `Deleted ${count} product fittings successfully.`,
       archivedIds: ids,
     };
+  }
+
+  private async getProductSizingIds(
+    productFittingId: number,
+  ): Promise<number[]> {
+    const associatedProductSizings =
+      await this.prisma.productFittingProductSizing.findMany({
+        where: { productFittingId },
+        select: { productSizingId: true },
+      });
+
+    return associatedProductSizings.map(
+      (association) => association.productSizingId,
+    );
   }
 }
