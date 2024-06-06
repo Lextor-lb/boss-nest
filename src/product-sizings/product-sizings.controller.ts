@@ -24,19 +24,41 @@ import { UpdateProductSizingDto } from './dto/update-product-sizing.dto';
 export class ProductSizingsController {
   constructor(private readonly productSizingsService: ProductSizingsService) {}
 
+  //   @Post()
+  //   async create(
+  //     @Body() createProductSizingDto: CreateProductSizingDto,
+  //     @Req() req,
+  //   ) {
+  //     createProductSizingDto.createdByUserId = req.user.id;
+  //     const createdProductSizing = await this.productSizingsService.create(
+  //       createProductSizingDto,
+  //     );
+  //     return {
+  //       status: true,
+  //       message: 'Created Successfully!',
+  //       data: new ProductSizingEntity(createdProductSizing),
+  //     };
+  //   }
+
   @Post()
-  async create(
-    @Body() createProductSizingDto: CreateProductSizingDto,
+  async createMultiple(
+    @Body() createProductSizingDtos: CreateProductSizingDto[],
     @Req() req,
   ) {
-    createProductSizingDto.createdByUserId = req.user.id;
-    const createdProductSizing = await this.productSizingsService.create(
-      createProductSizingDto,
-    );
+    const createdByUserId = req.user.id;
+
+    // Assign createdByUserId to each DTO
+    createProductSizingDtos.forEach((dto) => {
+      dto.createdByUserId = createdByUserId;
+    });
+    const createdProductSizings =
+      await this.productSizingsService.createMultiple(createProductSizingDtos);
     return {
       status: true,
       message: 'Created Successfully!',
-      data: new ProductSizingEntity(createdProductSizing),
+      data: createdProductSizings.map(
+        (productSizing) => new ProductSizingEntity(productSizing),
+      ),
     };
   }
 
@@ -52,10 +74,16 @@ export class ProductSizingsController {
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit', ParseIntPipe) limit: number = 10,
+    @Query('searchName') searchName?: string,
+    @Query('orderBy') orderBy: string = 'createdAt',
+    @Query('orderDirection') orderDirection: 'asc' | 'desc' = 'desc',
   ) {
     const productSizings = await this.productSizingsService.findAll(
       page,
       limit,
+      searchName,
+      orderBy,
+      orderDirection,
     );
     return {
       data: productSizings.data.map(

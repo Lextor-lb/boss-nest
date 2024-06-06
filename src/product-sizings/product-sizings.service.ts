@@ -12,24 +12,52 @@ export class ProductSizingsService {
     isArchived: null,
   };
 
-  create(createProductSizingDto: CreateProductSizingDto) {
-    return this.prisma.productSizing.create({ data: createProductSizingDto });
+  // create(createProductSizingDto: CreateProductSizingDto) {
+  //   return this.prisma.productSizing.create({ data: createProductSizingDto });
+  // }
+  async createMultiple(createProductSizingDtos: CreateProductSizingDto[]) {
+    const createdProductSizings = [];
+
+    for (const createProductSizingDto of createProductSizingDtos) {
+      const createdProductSizing = await this.prisma.productSizing.create({
+        data: {
+          ...createProductSizingDto,
+        },
+      });
+      createdProductSizings.push(createdProductSizing);
+    }
+
+    return createdProductSizings;
   }
 
   async indexAll() {
     return await this.prisma.productSizing.findMany();
   }
 
-  async findAll(page: number, limit: number) {
+  async findAll(
+    page: number,
+    limit: number,
+    searchName?: string,
+    orderBy: string = 'createdAt',
+    orderDirection: 'asc' | 'desc' = 'desc',
+  ) {
     const total = await this.prisma.productSizing.count({
       where: this.whereClause,
     });
     const skip = (page - 1) * limit;
 
     const productSizings = await this.prisma.productSizing.findMany({
-      where: this.whereClause,
+      where: {
+        ...this.whereClause,
+        name: {
+          contains: searchName || '',
+        },
+      },
       skip,
       take: limit,
+      orderBy: {
+        [orderBy]: orderDirection,
+      },
     });
     return { data: productSizings, total, page, limit };
   }
