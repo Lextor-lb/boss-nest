@@ -101,7 +101,7 @@ export class ProductSizingsController {
     try {
       const productSizing = await this.productSizingsService.findOne(id);
       if (!productSizing) {
-        return { message: 'Product Sizing not found' };
+        return { status: false, message: 'Product Sizing not found' };
       }
       return new ProductSizingEntity(productSizing);
     } catch (error) {
