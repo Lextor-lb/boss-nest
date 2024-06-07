@@ -31,10 +31,14 @@ model User {
   updatedAt DateTime  @updatedAt
   articles  Article[]
 
-  createdProductSizings  ProductSizing[]  @relation("CreatedProductSizings")
-  updatedProductSizings  ProductSizing[]  @relation("UpdatedProductSizings")
+  createdProductSizings ProductSizing[] @relation("CreatedProductSizings")
+  updatedProductSizings ProductSizing[] @relation("UpdatedProductSizings")
+
   createdProductFittings ProductFitting[] @relation("CreatedProductFittings")
   updatedProductFittings ProductFitting[] @relation("UpdatedProductFittings")
+
+  createdProductTypes ProductType[] @relation("CreatedProductTypes")
+  updatedProductTypes ProductType[] @relation("UpdatedProductTypes")
 }
 
 model ProductSizing {
@@ -73,4 +77,17 @@ model ProductFittingProductSizing {
   productSizingId  Int
   productFitting   ProductFitting @relation(fields: [productFittingId], references: [id])
   productFittingId Int
+}
+
+model ProductType {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdByUser   User?     @relation("CreatedProductTypes", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User?     @relation("UpdatedProductTypes", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+  isArchived      DateTime?
 }
