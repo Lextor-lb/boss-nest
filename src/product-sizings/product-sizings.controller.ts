@@ -155,3 +155,4 @@ export class ProductSizingsController {
     };
   }
 }
+//    @UploadedFile() file: Express.Multer.File,
