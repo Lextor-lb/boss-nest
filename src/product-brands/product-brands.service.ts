@@ -5,6 +5,7 @@ import { Prisma } from '@prisma/client';
 import { UpdateProductBrandDto } from './dto/update-product-brand.dto';
 import { unlinkSync } from 'fs';
 import { join } from 'path';
+import { RemoveManyProductBrandDto } from './dto/removeMany-product-brand.dto';
 
 @Injectable()
 export class ProductBrandsService {
@@ -146,5 +147,24 @@ export class ProductBrandsService {
         media: true,
       },
     });
+  }
+
+  async removeMany(removeManyProductBrandDto: RemoveManyProductBrandDto) {
+    const { ids } = removeManyProductBrandDto;
+
+    const { count } = await this.prisma.productBrand.updateMany({
+      where: {
+        id: { in: ids },
+      },
+      data: {
+        isArchived: new Date(),
+      },
+    });
+
+    return {
+      status: true,
+      message: `Deleted ${count} product brands successfully.`,
+      archivedIds: ids,
+    };
   }
 }

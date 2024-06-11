@@ -217,6 +217,7 @@ import {
   ParseIntPipe,
   Param,
   Put,
+  Delete,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -227,6 +228,7 @@ import { ProductBrandEntity } from './entity/product-brand.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ConfigService } from '@nestjs/config';
 import { UpdateProductBrandDto } from './dto/update-product-brand.dto';
+import { RemoveManyProductBrandDto } from './dto/removeMany-product-brand.dto';
 
 @Controller('product-brands')
 @UseGuards(JwtAuthGuard)
@@ -402,6 +404,20 @@ export class ProductBrandsController {
       status: true,
       message: 'Updated Successfully!',
       data: new ProductBrandEntity(updatedProductBrand),
+    };
+  }
+
+  @Delete()
+  async removeMany(
+    @Body() removeManyProductBrandDto: RemoveManyProductBrandDto,
+  ) {
+    const result = await this.productBrandsService.removeMany(
+      removeManyProductBrandDto,
+    );
+    return {
+      status: true,
+      message: 'Deleted Successfully!',
+      data: result,
     };
   }
 }
