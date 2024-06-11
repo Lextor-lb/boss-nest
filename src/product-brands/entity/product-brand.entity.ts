@@ -5,10 +5,12 @@ import { UserEntity } from 'src/users/entities/user.entity';
 export class ProductBrandEntity implements ProductBrand {
   id: number;
   name: string;
+  @Exclude()
   mediaId: number | null;
   createdBy: number;
   updatedBy: number;
   isArchived: Date | null;
+  image: string | null;
 
   @Exclude()
   createdAt: Date;
@@ -31,11 +33,16 @@ export class ProductBrandEntity implements ProductBrand {
   }
 
   constructor({
+    media = null,
     createdByUser = null,
     updatedByUser = null,
     ...data
-  }: Partial<ProductBrandEntity>) {
+  }: Partial<ProductBrandEntity & { media?: { url: string } }>) {
     Object.assign(this, data);
+
+    if (media) {
+      this.image = media.url;
+    }
 
     if (createdByUser) {
       this.createdByUser = new UserEntity(createdByUser);

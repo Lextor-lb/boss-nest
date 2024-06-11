@@ -11,12 +11,18 @@ import { ProductTypesModule } from './product-types/product-types.module';
 import { ProductBrandsModule } from './product-brands/product-brands.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ConfigModule } from '@nestjs/config';
+import configuration from 'config/configuration';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      load: [configuration],
+      isGlobal: true,
+    }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/uploads',
+      rootPath: join(__dirname, '..', 'uploads'), // Adjust the root path to match the intended directory
+      serveRoot: '/uploads', // This will serve files at http://localhost:3000/uploads/
     }),
     PrismaModule,
     ArticlesModule,
