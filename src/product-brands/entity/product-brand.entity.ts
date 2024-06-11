@@ -7,8 +7,7 @@ export class ProductBrandEntity implements ProductBrand {
   name: string;
   @Exclude()
   mediaId: number | null;
-  createdBy: number;
-  updatedBy: number;
+
   isArchived: Date | null;
   image: string | null;
 
@@ -18,10 +17,10 @@ export class ProductBrandEntity implements ProductBrand {
   @Exclude()
   updatedAt: Date;
 
-  @Exclude()
+  // @Exclude()
   createdByUserId: number | null;
 
-  @Exclude()
+  // @Exclude()
   updatedByUserId: number | null;
 
   createdByUser?: UserEntity;

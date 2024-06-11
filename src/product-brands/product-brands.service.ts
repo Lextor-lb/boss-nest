@@ -18,13 +18,11 @@ export class ProductBrandsService {
   async create(
     createProductBrandDto: CreateProductBrandDto,
     filename: string,
-    createdBy: number,
+    createdByUserId: number,
   ) {
     const createdMedia = await this.prisma.media.create({
       data: {
         url: `/uploads/brands/${filename}`,
-        createdBy,
-        updatedBy: createdBy,
       },
     });
 
@@ -32,8 +30,7 @@ export class ProductBrandsService {
       data: {
         name: createProductBrandDto.name,
         mediaId: createdMedia.id,
-        createdBy,
-        updatedBy: createdBy,
+        createdByUserId,
       },
     });
   }
@@ -83,7 +80,7 @@ export class ProductBrandsService {
     id: number,
     updateProductBrandDto: UpdateProductBrandDto,
     filename: string | null,
-    updatedBy: number,
+    updatedByUserId: number,
   ) {
     const productBrand = await this.prisma.productBrand.findUnique({
       where: { id, AND: this.whereCheckingNullClause },
@@ -117,7 +114,6 @@ export class ProductBrandsService {
 
       const mediaData = {
         url: `/uploads/brands/${filename}`,
-        updatedBy,
       };
 
       if (mediaId) {
@@ -129,7 +125,6 @@ export class ProductBrandsService {
         const createdMedia = await this.prisma.media.create({
           data: {
             ...mediaData,
-            createdBy: updatedBy,
           },
         });
         mediaId = createdMedia.id;
@@ -141,7 +136,7 @@ export class ProductBrandsService {
       data: {
         ...updateProductBrandDto,
         mediaId,
-        updatedBy,
+        updatedByUserId,
       },
       include: {
         media: true,

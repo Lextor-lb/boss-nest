@@ -99,8 +99,6 @@ model ProductBrand {
   id         Int       @id @default(autoincrement())
   name       String
   mediaId    Int?      @unique
-  createdBy  Int
-  updatedBy  Int
   isArchived DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -116,8 +114,6 @@ model Media {
   id         Int       @id @default(autoincrement())
   url        String
   productId  Int?
-  createdBy  Int
-  updatedBy  Int
   isArchived DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt

@@ -33,8 +33,6 @@ async function main() {
     },
   });
 
-  // Create three dummy posts
-  // ... (Add your post creation logic here)
   const productSizing1 = await prisma.productSizing.create({
     data: {
       name: 'YourProductSizingName1',
@@ -51,6 +49,51 @@ async function main() {
     },
   });
 
+  await prisma.productType.create({
+    data: {
+      name: 'Clothing',
+      createdByUserId: user1.id,
+      updatedByUserId: user2.id,
+    },
+  });
+
+  await prisma.productType.create({
+    data: {
+      name: 'Accessories',
+      createdByUserId: user2.id,
+      updatedByUserId: user1.id,
+    },
+  });
+  await prisma.productType.create({
+    data: {
+      name: 'Foot Wear',
+      createdByUserId: user2.id,
+      updatedByUserId: user1.id,
+    },
+  });
+
+  await prisma.productBrand.create({
+    data: {
+      name: 'Adidas',
+      createdByUserId: 1,
+      updatedByUserId: 1,
+    },
+  });
+
+  await prisma.productBrand.create({
+    data: {
+      name: 'Accessories',
+      createdByUserId: user2.id,
+      updatedByUserId: user1.id,
+    },
+  });
+  await prisma.productBrand.create({
+    data: {
+      name: 'Foot Wear',
+      createdByUserId: user2.id,
+      updatedByUserId: user1.id,
+    },
+  });
   console.log({ user1, user2, productSizing1, productSizing2 });
 }
 
