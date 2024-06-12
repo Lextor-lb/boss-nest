@@ -42,6 +42,9 @@ model User {
 
   createdProductBrands ProductBrand[] @relation("CreatedProductBrands")
   updatedProductBrands ProductBrand[] @relation("UpdatedProductBrands")
+
+  createdProductCategories ProductCategory[] @relation("CreatedProductCategories")
+  updatedProductCategories ProductCategory[] @relation("UpdatedProductCategories")
 }
 
 model ProductSizing {
@@ -72,6 +75,9 @@ model ProductFitting {
   isArchived                  DateTime?
   productSizings              ProductSizing[]
   ProductFittingProductSizing ProductFittingProductSizing[]
+
+  productCategories             ProductCategory[]
+  ProductCategoryProductFitting ProductCategoryProductFitting[]
 }
 
 model ProductFittingProductSizing {
@@ -80,19 +86,6 @@ model ProductFittingProductSizing {
   productSizingId  Int
   productFitting   ProductFitting @relation(fields: [productFittingId], references: [id])
   productFittingId Int
-}
-
-model ProductType {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  createdByUser   User?     @relation("CreatedProductTypes", fields: [createdByUserId], references: [id])
-  createdByUserId Int?
-  updatedByUser   User?     @relation("UpdatedProductTypes", fields: [updatedByUserId], references: [id])
-  updatedByUserId Int?
-  isArchived      DateTime?
 }
 
 model ProductBrand {
@@ -120,4 +113,48 @@ model Media {
 
   // product ProductBrand? @relation(fields: [productId], references: [id])
   ProductBrand ProductBrand?
+}
+
+model ProductType {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdByUser   User? @relation("CreatedProductTypes", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedProductTypes", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  productCategories ProductCategory[] @relation("ProductTypeCategories")
+
+  isArchived DateTime?
+}
+
+model ProductCategory {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdByUser   User? @relation("CreatedProductCategories", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedProductCategories", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  productType   ProductType @relation("ProductTypeCategories", fields: [productTypeId], references: [id])
+  productTypeId Int
+
+  productFittings               ProductFitting[]
+  ProductCategoryProductFitting ProductCategoryProductFitting[]
+
+  isArchived DateTime?
+}
+
+model ProductCategoryProductFitting {
+  id                Int             @id @default(autoincrement())
+  productCategory   ProductCategory @relation(fields: [productCategoryId], references: [id])
+  productCategoryId Int
+  productFitting    ProductFitting  @relation(fields: [productFittingId], references: [id])
+  productFittingId  Int
 }

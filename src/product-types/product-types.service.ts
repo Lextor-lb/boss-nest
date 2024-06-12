@@ -72,7 +72,8 @@ export class ProductTypesService {
   async removeMany(removeManyProductTypeDto: RemoveManyProductTypeDto) {
     const { ids } = removeManyProductTypeDto;
 
-    const { count } = await this.prisma.productType.updateMany({
+    // Archive the ProductType instances
+    const archivedProductTypes = await this.prisma.productType.updateMany({
       where: {
         id: { in: ids },
       },
@@ -81,10 +82,22 @@ export class ProductTypesService {
       },
     });
 
+    // Archive the related ProductCategory instances
+    const archivedProductCategories =
+      await this.prisma.productCategory.updateMany({
+        where: {
+          productTypeId: { in: ids },
+        },
+        data: {
+          isArchived: new Date(),
+        },
+      });
+
     return {
       status: true,
-      message: `Deleted ${count} product types successfully.`,
-      archivedIds: ids,
+      message: `Archived ${archivedProductTypes.count} product types and ${archivedProductCategories.count} related product categories successfully.`,
+      archivedTypeIds: ids,
+      archivedCategoryCount: archivedProductCategories.count,
     };
   }
 }

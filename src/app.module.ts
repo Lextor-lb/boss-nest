@@ -12,6 +12,7 @@ import { ProductBrandsModule } from './product-brands/product-brands.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
+import { ProductCategoriesModule } from './product-categories/product-categories.module';
 import configuration from 'config/configuration';
 
 @Module({
@@ -32,6 +33,7 @@ import configuration from 'config/configuration';
     ProductFittingsModule,
     ProductTypesModule,
     ProductBrandsModule,
+    ProductCategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
