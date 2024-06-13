@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { IsEntityExists } from 'customValidation/validation';
 
 export class CreateProductCategoryDto {
   @IsNotEmpty()
@@ -21,11 +22,15 @@ export class CreateProductCategoryDto {
 
   @IsNotEmpty()
   @IsInt()
+  @IsEntityExists('productType', { message: 'Product type does not exist' })
   productTypeId: number;
 
   @IsNotEmpty()
   @IsArray()
   @IsInt({ each: true })
+  @IsEntityExists('productFittings', {
+    message: 'Some product fittings do not exist',
+  })
   productFittingIds: number[];
 
   @IsOptional()

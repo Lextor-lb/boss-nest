@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
-import { ArticlesModule } from './articles/articles.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ProductSizingsModule } from './product-sizings/product-sizings.module';
@@ -13,6 +12,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
+import { ProductsModule } from './products/products.module';
 import configuration from 'config/configuration';
 
 @Module({
@@ -26,7 +26,6 @@ import configuration from 'config/configuration';
       serveRoot: '/uploads', // This will serve files at http://localhost:3000/uploads/
     }),
     PrismaModule,
-    ArticlesModule,
     UsersModule,
     AuthModule,
     ProductSizingsModule,
@@ -34,6 +33,7 @@ import configuration from 'config/configuration';
     ProductTypesModule,
     ProductBrandsModule,
     ProductCategoriesModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
