@@ -1,7 +1,8 @@
 {
 	"cSpell.ignoreWords": [
 		"Dtos",
-		"Ecommerce"
+		"Ecommerce",
+		"fieldname"
 	],
 	"editor.guides.indentation": false
 }

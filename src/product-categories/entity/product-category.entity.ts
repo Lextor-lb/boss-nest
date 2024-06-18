@@ -1,5 +1,6 @@
 import { ProductCategory } from '@prisma/client';
 import { Exclude, Expose } from 'class-transformer';
+import { formatDate } from 'src/shared/utils';
 import { UserEntity } from 'src/users/entities/user.entity';
 
 export class ProductCategoryEntity implements ProductCategory {
@@ -20,19 +21,22 @@ export class ProductCategoryEntity implements ProductCategory {
   createdByUser?: UserEntity;
   updatedByUser?: UserEntity;
 
+  // @Exclude()
   productFittingIds: number[];
 
   productTypeId: number;
 
-  @Expose()
-  get date(): string {
-    return this.formatDate(this.updatedAt);
+  get date(): string | null {
+    if (!this.createdAt) {
+      return null;
+    }
+    return formatDate(this.createdAt);
   }
 
   constructor({
-    createdByUser = null,
-    updatedByUser = null,
-    productFittingIds = [],
+    createdByUser,
+    updatedByUser,
+    productFittingIds,
     ...data
   }: Partial<ProductCategoryEntity>) {
     Object.assign(this, data);
@@ -46,14 +50,5 @@ export class ProductCategoryEntity implements ProductCategory {
     }
 
     this.productFittingIds = productFittingIds;
-  }
-
-  private formatDate(date: Date): string {
-    const options: Intl.DateTimeFormatOptions = {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    };
-    return date.toLocaleDateString('en-US', options).replace(/,/g, '');
   }
 }

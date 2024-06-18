@@ -1,127 +1,170 @@
 // import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { ProductEntity } from './entity/product.entity';
+import { ProductTypeEntity } from 'src/product-types/entity/product-type.entity';
+import { ProductPagination, SearchOption } from '../shared/types';
+import { MediaService } from 'src/media/media.service';
+import { MediaEntity } from 'src/media/entity/media.entity';
+import { ProductBrandEntity } from 'src/product-brands/entity/product-brand.entity';
+import { ProductCategoryEntity } from 'src/product-categories/entity/product-category.entity';
+import { ProductFittingEntity } from 'src/product-fittings/entity/product-fitting.entity';
+import { MediaDto } from 'src/media/dto/media.dto';
+import { ProductVariantsService } from 'src/product-variants/product-variants.service';
+import { ProductVariantEntity } from 'src/product-variants/entity/product-variant.entity';
+// import { ProductVariantsService } from 'src/product-variants/product-variants.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mediaService: MediaService, // Inject MediaService
+    private readonly productVariantsService: ProductVariantsService, // Inject ProductVariantService
+  ) {}
+  whereCheckingNullClause: Prisma.ProductWhereInput = {
+    isArchived: null,
+  };
 
-  async create(
-    createProductDto: CreateProductDto,
-    files: Express.Multer.File[],
-  ): Promise<any> {
-    const {
-      name,
-      isEcommerce,
-      isPos,
-      gender,
-      salePrice,
-      stockPrice,
-      productBrandId,
-      productCategoryId,
-      productFittingId,
-      productTypeId,
-      productVariants,
-    } = createProductDto;
-
+  async create(createProductDto: CreateProductDto) {
     try {
-      return await this.prisma.$transaction(async (prisma) => {
-        // Create the product
-        const product = await prisma.product.create({
-          data: {
-            name,
-            isEcommerce,
-            isPos,
-            gender,
-            stockPrice,
-            salePrice,
-            productBrandId,
-            productCategoryId,
-            productFittingId,
-            productTypeId,
-          },
-        });
+      const product = await this.prisma.$transaction(
+        async (transactionClient: PrismaClient) => {
+          // Create product
+          const { productVariants, imageFilesUrl, ...productData } =
+            createProductDto;
 
-        // Save product images
-        const productImages = files.filter(
-          (file) => file.fieldname === 'images',
-        );
-        const mediaPromises = productImages.map((file) =>
-          prisma.media.create({
-            data: {
-              url: `/uploads/products/${file.filename}`,
-              productId: product.id,
-            },
-          }),
-        );
-        await Promise.all(mediaPromises);
+          const product = await transactionClient.product.create({
+            data: productData,
+          });
 
-        // Save product variants and their images
-        if (productVariants && productVariants.length > 0) {
-          for (let i = 0; i < productVariants.length; i++) {
-            const variant = productVariants[i];
-            const {
-              shopCode,
-              productCode,
-              colorCode,
-              barcode,
-              productSizingId,
-            } = variant;
+          // Save product images
+          const uploadMedia = imageFilesUrl.map((url) => {
+            const mediaDto = new MediaDto();
+            mediaDto.url = url;
+            mediaDto.productId = product.id;
+            return this.mediaService.saveMedia(transactionClient, mediaDto);
+          });
+          const medias = await Promise.all(uploadMedia);
 
-            // Save the image for the variant
-            const variantImageFieldname = `productVariants[${i}][image]`;
-            const variantImage = files.find(
-              (file) => file.fieldname === variantImageFieldname,
-            );
-
-            let mediaId: number | null = null;
-            if (variantImage) {
-              const media = await prisma.media.create({
-                data: {
-                  url: `/uploads/products/${variantImage.filename}`,
+          // Create product variants
+          let variants = [];
+          if (productVariants && productVariants.length > 0) {
+            const variantPromises = productVariants.map(async (variantDto) => {
+              return this.productVariantsService.createWithTransaction(
+                transactionClient,
+                {
+                  ...variantDto,
+                  productId: product.id,
                 },
-              });
-              mediaId = media.id;
-            }
-
-            await prisma.productVariant.create({
-              data: {
-                shopCode,
-                productCode,
-                colorCode,
-                barcode,
-                productSizingId,
-                createdByUserId: createProductDto.createdByUserId,
-                productId: product.id,
-                mediaId,
-              },
+              );
             });
+            variants = await Promise.all(variantPromises);
           }
-        }
 
-        return {
-          status: true,
-          message: 'Created Successfully',
-        };
+          return {
+            ...product,
+            medias,
+            variants,
+          };
+        },
+      );
+      // return product.variants;
+      // return files;
+      return new ProductEntity({
+        ...product,
+        medias: product.medias.map((media) => new MediaEntity(media)),
       });
     } catch (error) {
+      console.error(error);
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          console.log('Unique constraint violation error meta:', error.meta);
-          // Adjust this condition based on the logged structure of error.meta
-          if (
-            error.meta &&
-            Array.isArray(error.meta.target) &&
-            error.meta.target.includes('barcode')
-          ) {
-            throw new BadRequestException('The barcode must be unique.');
-          }
+          throw new ConflictException('The barcode must be unique.');
         }
       }
-      console.error(error);
       throw new BadRequestException('Error creating product');
     }
+  }
+
+  async findAll({
+    page,
+    limit,
+    search = '',
+    orderBy = 'createdAt',
+    orderDirection = 'desc',
+  }: SearchOption): Promise<ProductPagination> {
+    const total = await this.prisma.product.count({
+      where: this.whereCheckingNullClause,
+    });
+    const skip = (page - 1) * limit;
+
+    const whereClause = {
+      ...this.whereCheckingNullClause,
+      name: {
+        contains: search,
+      },
+    };
+
+    const orderByClause = {
+      [orderBy]: orderDirection,
+    };
+
+    const includeClause = {
+      productBrand: true,
+      productType: true,
+      productCategory: true,
+      productFitting: true,
+      medias: true,
+      productVariants: true,
+    };
+
+    const products = await this.prisma.product.findMany({
+      where: whereClause,
+      include: includeClause,
+      skip,
+      take: limit,
+      orderBy: orderByClause,
+    });
+
+    const createEntityProps = (entity: {
+      id: number;
+      name: string;
+      isArchived: Date;
+    }) => ({
+      id: entity.id,
+      name: entity.name,
+      isArchived: entity.isArchived,
+    });
+
+    const productEntities = products.map((product) => {
+      return new ProductEntity({
+        ...product,
+        productType: new ProductTypeEntity(
+          createEntityProps(product.productType),
+        ),
+        productBrand: new ProductBrandEntity(
+          createEntityProps(product.productBrand),
+        ),
+        productCategory: new ProductCategoryEntity(
+          createEntityProps(product.productCategory),
+        ),
+        productFitting: new ProductFittingEntity(
+          createEntityProps(product.productFitting),
+        ),
+        medias: product.medias.map(
+          (media) => new MediaEntity({ id: media.id, url: media.url }),
+        ),
+        productVariants: product.productVariants.map(
+          (productVariant) => new ProductVariantEntity(productVariant),
+        ),
+      });
+    });
+
+    return { data: productEntities, total, page, limit };
   }
 }

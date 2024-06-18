@@ -14,6 +14,9 @@ import { ConfigModule } from '@nestjs/config';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
 import { ProductsModule } from './products/products.module';
 import configuration from 'config/configuration';
+import { MediaModule } from './media/media.module';
+import { ProductVariantsModule } from './product-variants/product-variants.module';
+import { FileValidatorPipe } from './shared/pipes/file-validator.pipe';
 
 @Module({
   imports: [
@@ -34,8 +37,10 @@ import configuration from 'config/configuration';
     ProductBrandsModule,
     ProductCategoriesModule,
     ProductsModule,
+    MediaModule,
+    ProductVariantsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, FileValidatorPipe],
 })
 export class AppModule {}

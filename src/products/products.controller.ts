@@ -1,4 +1,3 @@
-//
 import {
   Controller,
   Post,
@@ -7,84 +6,112 @@ import {
   UploadedFiles,
   HttpException,
   HttpStatus,
+  Get,
+  Query,
+  Req,
+  UseGuards,
+  BadRequestException,
+  UseFilters,
 } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductsService } from './products.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { ProductPagination, SearchOption } from 'src/shared/types';
+import { multerOptions } from 'src/media/multer-config';
+import { ProductEntity } from './entity/product.entity';
+import { CustomBadRequestExceptionFilter } from 'src/shared/exception/CustomBadRequestExceptionFilter';
 
 @Controller('products')
+@UseGuards(JwtAuthGuard)
+@UseFilters(CustomBadRequestExceptionFilter)
 export class ProductsController {
   constructor(private readonly productService: ProductsService) {}
 
   @Post()
-  @UseInterceptors(
-    AnyFilesInterceptor({
-      storage: diskStorage({
-        destination: join(__dirname, '..', '..', '..', 'uploads', 'products'),
-        filename: (req, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
-          callback(null, filename);
-        },
-      }),
-      limits: { fileSize: 2000 * 1024 }, // 2MB
-      fileFilter: (req, file, callback) => {
-        const allowedTypes = [
-          'image/png',
-          'image/jpg',
-          'image/jpeg',
-          'image/webp',
-        ];
-        if (allowedTypes.includes(file.mimetype)) {
-          callback(null, true);
-        } else {
-          callback(
-            new HttpException('Invalid file type', HttpStatus.BAD_REQUEST),
-            false,
-          );
-        }
-      },
-    }),
-  )
+  @UseInterceptors(AnyFilesInterceptor(multerOptions))
   async create(
     @Body() createProductDto: CreateProductDto,
     @UploadedFiles() files: Express.Multer.File[],
+    @Req() req,
   ) {
     if (!files || files.length === 0) {
       throw new HttpException('No images uploaded', HttpStatus.BAD_REQUEST);
     }
+
     const imageFiles = files.filter((file) => file.fieldname === 'images');
     if (imageFiles.length === 0) {
-      throw new HttpException(
-        'At least one product image is required',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new BadRequestException('At least one product image is required');
     }
-    const filesMap = files.reduce((acc, file) => {
-      acc[file.fieldname] = file;
-      return acc;
-    }, {});
 
-    if (
-      createProductDto.productVariants &&
-      createProductDto.productVariants.length > 0
-    ) {
-      for (let i = 0; i < createProductDto.productVariants.length; i++) {
-        const variantImageFieldname = `productVariants[${i}][image]`;
-        if (!filesMap[variantImageFieldname]) {
-          throw new HttpException(
-            `Image is required for all product variants`,
-            HttpStatus.BAD_REQUEST,
+    createProductDto.imageFilesUrl = imageFiles.map(
+      (file) => `/uploads/${file.filename}`,
+    );
+    createProductDto.createdByUserId = req.user.id;
+    createProductDto.updatedByUserId = req.user.id;
+
+    if (createProductDto.productVariants) {
+      createProductDto.productVariants.forEach((variant, index) => {
+        variant.createdByUserId = req.user.id;
+        variant.updatedByUserId = req.user.id;
+        const variantFile = files.find(
+          (file) => file.fieldname === `productVariants[${index}][image]`,
+        );
+        if (!variantFile) {
+          throw new BadRequestException(
+            `Image file for product variant at index ${index} is missing`,
           );
         }
-      }
+        const url = `/uploads/${variantFile.filename}`;
+        variant.imageFileUrl = url;
+      });
     }
-    createProductDto.createdByUserId = 1;
-    const product = await this.productService.create(createProductDto, files);
-    return product;
+
+    const product = await this.productService.create(createProductDto);
+
+    return {
+      status: true,
+      message: 'Created Successfully!',
+      // data: product,
+      data: new ProductEntity(product),
+    };
+  }
+
+  // @Get('all')
+  // async indexAll() {
+  //   const products = await this.productService.indexAll();
+  //   return products.map((product) => {
+  //     const entity = new ProductEntity(product);
+  //     return {
+  //       id: entity.id,
+  //       name: entity.name,
+  //       isArchived: entity.isArchived,
+  //     };
+  //   });
+  // }
+
+  @Get()
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('orderBy') orderBy: string = 'createdAt',
+    @Query('orderDirection') orderDirection: 'asc' | 'desc' = 'desc',
+  ): Promise<ProductPagination> {
+    const searchOptions: SearchOption = {
+      page,
+      limit: limit ? parseInt(limit, 10) : 10,
+      search,
+      orderBy,
+      orderDirection,
+    };
+
+    const products = await this.productService.findAll(searchOptions);
+    return {
+      data: products.data.map((product) => new ProductEntity(product)),
+      total: products.total,
+      page: products.page,
+      limit: products.limit,
+    };
   }
 }

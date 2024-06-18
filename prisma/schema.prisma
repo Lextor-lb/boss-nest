@@ -37,8 +37,8 @@ model User {
   createdProducts Product[] @relation("CreatedProducts")
   updatedProducts Product[] @relation("UpdatedProducts")
 
-  createdProductVariants productVariant[] @relation("CreatedProductVariants")
-  updatedProductVariants productVariant[] @relation("UpdatedProductVariants")
+  createdProductVariants ProductVariant[] @relation("CreatedProductVariants")
+  updatedProductVariants ProductVariant[] @relation("UpdatedProductVariants")
 }
 
 model ProductSizing {
@@ -59,7 +59,7 @@ model ProductSizing {
   ProductFittingProductSizing ProductFittingProductSizing[]
 
   // One to One Inverse
-  productVariants productVariant[] @relation("ProductSizingVariants")
+  productVariants ProductVariant[] @relation("ProductSizingVariants")
 }
 
 model ProductFitting {
@@ -127,7 +127,7 @@ model Media {
 
   // One to One Inverse
   ProductBrand   ProductBrand?
-  productVariant productVariant?
+  productVariant ProductVariant?
 
   isArchived DateTime?
 }
@@ -217,19 +217,20 @@ model Product {
 
   // One to Many Inverse
   medias          Media[]          @relation("ProductMedias")
-  productVariants productVariant[] @relation("ProductProductVariants")
+  productVariants ProductVariant[] @relation("ProductProductVariants")
 
   isArchived DateTime?
 }
 
-model productVariant {
-  id          Int      @id @default(autoincrement())
+model ProductVariant {
+  id          Int          @id @default(autoincrement())
   shopCode    String
   productCode String
   colorCode   String
-  barcode     String   @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  barcode     String       @unique
+  statusStock StatusStock?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   // One to Many
   createdByUser   User? @relation("CreatedProductVariants", fields: [createdByUserId], references: [id])
@@ -253,4 +254,8 @@ enum Gender {
   MAN
   LADY
   UNISEX
+}
+
+enum StatusStock {
+  SOLDOUT
 }
