@@ -12,23 +12,19 @@ export class ProductSizingEntity implements ProductSizing {
   @Exclude()
   updatedAt: Date;
   @Exclude()
-  createdByUserId: number | null;
+  createdByUserId: number;
   @Exclude()
-  updatedByUserId: number | null;
+  updatedByUserId: number;
 
   isArchived: Date | null;
 
   createdByUser?: UserEntity;
 
   updatedByUser?: UserEntity;
-
-  get date(): string | null {
-    if (!this.createdAt) {
-      return null;
-    }
+  @Expose()
+  get date(): string {
     return formatDate(this.createdAt);
   }
-
   constructor({
     createdByUser = null,
     updatedByUser = null,

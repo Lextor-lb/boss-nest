@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -19,6 +20,12 @@ import { ProductSizingEntity } from './entity/product-sizing.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UpdateProductSizingDto } from './dto/update-product-sizing.dto';
 import { RemoveManyProductSizingDto } from './dto/removeMany-product-sizing.dto';
+import {
+  FetchedSizing,
+  MessageWithSizing,
+  PaginatedSizing,
+} from 'src/shared/types/productSizing';
+import { SearchOption } from 'src';
 
 @Controller('product-sizings')
 @UseGuards(JwtAuthGuard)
@@ -45,47 +52,57 @@ export class ProductSizingsController {
   async createMultiple(
     @Body() createProductSizingDtos: CreateProductSizingDto[],
     @Req() req,
-  ) {
-    const createdByUserId = req.user.id;
+  ): Promise<FetchedSizing> {
+    try {
+      const createdByUserId = req.user.id;
+      createProductSizingDtos.forEach((dto) => {
+        dto.createdByUserId = createdByUserId;
+      });
+      const createdProductSizings =
+        await this.productSizingsService.createMultiple(
+          createProductSizingDtos,
+        );
+      return {
+        status: true,
+        message: 'Created Successfully!',
+        data: createdProductSizings.map(
+          (productSizing) => new ProductSizingEntity(productSizing),
+        ),
+      };
+    } catch (error) {
+      throw new BadRequestException('error creating sizings');
+    }
+  }
 
-    // Assign createdByUserId to each DTO
-    createProductSizingDtos.forEach((dto) => {
-      dto.createdByUserId = createdByUserId;
-    });
-    const createdProductSizings =
-      await this.productSizingsService.createMultiple(createProductSizingDtos);
+  @Get('all')
+  async indexAll(): Promise<FetchedSizing> {
+    const productSizings = await this.productSizingsService.indexAll();
     return {
       status: true,
-      message: 'Created Successfully!',
-      data: createdProductSizings.map(
+      message: 'Fetched Successfully!',
+      data: productSizings.map(
         (productSizing) => new ProductSizingEntity(productSizing),
       ),
     };
   }
 
-  @Get('all')
-  async indexAll() {
-    const productSizings = await this.productSizingsService.indexAll();
-    return productSizings.map(
-      (productSizing) => new ProductSizingEntity(productSizing),
-    );
-  }
-
   @Get()
   async findAll(
     @Query('page') page: number = 1,
-    @Query('limit', ParseIntPipe) limit: number = 10,
-    @Query('searchName') searchName?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
     @Query('orderBy') orderBy: string = 'createdAt',
     @Query('orderDirection') orderDirection: 'asc' | 'desc' = 'desc',
-  ) {
-    const productSizings = await this.productSizingsService.findAll(
+  ): Promise<PaginatedSizing> {
+    const searchOptions: SearchOption = {
       page,
-      limit,
-      searchName,
+      limit: limit ? parseInt(limit, 10) : 10,
+      search,
       orderBy,
       orderDirection,
-    );
+    };
+    const productSizings =
+      await this.productSizingsService.findAll(searchOptions);
     return {
       data: productSizings.data.map(
         (productSizing) => new ProductSizingEntity(productSizing),
@@ -97,12 +114,12 @@ export class ProductSizingsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ProductSizingEntity> {
     try {
       const productSizing = await this.productSizingsService.findOne(id);
-      if (!productSizing) {
-        return { status: false, message: 'Product Sizing not found' };
-      }
+
       return new ProductSizingEntity(productSizing);
     } catch (error) {
       console.error('Error fetching product sizing:', error);
@@ -118,7 +135,7 @@ export class ProductSizingsController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
     @Body() updateProductSizingDto: UpdateProductSizingDto,
-  ) {
+  ): Promise<MessageWithSizing> {
     updateProductSizingDto.updatedByUserId = req.user.id;
     const updatedProductSizing = await this.productSizingsService.update(
       id,
@@ -128,16 +145,6 @@ export class ProductSizingsController {
       status: true,
       message: 'Updated Successfully!',
       data: new ProductSizingEntity(updatedProductSizing),
-    };
-  }
-
-  @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    const deletedProductSizing = await this.productSizingsService.remove(id);
-    return {
-      status: true,
-      message: 'Deleted Successfully!',
-      data: new ProductSizingEntity(deletedProductSizing),
     };
   }
 

@@ -1,3 +1,3 @@
-export * from './entity/index';
-export * from './dto/index';
+export * from './entity';
+export * from './dto';
 export * from './product-sizings.service';

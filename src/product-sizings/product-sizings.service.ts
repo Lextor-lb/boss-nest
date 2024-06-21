@@ -4,6 +4,9 @@ import { CreateProductSizingDto } from './dto/create-product-sizing.dto';
 import { Prisma } from '@prisma/client';
 import { UpdateProductSizingDto } from './dto/update-product-sizing.dto';
 import { RemoveManyProductSizingDto } from './dto/removeMany-product-sizing.dto';
+import { ProductSizingEntity } from './entity';
+import { PaginatedSizing } from 'src/shared/types/productSizing';
+import { SearchOption } from 'src';
 
 @Injectable()
 export class ProductSizingsService {
@@ -16,7 +19,10 @@ export class ProductSizingsService {
   // create(createProductSizingDto: CreateProductSizingDto) {
   //   return this.prisma.productSizing.create({ data: createProductSizingDto });
   // }
-  async createMultiple(createProductSizingDtos: CreateProductSizingDto[]) {
+
+  async createMultiple(
+    createProductSizingDtos: CreateProductSizingDto[],
+  ): Promise<ProductSizingEntity[]> {
     const createdProductSizings = [];
 
     for (const createProductSizingDto of createProductSizingDtos) {
@@ -28,20 +34,25 @@ export class ProductSizingsService {
       createdProductSizings.push(createdProductSizing);
     }
 
-    return createdProductSizings;
+    return createdProductSizings.map(
+      (createdProductSizing) => new ProductSizingEntity(createdProductSizing),
+    );
   }
 
-  async indexAll() {
-    return await this.prisma.productSizing.findMany();
+  async indexAll(): Promise<ProductSizingEntity[]> {
+    const productSizings = await this.prisma.productSizing.findMany();
+    return productSizings.map(
+      (productSizing) => new ProductSizingEntity(productSizing),
+    );
   }
 
-  async findAll(
-    page: number,
-    limit: number,
-    searchName?: string,
-    orderBy: string = 'createdAt',
-    orderDirection: 'asc' | 'desc' = 'desc',
-  ) {
+  async findAll({
+    page,
+    limit,
+    search = '',
+    orderBy = 'createdAt',
+    orderDirection = 'desc',
+  }: SearchOption): Promise<PaginatedSizing> {
     const total = await this.prisma.productSizing.count({
       where: this.whereCheckingNullClause,
     });
@@ -51,7 +62,7 @@ export class ProductSizingsService {
       where: {
         ...this.whereCheckingNullClause,
         name: {
-          contains: searchName || '',
+          contains: search || '',
         },
       },
       skip,
@@ -60,34 +71,32 @@ export class ProductSizingsService {
         [orderBy]: orderDirection,
       },
     });
-    return { data: productSizings, total, page, limit };
+    return {
+      data: productSizings.map(
+        (productSizing) => new ProductSizingEntity(productSizing),
+      ),
+      total,
+      page,
+      limit,
+    };
   }
 
-  findOne(id: number) {
-    return this.prisma.productSizing.findUnique({
+  async findOne(id: number): Promise<ProductSizingEntity> {
+    const productSizing = await this.prisma.productSizing.findUnique({
       where: { id, AND: this.whereCheckingNullClause },
     });
+    return new ProductSizingEntity(productSizing);
   }
 
-  async update(id: number, updateProductSizingDto: UpdateProductSizingDto) {
-    const existingProductSizing = await this.prisma.productSizing.findUnique({
-      where: { id, AND: this.whereCheckingNullClause },
-    });
-
-    if (!existingProductSizing) {
-      throw new NotFoundException(`Product sizing with ID ${id} not found`);
-    }
-    return this.prisma.productSizing.update({
+  async update(
+    id: number,
+    updateProductSizingDto: UpdateProductSizingDto,
+  ): Promise<ProductSizingEntity> {
+    const productSizing = await this.prisma.productSizing.update({
       where: { id },
       data: updateProductSizingDto,
     });
-  }
-
-  remove(id: number) {
-    return this.prisma.productSizing.update({
-      where: { id },
-      data: { isArchived: new Date() },
-    });
+    return new ProductSizingEntity(productSizing);
   }
 
   async removeMany(removeManyProductSizingDto: RemoveManyProductSizingDto) {

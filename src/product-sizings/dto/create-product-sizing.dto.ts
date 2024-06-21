@@ -6,11 +6,9 @@ export class CreateProductSizingDto {
   name: string;
 
   @IsOptional()
-  //   @IsNumber()
   createdByUserId: number;
 
   @IsOptional()
-  //   @IsNumber()
   updatedByUserId: number;
 
   @IsOptional()
