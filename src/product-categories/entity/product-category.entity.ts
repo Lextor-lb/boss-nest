@@ -12,8 +12,9 @@ export class ProductCategoryEntity implements ProductCategory {
 
   @Exclude()
   updatedAt: Date;
-
+  @Exclude()
   createdByUserId: number | null;
+  @Exclude()
   updatedByUserId: number | null;
 
   isArchived: Date | null;

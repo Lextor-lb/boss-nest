@@ -4,7 +4,8 @@ import { Prisma } from '@prisma/client';
 import { CreateProductTypeDto } from './dto/create-product-type.dto';
 import { UpdateProductTypeDto } from './dto/update-product-type.dto';
 import { RemoveManyProductTypeDto } from './dto/removeMany-product-type.dto';
-
+// import { PrismaService } from 'src';
+//
 @Injectable()
 export class ProductTypesService {
   constructor(private prisma: PrismaService) {}

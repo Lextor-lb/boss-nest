@@ -18,20 +18,20 @@ export class ProductBrandEntity implements ProductBrand {
   @Exclude()
   updatedAt: Date;
 
-  // @Exclude()
+  @Exclude()
   createdByUserId: number | null;
 
-  // @Exclude()
+  @Exclude()
   updatedByUserId: number | null;
 
   createdByUser?: UserEntity;
   updatedByUser?: UserEntity;
 
   get date(): string | null {
-    if (!this.createdAt || !this.updatedAt) {
+    if (!this.createdAt) {
       return null;
     }
-    return formatDate(this.updatedAt);
+    return formatDate(this.createdAt);
   }
 
   constructor({

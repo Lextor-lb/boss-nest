@@ -17,7 +17,9 @@ export class ProductVariantEntity implements ProductVariant {
   createdAt: Date;
   @Exclude()
   updatedAt: Date;
+  @Exclude()
   createdByUserId: number;
+  @Exclude()
   updatedByUserId: number;
   statusStock: StatusStock | null;
   productSizingId: number;

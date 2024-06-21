@@ -1,3 +1,7 @@
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
+import { ConfigService } from '@nestjs/config';
 import {
   Controller,
   Post,
@@ -15,16 +19,15 @@ import {
   Put,
   Delete,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
-import { ProductBrandsService } from './product-brands.service';
-import { CreateProductBrandDto } from './dto/create-product-brand.dto';
-import { ProductBrandEntity } from './entity/product-brand.entity';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { ConfigService } from '@nestjs/config';
-import { UpdateProductBrandDto } from './dto/update-product-brand.dto';
-import { RemoveManyProductBrandDto } from './dto/removeMany-product-brand.dto';
+
+import {
+  UpdateProductBrandDto,
+  RemoveManyProductBrandDto,
+  JwtAuthGuard,
+  ProductBrandEntity,
+  CreateProductBrandDto,
+  ProductBrandsService,
+} from 'src';
 
 @Controller('product-brands')
 @UseGuards(JwtAuthGuard)

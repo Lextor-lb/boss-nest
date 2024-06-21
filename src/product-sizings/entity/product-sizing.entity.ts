@@ -1,5 +1,6 @@
 import { ProductSizing } from '@prisma/client';
 import { Exclude, Expose } from 'class-transformer';
+import { formatDate } from 'src/shared/utils';
 import { UserEntity } from 'src/users/entities/user.entity';
 
 export class ProductSizingEntity implements ProductSizing {
@@ -10,9 +11,9 @@ export class ProductSizingEntity implements ProductSizing {
   createdAt: Date;
   @Exclude()
   updatedAt: Date;
-
+  @Exclude()
   createdByUserId: number | null;
-
+  @Exclude()
   updatedByUserId: number | null;
 
   isArchived: Date | null;
@@ -21,9 +22,11 @@ export class ProductSizingEntity implements ProductSizing {
 
   updatedByUser?: UserEntity;
 
-  @Expose()
-  get date(): string {
-    return this.formatDate(this.updatedAt);
+  get date(): string | null {
+    if (!this.createdAt) {
+      return null;
+    }
+    return formatDate(this.createdAt);
   }
 
   constructor({
@@ -40,13 +43,5 @@ export class ProductSizingEntity implements ProductSizing {
     if (updatedByUser) {
       this.updatedByUser = new UserEntity(updatedByUser);
     }
-  }
-  private formatDate(date: Date): string {
-    const options: Intl.DateTimeFormatOptions = {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    };
-    return date.toLocaleDateString('en-US', options).replace(/,/g, '');
   }
 }

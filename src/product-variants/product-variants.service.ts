@@ -5,11 +5,13 @@ import {
 } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { MediaService } from 'src/media/media.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+// import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductVariantDto } from './dto/create-product-variant.dto';
 import { ProductVariantEntity } from './entity/product-variant.entity';
 import { MediaEntity } from 'src/media/entity/media.entity';
 import { MediaDto } from 'src/media/dto/media.dto';
+import { PrismaService } from 'src/prisma';
+// import { PrismaService } from 'src';
 
 @Injectable()
 export class ProductVariantsService {
@@ -84,5 +86,14 @@ export class ProductVariantsService {
       console.error(error);
       throw new BadRequestException('Error creating product variant');
     }
+  }
+
+  async countAvailableStock(): Promise<number> {
+    return this.prisma.productVariant.count({
+      where: {
+        isArchived: null,
+        statusStock: null,
+      },
+    });
   }
 }

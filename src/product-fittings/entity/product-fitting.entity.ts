@@ -11,9 +11,9 @@ export class ProductFittingEntity implements ProductFitting {
   createdAt: Date;
   @Exclude()
   updatedAt: Date;
-
+  @Exclude()
   createdByUserId: number | null;
-
+  @Exclude()
   updatedByUserId: number | null;
 
   isArchived: Date | null;
@@ -21,7 +21,7 @@ export class ProductFittingEntity implements ProductFitting {
   createdByUser?: UserEntity;
 
   updatedByUser?: UserEntity;
-
+  @Exclude()
   productSizingIds?: number[];
 
   get date(): string | null {

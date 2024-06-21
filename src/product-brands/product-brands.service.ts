@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateProductBrandDto } from './dto/create-product-brand.dto';
 import { Prisma } from '@prisma/client';
-import { UpdateProductBrandDto } from './dto/update-product-brand.dto';
 import { unlinkSync } from 'fs';
 import { join } from 'path';
-import { RemoveManyProductBrandDto } from './dto/removeMany-product-brand.dto';
+import {
+  RemoveManyProductBrandDto,
+  UpdateProductBrandDto,
+  CreateProductBrandDto,
+  PrismaService,
+} from 'src';
 
 @Injectable()
 export class ProductBrandsService {

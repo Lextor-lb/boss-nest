@@ -1,32 +1,39 @@
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { CustomBadRequestExceptionFilter } from 'src/shared/exception/CustomBadRequestExceptionFilter';
 import {
   Controller,
   Post,
   Body,
   UseInterceptors,
   UploadedFiles,
-  HttpException,
-  HttpStatus,
   Get,
   Query,
   Req,
   UseGuards,
   BadRequestException,
   UseFilters,
+  Param,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
-import { CreateProductDto } from './dto/create-product.dto';
-import { ProductsService } from './products.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { ProductPagination, SearchOption } from 'src/shared/types';
-import { multerOptions } from 'src/media/multer-config';
-import { ProductEntity } from './entity/product.entity';
-import { CustomBadRequestExceptionFilter } from 'src/shared/exception/CustomBadRequestExceptionFilter';
+import {
+  ProductVariantsService,
+  ProductEntity,
+  multerOptions,
+  ProductsService,
+  CreateProductDto,
+  ProductPagination,
+  SearchOption,
+  JwtAuthGuard,
+} from 'src';
 
 @Controller('products')
 @UseGuards(JwtAuthGuard)
 @UseFilters(CustomBadRequestExceptionFilter)
 export class ProductsController {
-  constructor(private readonly productService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly productVariantsService: ProductVariantsService,
+  ) {}
 
   @Post()
   @UseInterceptors(AnyFilesInterceptor(multerOptions))
@@ -36,7 +43,7 @@ export class ProductsController {
     @Req() req,
   ) {
     if (!files || files.length === 0) {
-      throw new HttpException('No images uploaded', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('No images uploaded');
     }
 
     const imageFiles = files.filter((file) => file.fieldname === 'images');
@@ -67,28 +74,14 @@ export class ProductsController {
       });
     }
 
-    const product = await this.productService.create(createProductDto);
+    const product = await this.productsService.create(createProductDto);
 
     return {
       status: true,
       message: 'Created Successfully!',
-      // data: product,
       data: new ProductEntity(product),
     };
   }
-
-  // @Get('all')
-  // async indexAll() {
-  //   const products = await this.productService.indexAll();
-  //   return products.map((product) => {
-  //     const entity = new ProductEntity(product);
-  //     return {
-  //       id: entity.id,
-  //       name: entity.name,
-  //       isArchived: entity.isArchived,
-  //     };
-  //   });
-  // }
 
   @Get()
   async findAll(
@@ -106,12 +99,20 @@ export class ProductsController {
       orderDirection,
     };
 
-    const products = await this.productService.findAll(searchOptions);
+    const products = await this.productsService.findAll(searchOptions);
     return {
+      totalStock: products.totalStock,
+      totalSalePrice: products.totalSalePrice,
       data: products.data.map((product) => new ProductEntity(product)),
       total: products.total,
       page: products.page,
       limit: products.limit,
     };
+  }
+
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const product = await this.productsService.findOne(id);
+    return new ProductEntity(product);
   }
 }

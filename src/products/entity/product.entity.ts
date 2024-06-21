@@ -22,7 +22,9 @@ export class ProductEntity implements Product {
   createdAt: Date;
   @Exclude()
   updatedAt: Date;
+  @Exclude()
   createdByUserId: number;
+  @Exclude()
   updatedByUserId: number;
 
   @Exclude()

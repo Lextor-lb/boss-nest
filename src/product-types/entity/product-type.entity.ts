@@ -11,9 +11,9 @@ export class ProductTypeEntity implements ProductType {
   createdAt: Date;
   @Exclude()
   updatedAt: Date;
-
+  @Exclude()
   createdByUserId: number | null;
-
+  @Exclude()
   updatedByUserId: number | null;
 
   isArchived: Date | null;

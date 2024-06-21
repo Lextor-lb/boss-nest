@@ -13,12 +13,14 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ProductCategoriesService } from './product-categories.service';
-import { CreateProductCategoryDto } from './dto/create-product-category.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { ProductCategoryEntity } from './entity/product-category.entity';
-import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
-import { RemoveManyProductCategoryDto } from './dto/removeMany-product-category.dto';
+import {
+  ProductCategoriesService,
+  CreateProductCategoryDto,
+  JwtAuthGuard,
+  RemoveManyProductCategoryDto,
+  UpdateProductCategoryDto,
+  ProductCategoryEntity,
+} from 'src';
 
 @Controller('product-categories')
 @UseGuards(JwtAuthGuard)

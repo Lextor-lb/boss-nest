@@ -2,10 +2,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateProductFittingDto } from './dto/create-product-fitting.dto';
 import { ProductFittingEntity } from './entity/product-fitting.entity';
-import { UpdateProductFittingDto } from './dto/update-product-fitting.dto';
+import {} from './dto/update-product-fitting.dto';
 import { RemoveManyProductFittingDto } from './dto/removeMany-product-fitting.dto';
+import { CreateProductFittingDto, UpdateProductFittingDto } from 'src';
 
 @Injectable()
 export class ProductFittingsService {
