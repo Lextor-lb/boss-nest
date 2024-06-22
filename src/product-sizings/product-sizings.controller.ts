@@ -20,11 +20,7 @@ import { ProductSizingEntity } from './entity/product-sizing.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UpdateProductSizingDto } from './dto/update-product-sizing.dto';
 import { RemoveManyProductSizingDto } from './dto/removeMany-product-sizing.dto';
-import {
-  FetchedSizing,
-  MessageWithSizing,
-  PaginatedSizing,
-} from 'src/shared/types/productSizing';
+import { FetchedProductSizing, MessageWithProductSizing, PaginatedProductSizing } from 'src/shared/types/productSizing';
 import { SearchOption } from 'src';
 
 @Controller('product-sizings')
@@ -52,11 +48,11 @@ export class ProductSizingsController {
   async createMultiple(
     @Body() createProductSizingDtos: CreateProductSizingDto[],
     @Req() req,
-  ): Promise<FetchedSizing> {
+  ): Promise<FetchedProductSizing> {
     try {
-      const createdByUserId = req.user.id;
       createProductSizingDtos.forEach((dto) => {
-        dto.createdByUserId = createdByUserId;
+        dto.createdByUserId = req.user.id;
+        dto.updatedByUserId = req.user.id;
       });
       const createdProductSizings =
         await this.productSizingsService.createMultiple(
@@ -75,7 +71,7 @@ export class ProductSizingsController {
   }
 
   @Get('all')
-  async indexAll(): Promise<FetchedSizing> {
+  async indexAll(): Promise<FetchedProductSizing> {
     const productSizings = await this.productSizingsService.indexAll();
     return {
       status: true,
@@ -93,7 +89,7 @@ export class ProductSizingsController {
     @Query('search') search?: string,
     @Query('orderBy') orderBy: string = 'createdAt',
     @Query('orderDirection') orderDirection: 'asc' | 'desc' = 'desc',
-  ): Promise<PaginatedSizing> {
+  ): Promise<PaginatedProductSizing> {
     const searchOptions: SearchOption = {
       page,
       limit: limit ? parseInt(limit, 10) : 10,
@@ -119,7 +115,6 @@ export class ProductSizingsController {
   ): Promise<ProductSizingEntity> {
     try {
       const productSizing = await this.productSizingsService.findOne(id);
-
       return new ProductSizingEntity(productSizing);
     } catch (error) {
       console.error('Error fetching product sizing:', error);
@@ -135,7 +130,7 @@ export class ProductSizingsController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
     @Body() updateProductSizingDto: UpdateProductSizingDto,
-  ): Promise<MessageWithSizing> {
+  ): Promise<MessageWithProductSizing> {
     updateProductSizingDto.updatedByUserId = req.user.id;
     const updatedProductSizing = await this.productSizingsService.update(
       id,

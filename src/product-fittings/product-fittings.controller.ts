@@ -19,6 +19,8 @@ import { CreateProductFittingDto } from './dto/create-product-fitting.dto';
 import { ProductFittingEntity } from './entity/product-fitting.entity';
 import { UpdateProductFittingDto } from './dto/update-product-fitting.dto';
 import { RemoveManyProductFittingDto } from './dto/removeMany-product-fitting.dto';
+import { MessageWithProductFitting } from 'src/shared/types/productFitting';
+import { SearchOption } from 'src';
 
 @Controller('product-fittings')
 @UseGuards(JwtAuthGuard)
@@ -31,11 +33,11 @@ export class ProductFittingsController {
   async create(
     @Body() createProductFittingDto: CreateProductFittingDto,
     @Req() req,
-  ) {
-    const createdByUserId = req.user.id;
+  ): Promise<MessageWithProductFitting> {
+    createProductFittingDto.createdByUserId = req.user.id;
+    createProductFittingDto.updatedByUserId = req.user.id;
     const createdProductFitting = await this.productFittingsService.create(
       createProductFittingDto,
-      createdByUserId,
     );
     return {
       status: true,
@@ -55,18 +57,20 @@ export class ProductFittingsController {
   @Get()
   async findAll(
     @Query('page') page: number = 1,
-    @Query('limit', ParseIntPipe) limit: number = 10,
-    @Query('searchName') searchName?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
     @Query('orderBy') orderBy: string = 'createdAt',
     @Query('orderDirection') orderDirection: 'asc' | 'desc' = 'desc',
   ) {
-    const productFittings = await this.productFittingsService.findAll(
+    const searchOptions: SearchOption = {
       page,
-      limit,
-      searchName,
+      limit: limit ? parseInt(limit, 10) : 10,
+      search,
       orderBy,
       orderDirection,
-    );
+    };
+    const productFittings =
+      await this.productFittingsService.findAll(searchOptions);
     return {
       data: productFittings.data.map(
         (productFitting) => new ProductFittingEntity(productFitting),

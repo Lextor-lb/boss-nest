@@ -1,5 +1,5 @@
 import { ProductSizing } from '@prisma/client';
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
 import { formatDate } from 'src/shared/utils';
 import { UserEntity } from 'src/users/entities/user.entity';
 
@@ -22,7 +22,13 @@ export class ProductSizingEntity implements ProductSizing {
 
   updatedByUser?: UserEntity;
   @Expose()
-  get date(): string {
+  @Transform(({ value }) => (value ? formatDate(new Date(value)) : undefined), {
+    toPlainOnly: true,
+  })
+  get date(): string | null {
+    if (!this.createdAt) {
+      return null;
+    }
     return formatDate(this.createdAt);
   }
   constructor({

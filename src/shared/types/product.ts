@@ -1,6 +1,6 @@
 import { ProductEntity } from 'src/products/entity/product.entity';
 import { Pagination } from './pagination';
-import { ResponseMessage } from './responeMessage';
+import { ResponseMessage } from './responseMessage';
 
 export interface ProductPagination extends Pagination {
   totalStock: number;

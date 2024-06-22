@@ -1,5 +1,5 @@
 import { ProductCategory } from '@prisma/client';
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
 import { formatDate } from 'src/shared/utils';
 import { UserEntity } from 'src/users/entities/user.entity';
 
@@ -26,7 +26,10 @@ export class ProductCategoryEntity implements ProductCategory {
   productFittingIds: number[];
 
   productTypeId: number;
-
+  @Expose()
+  @Transform(({ value }) => (value ? formatDate(new Date(value)) : undefined), {
+    toPlainOnly: true,
+  })
   get date(): string | null {
     if (!this.createdAt) {
       return null;

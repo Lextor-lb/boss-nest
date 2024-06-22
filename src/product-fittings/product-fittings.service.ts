@@ -5,7 +5,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ProductFittingEntity } from './entity/product-fitting.entity';
 import {} from './dto/update-product-fitting.dto';
 import { RemoveManyProductFittingDto } from './dto/removeMany-product-fitting.dto';
-import { CreateProductFittingDto, UpdateProductFittingDto } from 'src';
+import {
+  CreateProductFittingDto,
+  SearchOption,
+  UpdateProductFittingDto,
+} from 'src';
+import { instanceToPlain } from 'class-transformer';
+import { PaginatedProductFitting } from 'src/shared/types/productFitting';
 
 @Injectable()
 export class ProductFittingsService {
@@ -17,7 +23,6 @@ export class ProductFittingsService {
 
   async create(
     createProductFittingDto: CreateProductFittingDto,
-    createdByUserId: number,
   ): Promise<ProductFittingEntity> {
     const { name, productSizingIds } = createProductFittingDto;
 
@@ -25,7 +30,6 @@ export class ProductFittingsService {
     const createdProductFitting = await this.prisma.productFitting.create({
       data: {
         name,
-        createdByUserId,
       },
     });
 
@@ -54,17 +58,26 @@ export class ProductFittingsService {
     });
   }
 
-  async indexAll() {
-    return await this.prisma.productFitting.findMany();
+  async indexAll(): Promise<ProductFittingEntity[]> {
+    const productFittings = await this.prisma.productFitting.findMany({
+      select: {
+        id: true,
+        name: true,
+        isArchived: true,
+      },
+    });
+    return productFittings.map(
+      (productFitting) => new ProductFittingEntity(productFitting),
+    );
   }
 
-  async findAll(
-    page: number,
-    limit: number,
-    searchName?: string,
-    orderBy: string = 'createdAt',
-    orderDirection: 'asc' | 'desc' = 'desc',
-  ) {
+  async findAll({
+    page,
+    limit,
+    search = '',
+    orderBy = 'createdAt',
+    orderDirection = 'desc',
+  }: SearchOption): Promise<PaginatedProductFitting> {
     const total = await this.prisma.productFitting.count({
       where: this.whereCheckingNullClause,
     });
@@ -74,7 +87,7 @@ export class ProductFittingsService {
       where: {
         ...this.whereCheckingNullClause,
         name: {
-          contains: searchName || '',
+          contains: search || '',
         },
       },
       skip,
@@ -92,16 +105,19 @@ export class ProductFittingsService {
     });
 
     // Directly transform the result to include productSizingIds and remove the nested ProductFittingProductSizing
-    const finalResult = productFittings.map((pf) => {
-      const productSizingIds = pf.ProductFittingProductSizing.map(
+    const productFittingEntities = productFittings.map((productFitting) => {
+      const { ProductFittingProductSizing, ...productFittingData } =
+        productFitting;
+      const productSizingIds = productFitting.ProductFittingProductSizing.map(
         (pfs) => pfs.productSizingId,
       );
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { ProductFittingProductSizing, ...rest } = pf;
-      return { ...rest, productSizingIds };
+      return new ProductFittingEntity({
+        ...productFittingData,
+        productSizingIds,
+      });
     });
 
-    return { data: finalResult, total, page, limit };
+    return { data: productFittingEntities, total, page, limit };
   }
 
   findOne(id: number) {

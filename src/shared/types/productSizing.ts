@@ -1,15 +1,15 @@
 import { Pagination } from './pagination';
-import { ResponseMessage } from './responeMessage';
+import { ResponseMessage } from './responseMessage';
 import { ProductSizingEntity } from 'src/product-sizings';
 
-export interface PaginatedSizing extends Pagination {
+export interface PaginatedProductSizing extends Pagination {
   data: ProductSizingEntity[];
 }
 
-export interface FetchedSizing extends ResponseMessage {
+export interface FetchedProductSizing extends ResponseMessage {
   data: ProductSizingEntity[];
 }
 
-export interface MessageWithSizing extends ResponseMessage {
+export interface MessageWithProductSizing extends ResponseMessage {
   data: ProductSizingEntity;
 }

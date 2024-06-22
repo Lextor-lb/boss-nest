@@ -1,12 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductSizingDto } from './dto/create-product-sizing.dto';
 import { Prisma } from '@prisma/client';
 import { UpdateProductSizingDto } from './dto/update-product-sizing.dto';
 import { RemoveManyProductSizingDto } from './dto/removeMany-product-sizing.dto';
 import { ProductSizingEntity } from './entity';
-import { PaginatedSizing } from 'src/shared/types/productSizing';
 import { SearchOption } from 'src';
+import { PaginatedProductSizing } from 'src/shared/types/productSizing';
 
 @Injectable()
 export class ProductSizingsService {
@@ -40,7 +40,13 @@ export class ProductSizingsService {
   }
 
   async indexAll(): Promise<ProductSizingEntity[]> {
-    const productSizings = await this.prisma.productSizing.findMany();
+    const productSizings = await this.prisma.productSizing.findMany({
+      select: {
+        id: true,
+        name: true,
+        isArchived: true,
+      },
+    });
     return productSizings.map(
       (productSizing) => new ProductSizingEntity(productSizing),
     );
@@ -52,7 +58,7 @@ export class ProductSizingsService {
     search = '',
     orderBy = 'createdAt',
     orderDirection = 'desc',
-  }: SearchOption): Promise<PaginatedSizing> {
+  }: SearchOption): Promise<PaginatedProductSizing> {
     const total = await this.prisma.productSizing.count({
       where: this.whereCheckingNullClause,
     });
