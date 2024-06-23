@@ -6,6 +6,9 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 // import { CustomBadRequestExceptionFilter } from './shared/exception/CustomBadRequestExceptionFilter';
 
 async function bootstrap() {

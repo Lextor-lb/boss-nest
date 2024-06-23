@@ -3,8 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -20,7 +18,13 @@ import {
   RemoveManyProductCategoryDto,
   UpdateProductCategoryDto,
   ProductCategoryEntity,
+  SearchOption,
 } from 'src';
+import {
+  FetchProductCategory,
+  MessageWithProductCategory,
+  PaginatedProductCategory,
+} from 'src/shared/types/productCategory';
 
 @Controller('product-categories')
 @UseGuards(JwtAuthGuard)
@@ -33,11 +37,11 @@ export class ProductCategoriesController {
   async create(
     @Body() createProductCategoryDto: CreateProductCategoryDto,
     @Req() req,
-  ) {
-    const createdByUserId = req.user.id;
+  ): Promise<MessageWithProductCategory> {
+    createProductCategoryDto.createdByUserId = req.user.id;
+    createProductCategoryDto.updatedByUserId = req.user.id;
     const createdProductCategory = await this.productCategoriesService.create(
       createProductCategoryDto,
-      createdByUserId,
     );
     return {
       status: true,
@@ -47,33 +51,34 @@ export class ProductCategoriesController {
   }
 
   @Get('all')
-  async indexAll() {
+  async indexAll(): Promise<FetchProductCategory> {
     const productCategories = await this.productCategoriesService.indexAll();
-    return productCategories.map((productCategory) => {
-      const entity = new ProductCategoryEntity(productCategory);
-      return {
-        id: entity.id,
-        name: entity.name,
-        isArchived: entity.isArchived,
-      };
-    });
+    return {
+      status: true,
+      message: 'Fetched Successfully!',
+      data: productCategories.map(
+        (productCategory) => new ProductCategoryEntity(productCategory),
+      ),
+    };
   }
 
   @Get()
   async findAll(
     @Query('page') page: number = 1,
-    @Query('limit', ParseIntPipe) limit: number = 10,
-    @Query('searchName') searchName?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
     @Query('orderBy') orderBy: string = 'createdAt',
     @Query('orderDirection') orderDirection: 'asc' | 'desc' = 'desc',
-  ) {
-    const productCategories = await this.productCategoriesService.findAll(
+  ): Promise<PaginatedProductCategory> {
+    const searchOptions: SearchOption = {
       page,
-      limit,
-      searchName,
+      limit: limit ? parseInt(limit, 10) : 10,
+      search,
       orderBy,
       orderDirection,
-    );
+    };
+    const productCategories =
+      await this.productCategoriesService.findAll(searchOptions);
     return {
       data: productCategories.data.map(
         (productCategory) => new ProductCategoryEntity(productCategory),
@@ -85,20 +90,11 @@ export class ProductCategoriesController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    try {
-      const productCategory = await this.productCategoriesService.findOne(id);
-      if (!productCategory) {
-        return { status: false, message: 'Product category not found' };
-      }
-      return new ProductCategoryEntity(productCategory);
-    } catch (error) {
-      console.error('Error fetching product fitting:', error);
-      throw new HttpException(
-        'Internal Server Error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ProductCategoryEntity> {
+    const productCategory = await this.productCategoriesService.findOne(id);
+    return new ProductCategoryEntity(productCategory);
   }
 
   @Patch(':id')
@@ -106,7 +102,7 @@ export class ProductCategoriesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductCategoryDto: UpdateProductCategoryDto,
     @Req() req,
-  ) {
+  ): Promise<MessageWithProductCategory> {
     updateProductCategoryDto.updatedByUserId = req.user.id;
     const updatedProductCategory = await this.productCategoriesService.update(
       id,
@@ -133,4 +129,3 @@ export class ProductCategoriesController {
     };
   }
 }
-//commit

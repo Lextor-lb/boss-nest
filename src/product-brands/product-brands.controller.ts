@@ -1,7 +1,4 @@
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
-import { ConfigService } from '@nestjs/config';
 import {
   Controller,
   Post,
@@ -13,11 +10,11 @@ import {
   HttpStatus,
   UseGuards,
   Get,
-  Query,
   ParseIntPipe,
   Param,
   Put,
   Delete,
+  Query,
 } from '@nestjs/common';
 
 import {
@@ -27,62 +24,33 @@ import {
   ProductBrandEntity,
   CreateProductBrandDto,
   ProductBrandsService,
+  multerOptions,
+  SearchOption,
 } from 'src';
+import { FileValidatorPipe } from 'src/shared/pipes/file-validator.pipe';
+import {
+  FetchedProductBrand,
+  MessageWithProductBrand,
+  PaginatedProductBrand,
+} from 'src/shared/types/productBrand';
 
 @Controller('product-brands')
 @UseGuards(JwtAuthGuard)
 export class ProductBrandsController {
-  constructor(
-    private readonly productBrandsService: ProductBrandsService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly productBrandsService: ProductBrandsService) {}
 
   @Post()
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: join(__dirname, '..', '..', '..', 'uploads', 'brands'),
-        filename: (req, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
-          callback(null, filename);
-        },
-      }),
-      limits: { fileSize: 2000 * 1024 }, // 2MB
-      fileFilter: (req, file, callback) => {
-        const allowedTypes = [
-          'image/png',
-          'image/jpg',
-          'image/jpeg',
-          'image/webp',
-        ];
-        if (allowedTypes.includes(file.mimetype)) {
-          callback(null, true);
-        } else {
-          callback(
-            new HttpException('Invalid file type', HttpStatus.BAD_REQUEST),
-            false,
-          );
-        }
-      },
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image', multerOptions))
   async create(
     @Body() createProductBrandDto: CreateProductBrandDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(new FileValidatorPipe()) file: Express.Multer.File,
     @Req() req,
-  ) {
-    if (!file) {
-      throw new HttpException('Image file is required', HttpStatus.BAD_REQUEST);
-    }
-
-    const createdByUserId = req.user.id;
+  ): Promise<MessageWithProductBrand> {
+    createProductBrandDto.createdByUserId = req.user.id;
+    createProductBrandDto.updatedByUserId = req.user.id;
+    createProductBrandDto.imageFileUrl = `/uploads/${file.filename}`;
     const createdProductBrand = await this.productBrandsService.create(
       createProductBrandDto,
-      file.filename,
-      createdByUserId,
     );
 
     return {
@@ -93,40 +61,37 @@ export class ProductBrandsController {
   }
 
   @Get('all')
-  async indexAll() {
+  async indexAll(): Promise<FetchedProductBrand> {
     const productBrands = await this.productBrandsService.indexAll();
-    return productBrands.map(
-      (productBrand) => new ProductBrandEntity(productBrand),
-    );
+    return {
+      status: true,
+      message: 'Fetched Successfully!',
+      data: productBrands.map(
+        (productBrand) => new ProductBrandEntity(productBrand),
+      ),
+    };
   }
+
   @Get()
   async findAll(
     @Query('page') page: number = 1,
-    @Query('limit', ParseIntPipe) limit: number = 10,
-    @Query('searchName') searchName?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
     @Query('orderBy') orderBy: string = 'createdAt',
     @Query('orderDirection') orderDirection: 'asc' | 'desc' = 'desc',
-  ) {
-    const productBrands = await this.productBrandsService.findAll(
+  ): Promise<PaginatedProductBrand> {
+    const searchOptions: SearchOption = {
       page,
-      limit,
-      searchName,
+      limit: limit ? parseInt(limit, 10) : 10,
+      search,
       orderBy,
       orderDirection,
-    );
-
-    const baseUrl = this.configService.get<string>('app.baseUrl');
-
-    const data = productBrands.data.map((productBrand) => {
-      const entity = new ProductBrandEntity(productBrand);
-      if (entity.image) {
-        entity.image = `${baseUrl}${entity.image}`;
-      }
-      return entity;
-    });
+    };
+    const productBrands =
+      await this.productBrandsService.findAll(searchOptions);
 
     return {
-      data,
+      data: productBrands.data.map((pb) => new ProductBrandEntity(pb)),
       total: productBrands.total,
       page: productBrands.page,
       limit: productBrands.limit,
@@ -134,70 +99,30 @@ export class ProductBrandsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    try {
-      const productBrand = await this.productBrandsService.findOne(id);
-      if (!productBrand) {
-        return { status: false, message: 'Product Sizing not found' };
-      }
-      return new ProductBrandEntity(productBrand);
-    } catch (error) {
-      console.error('Error fetching product brand:', error);
-      throw new HttpException(
-        'Internal Server Error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ProductBrandEntity> {
+    const productBrand = await this.productBrandsService.findOne(id);
+
+    return new ProductBrandEntity(productBrand);
   }
+
   @Put(':id')
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: join(__dirname, '..', '..', '..', 'uploads', 'brands'),
-        filename: (req, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
-          callback(null, filename);
-        },
-      }),
-      limits: { fileSize: 2000 * 1024 }, // 2MB
-      fileFilter: (req, file, callback) => {
-        const allowedTypes = [
-          'image/png',
-          'image/jpg',
-          'image/jpeg',
-          'image/webp',
-        ];
-        if (allowedTypes.includes(file.mimetype)) {
-          callback(null, true);
-        } else {
-          callback(
-            new HttpException('Invalid file type', HttpStatus.BAD_REQUEST),
-            false,
-          );
-        }
-      },
-    }),
-  )
+  @UseInterceptors()
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductBrandDto: UpdateProductBrandDto,
     @UploadedFile() file: Express.Multer.File,
     @Req() req,
-  ) {
-    const updatedByUserId = req.user.id;
+  ): Promise<MessageWithProductBrand> {
+    if (file) {
+      updateProductBrandDto.imageFileUrl = `/uploads/${file.filename}`;
+    }
+    updateProductBrandDto.updatedByUserId = req.user.id;
     const updatedProductBrand = await this.productBrandsService.update(
       id,
       updateProductBrandDto,
-      file ? file.filename : null,
-      updatedByUserId,
     );
-
-    if (!updatedProductBrand) {
-      throw new HttpException('Product Brand not found', HttpStatus.NOT_FOUND);
-    }
 
     return {
       status: true,

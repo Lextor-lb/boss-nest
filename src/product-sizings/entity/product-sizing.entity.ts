@@ -21,6 +21,7 @@ export class ProductSizingEntity implements ProductSizing {
   createdByUser?: UserEntity;
 
   updatedByUser?: UserEntity;
+
   @Expose()
   @Transform(({ value }) => (value ? formatDate(new Date(value)) : undefined), {
     toPlainOnly: true,
@@ -31,6 +32,7 @@ export class ProductSizingEntity implements ProductSizing {
     }
     return formatDate(this.createdAt);
   }
+
   constructor({
     createdByUser = null,
     updatedByUser = null,

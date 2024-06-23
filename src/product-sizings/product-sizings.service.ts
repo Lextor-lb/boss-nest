@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductSizingDto } from './dto/create-product-sizing.dto';
 import { Prisma } from '@prisma/client';
@@ -7,6 +7,7 @@ import { RemoveManyProductSizingDto } from './dto/removeMany-product-sizing.dto'
 import { ProductSizingEntity } from './entity';
 import { SearchOption } from 'src';
 import { PaginatedProductSizing } from 'src/shared/types/productSizing';
+import { createEntityProps } from 'src/shared/utils/createEntityProps';
 
 @Injectable()
 export class ProductSizingsService {
@@ -40,15 +41,10 @@ export class ProductSizingsService {
   }
 
   async indexAll(): Promise<ProductSizingEntity[]> {
-    const productSizings = await this.prisma.productSizing.findMany({
-      select: {
-        id: true,
-        name: true,
-        isArchived: true,
-      },
-    });
+    const productSizings = await this.prisma.productSizing.findMany();
     return productSizings.map(
-      (productSizing) => new ProductSizingEntity(productSizing),
+      (productSizing) =>
+        new ProductSizingEntity(createEntityProps(productSizing)),
     );
   }
 
@@ -91,6 +87,9 @@ export class ProductSizingsService {
     const productSizing = await this.prisma.productSizing.findUnique({
       where: { id, AND: this.whereCheckingNullClause },
     });
+    if (!productSizing) {
+      throw new NotFoundException(`productSizing with ID ${id} not found.`);
+    }
     return new ProductSizingEntity(productSizing);
   }
 
@@ -98,6 +97,13 @@ export class ProductSizingsService {
     id: number,
     updateProductSizingDto: UpdateProductSizingDto,
   ): Promise<ProductSizingEntity> {
+    const existingProductSizing = await this.prisma.productSizing.findUnique({
+      where: { id, AND: this.whereCheckingNullClause },
+    });
+    if (!existingProductSizing) {
+      throw new NotFoundException(`ProductSizing with id ${id} not found`);
+    }
+
     const productSizing = await this.prisma.productSizing.update({
       where: { id },
       data: updateProductSizingDto,

@@ -3,8 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -19,6 +17,12 @@ import { CreateProductTypeDto } from './dto/create-product-type.dto';
 import { ProductTypeEntity } from './entity/product-type.entity';
 import { UpdateProductTypeDto } from './dto/update-product-type.dto';
 import { RemoveManyProductTypeDto } from './dto/removeMany-product-type.dto';
+import { SearchOption } from 'src';
+import {
+  FetchedProductType,
+  MessageWithProductType,
+  PaginatedProductType,
+} from 'src/shared/types/productType';
 
 @Controller('product-types')
 @UseGuards(JwtAuthGuard)
@@ -26,7 +30,10 @@ export class ProductTypesController {
   constructor(private readonly productTypesService: ProductTypesService) {}
 
   @Post()
-  async create(@Body() createProductTypeDto: CreateProductTypeDto, @Req() req) {
+  async create(
+    @Body() createProductTypeDto: CreateProductTypeDto,
+    @Req() req,
+  ): Promise<MessageWithProductType> {
     createProductTypeDto.createdByUserId = req.user.id;
     const createdProductType =
       await this.productTypesService.create(createProductTypeDto);
@@ -38,28 +45,33 @@ export class ProductTypesController {
   }
 
   @Get('all')
-  async indexAll() {
+  async indexAll(): Promise<FetchedProductType> {
     const productTypes = await this.productTypesService.indexAll();
-    return productTypes.map(
-      (productType) => new ProductTypeEntity(productType),
-    );
+    return {
+      status: true,
+      message: 'Fetched Successfully!',
+      data: productTypes.map(
+        (productType) => new ProductTypeEntity(productType),
+      ),
+    };
   }
 
   @Get()
   async findAll(
     @Query('page') page: number = 1,
-    @Query('limit', ParseIntPipe) limit: number = 10,
-    @Query('searchName') searchName?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
     @Query('orderBy') orderBy: string = 'createdAt',
     @Query('orderDirection') orderDirection: 'asc' | 'desc' = 'desc',
-  ) {
-    const productTypes = await this.productTypesService.findAll(
+  ): Promise<PaginatedProductType> {
+    const searchOptions: SearchOption = {
       page,
-      limit,
-      searchName,
+      limit: limit ? parseInt(limit, 10) : 10,
+      search,
       orderBy,
       orderDirection,
-    );
+    };
+    const productTypes = await this.productTypesService.findAll(searchOptions);
     return {
       data: productTypes.data.map(
         (productType) => new ProductTypeEntity(productType),
@@ -71,20 +83,11 @@ export class ProductTypesController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    try {
-      const productType = await this.productTypesService.findOne(id);
-      if (!productType) {
-        return { status: false, message: 'Product Type not found' };
-      }
-      return new ProductTypeEntity(productType);
-    } catch (error) {
-      console.error('Error fetching product type:', error);
-      throw new HttpException(
-        'Internal Server Error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ProductTypeEntity> {
+    const productType = await this.productTypesService.findOne(id);
+    return new ProductTypeEntity(productType);
   }
 
   @Patch(':id')
@@ -92,7 +95,7 @@ export class ProductTypesController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
     @Body() updateProductTypeDto: UpdateProductTypeDto,
-  ) {
+  ): Promise<MessageWithProductType> {
     updateProductTypeDto.updatedByUserId = req.user.id;
     const updatedProductType = await this.productTypesService.update(
       id,

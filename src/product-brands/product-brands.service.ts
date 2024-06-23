@@ -1,53 +1,78 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { unlinkSync } from 'fs';
-import { join } from 'path';
 import {
   RemoveManyProductBrandDto,
   UpdateProductBrandDto,
   CreateProductBrandDto,
   PrismaService,
+  MediaDto,
+  MediaService,
+  ProductBrandEntity,
+  MediaEntity,
+  SearchOption,
 } from 'src';
+import { PaginatedProductBrand } from 'src/shared/types/productBrand';
+import { createEntityProps } from 'src/shared/utils/createEntityProps';
+import { deleteFile } from 'src/shared/utils/deleteOldImageFile';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class ProductBrandsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mediaService: MediaService, // Inject MediaService
+  ) {}
 
   whereCheckingNullClause: Prisma.ProductBrandWhereInput = {
     isArchived: null,
   };
 
-  async create(
-    createProductBrandDto: CreateProductBrandDto,
-    filename: string,
-    createdByUserId: number,
-  ) {
-    const createdMedia = await this.prisma.media.create({
-      data: {
-        url: `/uploads/brands/${filename}`,
-      },
-    });
+  async create(createProductBrandDto: CreateProductBrandDto) {
+    try {
+      const { imageFileUrl, ...productBrandData } = createProductBrandDto;
 
-    return this.prisma.productBrand.create({
-      data: {
-        name: createProductBrandDto.name,
-        mediaId: createdMedia.id,
-        createdByUserId,
-      },
-    });
+      const productBrand = await this.prisma.$transaction(
+        async (transactionClient: PrismaClient) => {
+          const mediaDto = new MediaDto();
+          mediaDto.url = imageFileUrl;
+          const uploadedMedia = await this.mediaService.saveMedia(
+            transactionClient,
+            mediaDto,
+          );
+
+          const productBrand = await transactionClient.productBrand.create({
+            data: { ...productBrandData, mediaId: uploadedMedia.id },
+          });
+
+          return { ...productBrand, media: uploadedMedia };
+        },
+      );
+
+      return new ProductBrandEntity({
+        ...productBrand,
+        media: new MediaEntity(productBrand.media),
+      });
+    } catch (error) {
+      throw new Error('Failed to create ProductBrand');
+    }
   }
 
-  async indexAll() {
-    return await this.prisma.productBrand.findMany();
+  async indexAll(): Promise<ProductBrandEntity[]> {
+    const productBrands = await this.prisma.productBrand.findMany();
+    return productBrands.map(
+      (pb) => new ProductBrandEntity(createEntityProps(pb)),
+    );
   }
 
-  async findAll(
-    page: number,
-    limit: number,
-    searchName?: string,
-    orderBy: string = 'createdAt',
-    orderDirection: 'asc' | 'desc' = 'desc',
-  ) {
+  async findAll({
+    page,
+    limit,
+    search = '',
+    orderBy = 'createdAt',
+    orderDirection = 'desc',
+  }: SearchOption): Promise<PaginatedProductBrand> {
     const total = await this.prisma.productBrand.count({
       where: this.whereCheckingNullClause,
     });
@@ -57,7 +82,7 @@ export class ProductBrandsService {
       where: {
         ...this.whereCheckingNullClause,
         name: {
-          contains: searchName || '',
+          contains: search || '',
         },
       },
       skip,
@@ -69,83 +94,96 @@ export class ProductBrandsService {
         media: true,
       },
     });
-    return { data: productBrands, total, page, limit };
+    const productBrandEntities = productBrands.map((pb) => {
+      const { media, ...productBrandData } = pb;
+      return new ProductBrandEntity({
+        ...productBrandData,
+        media: new MediaEntity(media),
+      });
+    });
+
+    return {
+      data: productBrandEntities,
+      total,
+      page,
+      limit,
+    };
   }
 
-  findOne(id: number) {
-    return this.prisma.productBrand.findUnique({
+  async findOne(id: number): Promise<ProductBrandEntity> {
+    const productBrand = await this.prisma.productBrand.findUnique({
       where: { id, AND: this.whereCheckingNullClause },
+      include: { media: true },
+    });
+    if (!productBrand) {
+      throw new NotFoundException(`productBrand with ID ${id} not found.`);
+    }
+    const { media, ...productBrandData } = productBrand;
+
+    return new ProductBrandEntity({
+      ...productBrandData,
+      media: new MediaEntity(media),
     });
   }
 
   async update(
     id: number,
     updateProductBrandDto: UpdateProductBrandDto,
-    filename: string | null,
-    updatedByUserId: number,
-  ) {
-    const productBrand = await this.prisma.productBrand.findUnique({
-      where: { id, AND: this.whereCheckingNullClause },
-      include: { media: true },
-    });
+  ): Promise<ProductBrandEntity> {
+    try {
+      const { imageFileUrl, ...productBrandData } = updateProductBrandDto;
 
-    if (!productBrand) {
-      return null;
-    }
+      const existingProductBrand = await this.prisma.productBrand.findUnique({
+        where: { id },
+        include: { media: true },
+      });
 
-    let mediaId = productBrand.mediaId;
-
-    if (filename) {
-      // Remove old image if it exists
-      if (productBrand.media?.url) {
-        const oldImagePath = join(
-          __dirname,
-          '..',
-          '..',
-          '..',
-          'uploads',
-          'brands',
-          productBrand.media.url.split('/').pop(),
-        );
-        try {
-          unlinkSync(oldImagePath);
-        } catch (err) {
-          console.error('Error deleting old image:', err);
-        }
+      if (!existingProductBrand) {
+        throw new NotFoundException(`ProductBrand with id ${id} not found`);
       }
 
-      const mediaData = {
-        url: `/uploads/brands/${filename}`,
-      };
+      // Store the old image file URL
+      const oldImageFileUrl = existingProductBrand.media?.url;
 
-      if (mediaId) {
-        await this.prisma.media.update({
-          where: { id: mediaId },
-          data: mediaData,
-        });
-      } else {
-        const createdMedia = await this.prisma.media.create({
-          data: {
-            ...mediaData,
-          },
-        });
-        mediaId = createdMedia.id;
+      const updatedProductBrand = await this.prisma.$transaction(
+        async (transactionClient: PrismaClient) => {
+          let updatedMedia = existingProductBrand.media;
+
+          if (imageFileUrl) {
+            const mediaDto = new MediaDto();
+            mediaDto.url = imageFileUrl;
+            if (updatedMedia) {
+              updatedMedia = await this.mediaService.updateMedia(
+                transactionClient,
+                updatedMedia.id,
+                mediaDto,
+              );
+            }
+          }
+
+          const productBrand = await transactionClient.productBrand.update({
+            where: { id },
+            data: productBrandData,
+          });
+
+          return { ...productBrand, media: updatedMedia };
+        },
+      );
+
+      // Delete the old image file if a new one was provided
+      if (imageFileUrl && oldImageFileUrl) {
+        deleteFile(oldImageFileUrl);
       }
-    }
+      const { media, ...updatedProductBrandData } = updatedProductBrand;
 
-    return this.prisma.productBrand.update({
-      where: { id },
-      data: {
-        ...updateProductBrandDto,
-        mediaId,
-        updatedByUserId,
-      },
-      include: {
-        media: true,
-      },
-    });
+      return new ProductBrandEntity({
+        ...updatedProductBrandData,
+        media: new MediaEntity(media),
+      });
+    } catch (error) {
+      throw error;
+    }
   }
-
   async removeMany(removeManyProductBrandDto: RemoveManyProductBrandDto) {
     const { ids } = removeManyProductBrandDto;
 
@@ -165,4 +203,3 @@ export class ProductBrandsService {
     };
   }
 }
-//commit

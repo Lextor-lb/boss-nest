@@ -1,5 +1,7 @@
-import { ProductCategory } from '@prisma/client';
+import { ProductCategory, ProductFitting } from '@prisma/client';
 import { Exclude, Expose, Transform } from 'class-transformer';
+import { ProductFittingEntity } from 'src/product-fittings';
+import { ProductTypeEntity } from 'src/product-types';
 import { formatDate } from 'src/shared/utils';
 import { UserEntity } from 'src/users/entities/user.entity';
 
@@ -23,9 +25,12 @@ export class ProductCategoryEntity implements ProductCategory {
   updatedByUser?: UserEntity;
 
   // @Exclude()
+  productType: ProductTypeEntity;
   productFittingIds: number[];
+  productFittings: ProductFitting[];
 
   productTypeId: number;
+
   @Expose()
   @Transform(({ value }) => (value ? formatDate(new Date(value)) : undefined), {
     toPlainOnly: true,
@@ -41,6 +46,8 @@ export class ProductCategoryEntity implements ProductCategory {
     createdByUser,
     updatedByUser,
     productFittingIds,
+    productFittings,
+    productType,
     ...data
   }: Partial<ProductCategoryEntity>) {
     Object.assign(this, data);
@@ -51,6 +58,14 @@ export class ProductCategoryEntity implements ProductCategory {
 
     if (updatedByUser) {
       this.updatedByUser = new UserEntity(updatedByUser);
+    }
+    if (productType) {
+      this.productType = new ProductTypeEntity(productType);
+    }
+    if (productFittings) {
+      this.productFittings = productFittings.map(
+        (productFitting) => new ProductFittingEntity(productFitting),
+      );
     }
 
     this.productFittingIds = productFittingIds;

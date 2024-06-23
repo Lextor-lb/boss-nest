@@ -3,9 +3,15 @@ import { IsOptional, IsString } from 'class-validator';
 export class UpdateProductBrandDto {
   @IsOptional()
   @IsString()
-  name?: string;
+  name: string;
+
+  @IsOptional()
+  createdByUserId: number;
+
+  @IsOptional()
+  updatedByUserId: number;
 
   @IsOptional()
   @IsString()
-  image?: string;
+  imageFileUrl: string;
 }

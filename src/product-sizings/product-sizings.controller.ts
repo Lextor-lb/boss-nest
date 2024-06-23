@@ -20,7 +20,11 @@ import { ProductSizingEntity } from './entity/product-sizing.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UpdateProductSizingDto } from './dto/update-product-sizing.dto';
 import { RemoveManyProductSizingDto } from './dto/removeMany-product-sizing.dto';
-import { FetchedProductSizing, MessageWithProductSizing, PaginatedProductSizing } from 'src/shared/types/productSizing';
+import {
+  FetchedProductSizing,
+  MessageWithProductSizing,
+  PaginatedProductSizing,
+} from 'src/shared/types/productSizing';
 import { SearchOption } from 'src';
 
 @Controller('product-sizings')
@@ -113,16 +117,8 @@ export class ProductSizingsController {
   async findOne(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ProductSizingEntity> {
-    try {
-      const productSizing = await this.productSizingsService.findOne(id);
-      return new ProductSizingEntity(productSizing);
-    } catch (error) {
-      console.error('Error fetching product sizing:', error);
-      throw new HttpException(
-        'Internal Server Error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    const productSizing = await this.productSizingsService.findOne(id);
+    return new ProductSizingEntity(productSizing);
   }
 
   @Patch(':id')

@@ -1,17 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProductFittingEntity } from './entity/product-fitting.entity';
-import {} from './dto/update-product-fitting.dto';
 import { RemoveManyProductFittingDto } from './dto/removeMany-product-fitting.dto';
+import { ProductSizingEntity } from '../product-sizings/entity';
 import {
   CreateProductFittingDto,
+  // ProductSizingEntity,
   SearchOption,
   UpdateProductFittingDto,
 } from 'src';
-import { instanceToPlain } from 'class-transformer';
 import { PaginatedProductFitting } from 'src/shared/types/productFitting';
+import { createEntityProps } from 'src/shared/utils/createEntityProps';
 
 @Injectable()
 export class ProductFittingsService {
@@ -24,50 +29,56 @@ export class ProductFittingsService {
   async create(
     createProductFittingDto: CreateProductFittingDto,
   ): Promise<ProductFittingEntity> {
-    const { name, productSizingIds } = createProductFittingDto;
+    try {
+      const { name, productSizingIds } = createProductFittingDto;
 
-    // Create the ProductFitting entity
-    const createdProductFitting = await this.prisma.productFitting.create({
-      data: {
-        name,
-      },
-    });
+      // Start a transaction
+      const createdProductFitting = await this.prisma.$transaction(
+        async (prisma) => {
+          // Create the ProductFitting entity
+          const createdProductFitting = await prisma.productFitting.create({
+            data: {
+              name,
+            },
+          });
 
-    // If productSizingIds are provided, create the associations
-    if (productSizingIds) {
-      const productFittingProductSizings = productSizingIds.map(
-        (productSizingId) => ({
-          productFittingId: createdProductFitting.id,
-          productSizingId,
-        }),
+          // If productSizingIds are provided, create the associations
+          if (productSizingIds) {
+            const productFittingProductSizings = productSizingIds.map(
+              (productSizingId) => ({
+                productFittingId: createdProductFitting.id,
+                productSizingId,
+              }),
+            );
+
+            await prisma.productFittingProductSizing.createMany({
+              data: productFittingProductSizings,
+            });
+          }
+
+          return createdProductFitting;
+        },
       );
 
-      await this.prisma.productFittingProductSizing.createMany({
-        data: productFittingProductSizings,
+      const createdProductSizingIds = await this.getProductSizingIds(
+        createdProductFitting.id,
+      );
+
+      // Return the created ProductFitting as a ProductFittingEntity with productSizingIds
+      return new ProductFittingEntity({
+        ...createdProductFitting,
+        productSizingIds: createdProductSizingIds,
       });
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to create ProductFitting'); // Adjust error handling as per your application's requirements
     }
-
-    const createdProductSizingIds = await this.getProductSizingIds(
-      createdProductFitting.id,
-    );
-
-    // Return the created ProductFitting as a ProductFittingEntity with productSizingIds
-    return new ProductFittingEntity({
-      ...createdProductFitting,
-      productSizingIds: createdProductSizingIds,
-    });
   }
-
   async indexAll(): Promise<ProductFittingEntity[]> {
-    const productFittings = await this.prisma.productFitting.findMany({
-      select: {
-        id: true,
-        name: true,
-        isArchived: true,
-      },
-    });
+    const productFittings = await this.prisma.productFitting.findMany();
     return productFittings.map(
-      (productFitting) => new ProductFittingEntity(productFitting),
+      (productFitting) =>
+        new ProductFittingEntity(createEntityProps(productFitting)),
     );
   }
 
@@ -98,99 +109,104 @@ export class ProductFittingsService {
       include: {
         ProductFittingProductSizing: {
           select: {
-            productSizingId: true,
+            productSizing: true,
           },
         },
       },
     });
 
-    // Directly transform the result to include productSizingIds and remove the nested ProductFittingProductSizing
     const productFittingEntities = productFittings.map((productFitting) => {
       const { ProductFittingProductSizing, ...productFittingData } =
         productFitting;
-      const productSizingIds = productFitting.ProductFittingProductSizing.map(
-        (pfs) => pfs.productSizingId,
+      const productSizings = ProductFittingProductSizing.map(
+        (pfs) => pfs.productSizing,
       );
       return new ProductFittingEntity({
         ...productFittingData,
-        productSizingIds,
+        productSizings: productSizings.map(
+          (productSizing) =>
+            new ProductSizingEntity(createEntityProps(productSizing)),
+        ),
       });
     });
 
     return { data: productFittingEntities, total, page, limit };
   }
 
-  findOne(id: number) {
-    return this.prisma.productFitting
-      .findUnique({
-        where: {
-          id,
-          AND: this.whereCheckingNullClause,
-        },
-        include: {
-          ProductFittingProductSizing: {
-            select: {
-              productSizingId: true,
-            },
-          },
-        },
-      })
-      .then((productFitting) => {
-        if (!productFitting) {
-          return null;
-        }
-        const productSizingIds = productFitting.ProductFittingProductSizing.map(
-          (pfs) => pfs.productSizingId,
-        );
-        const { ProductFittingProductSizing, ...rest } = productFitting;
-        return { ...rest, productSizingIds };
-      });
+  async findOne(id: number): Promise<ProductFittingEntity> {
+    const productFitting = await this.prisma.productFitting.findUnique({
+      where: {
+        id,
+        AND: this.whereCheckingNullClause,
+      },
+      include: {
+        ProductFittingProductSizing: { select: { productSizing: true } },
+      },
+    });
+    if (!productFitting) {
+      throw new NotFoundException(`ProductFitting with ID ${id} not found.`);
+    }
+
+    const { ProductFittingProductSizing, ...productFittingData } =
+      productFitting;
+    const productSizings = ProductFittingProductSizing.map(
+      (pfs) => pfs.productSizing,
+    );
+    return new ProductFittingEntity({
+      ...productFittingData,
+      productSizings: productSizings.map(
+        (productSizing) =>
+          new ProductSizingEntity(createEntityProps(productSizing)),
+      ),
+    });
   }
 
   async update(
-    id: number,
     updateProductFittingDto: UpdateProductFittingDto,
-    updatedByUserId: number,
   ): Promise<ProductFittingEntity> {
-    const { name, productSizingIds } = updateProductFittingDto;
+    const { productSizingIds, id, ...productFittingData } =
+      updateProductFittingDto;
 
-    // Find the existing ProductFitting
-    const existingProductFitting = await this.prisma.productFitting.findUnique({
-      where: { id },
-    });
+    const updatedProductFitting = await this.prisma.$transaction(
+      async (prisma) => {
+        // Find the existing ProductFitting
+        const existingProductFitting = await prisma.productFitting.findUnique({
+          where: { id, AND: this.whereCheckingNullClause },
+        });
 
-    if (!existingProductFitting) {
-      throw new NotFoundException(`ProductFitting with id ${id} not found`);
-    }
+        if (!existingProductFitting) {
+          throw new NotFoundException(`ProductFitting with id ${id} not found`);
+        }
 
-    // Update the ProductFitting entity
-    const updatedProductFitting = await this.prisma.productFitting.update({
-      where: { id },
-      data: {
-        name,
-        updatedByUserId,
+        // Update the ProductFitting entity
+        const updatedProductFitting = await prisma.productFitting.update({
+          where: { id },
+          data: productFittingData,
+        });
+
+        // If productSizingIds are provided, update the associations
+        if (productSizingIds) {
+          // Delete existing associations
+          await prisma.productFittingProductSizing.deleteMany({
+            where: { productFittingId: id },
+          });
+
+          // Create new associations
+          const productFittingProductSizings = productSizingIds.map(
+            (productSizingId) => ({
+              productFittingId: id,
+              productSizingId,
+            }),
+          );
+
+          await prisma.productFittingProductSizing.createMany({
+            data: productFittingProductSizings,
+          });
+        }
+
+        return updatedProductFitting;
       },
-    });
-
-    // If productSizingIds are provided, update the associations
-    if (productSizingIds) {
-      // Delete existing associations
-      await this.prisma.productFittingProductSizing.deleteMany({
-        where: { productFittingId: id },
-      });
-
-      // Create new associations
-      const productFittingProductSizings = productSizingIds.map(
-        (productSizingId) => ({
-          productFittingId: id,
-          productSizingId,
-        }),
-      );
-
-      await this.prisma.productFittingProductSizing.createMany({
-        data: productFittingProductSizings,
-      });
-    }
+    );
 
     const updatedProductSizingIds = await this.getProductSizingIds(id);
 

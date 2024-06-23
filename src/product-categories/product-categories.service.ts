@@ -6,8 +6,13 @@ import {
   RemoveManyProductCategoryDto,
   UpdateProductCategoryDto,
   CreateProductCategoryDto,
+  SearchOption,
+  ProductFittingEntity,
+  ProductTypeEntity,
   // PrismaService,
 } from 'src';
+import { PaginatedProductCategory } from 'src/shared/types/productCategory';
+import { createEntityProps } from 'src/shared/utils/createEntityProps';
 
 @Injectable()
 export class ProductCategoriesService {
@@ -19,54 +24,61 @@ export class ProductCategoriesService {
 
   async create(
     createProductCategoryDto: CreateProductCategoryDto,
-    createdByUserId: number,
   ): Promise<ProductCategoryEntity> {
-    const { name, productTypeId, productFittingIds } = createProductCategoryDto;
+    const { productFittingIds, ...productCategoryData } =
+      createProductCategoryDto;
 
-    // Create the ProductCategory entity
-    const createdProductCategory = await this.prisma.productCategory.create({
-      data: {
-        name,
-        productTypeId,
-        createdByUserId,
-      },
-    });
+    try {
+      const createdProductCategory = await this.prisma.$transaction(
+        async (prisma) => {
+          // Create the ProductCategory entity
+          const createdProductCategory = await prisma.productCategory.create({
+            data: productCategoryData,
+          });
 
-    // If productFittingIds are provided, create the associations
-    if (productFittingIds) {
-      const productCategoryProductFittings = productFittingIds.map(
-        (productFittingId) => ({
-          productCategoryId: createdProductCategory.id,
-          productFittingId,
-        }),
+          // If productFittingIds are provided, create the associations
+          if (productFittingIds) {
+            const productCategoryProductFittings = productFittingIds.map(
+              (productFittingId) => ({
+                productCategoryId: createdProductCategory.id,
+                productFittingId,
+              }),
+            );
+
+            await prisma.productCategoryProductFitting.createMany({
+              data: productCategoryProductFittings,
+            });
+          }
+
+          return createdProductCategory;
+        },
       );
 
-      await this.prisma.productCategoryProductFitting.createMany({
-        data: productCategoryProductFittings,
+      return new ProductCategoryEntity({
+        ...createdProductCategory,
+        productFittingIds,
       });
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to create ProductCategory'); // Adjust error handling as per your application's requirements
     }
-
-    // return createdProductCategory;
-    return new ProductCategoryEntity({
-      ...createdProductCategory,
-      productFittingIds,
-      productTypeId,
-    });
   }
 
-  async indexAll(): Promise<
-    Pick<ProductCategoryEntity, 'id' | 'name' | 'isArchived'>[]
-  > {
-    return await this.prisma.productCategory.findMany();
+  async indexAll(): Promise<ProductCategoryEntity[]> {
+    const productCategories = await this.prisma.productCategory.findMany();
+    return productCategories.map(
+      (productCategory) =>
+        new ProductCategoryEntity(createEntityProps(productCategory)),
+    );
   }
 
-  async findAll(
-    page: number,
-    limit: number,
-    searchName?: string,
-    orderBy: string = 'createdAt',
-    orderDirection: 'asc' | 'desc' = 'desc',
-  ) {
+  async findAll({
+    page,
+    limit,
+    search = '',
+    orderBy = 'createdAt',
+    orderDirection = 'desc',
+  }: SearchOption): Promise<PaginatedProductCategory> {
     const total = await this.prisma.productCategory.count({
       where: this.whereCheckingNullClause,
     });
@@ -76,7 +88,7 @@ export class ProductCategoriesService {
       where: {
         ...this.whereCheckingNullClause,
         name: {
-          contains: searchName || '',
+          contains: search || '',
         },
       },
       skip,
@@ -85,102 +97,124 @@ export class ProductCategoriesService {
         [orderBy]: orderDirection,
       },
       include: {
+        productType: true,
         ProductCategoryProductFitting: {
           select: {
-            productFittingId: true,
+            productFitting: true,
           },
         },
       },
     });
 
     // Directly transform the result to include productSizingIds and remove the nested ProductFittingProductSizing
-    const finalResult = productCategories.map((pf) => {
-      const productFittingIds = pf.ProductCategoryProductFitting.map(
-        (pfs) => pfs.productFittingId,
+    const productCategoryEntities = productCategories.map((productCategory) => {
+      const {
+        ProductCategoryProductFitting,
+        productType,
+        ...productCategoryData
+      } = productCategory;
+      const productFittings = ProductCategoryProductFitting.map(
+        (pcf) => pcf.productFitting,
       );
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { ProductCategoryProductFitting, ...rest } = pf;
-      return { ...rest, productFittingIds };
+      return new ProductCategoryEntity({
+        ...productCategoryData,
+        productType: new ProductTypeEntity(createEntityProps(productType)),
+        productFittings: productFittings.map(
+          (productFitting) =>
+            new ProductFittingEntity(createEntityProps(productFitting)),
+        ),
+      });
     });
 
-    return { data: finalResult, total, page, limit };
+    return { data: productCategoryEntities, total, page, limit };
   }
 
-  findOne(id: number) {
-    return this.prisma.productCategory
-      .findUnique({
-        where: {
-          id,
-          AND: this.whereCheckingNullClause,
-        },
-        include: {
-          ProductCategoryProductFitting: {
-            select: {
-              productFittingId: true,
-            },
+  async findOne(id: number) {
+    const productCategory = await this.prisma.productCategory.findUnique({
+      where: {
+        id,
+        AND: this.whereCheckingNullClause,
+      },
+      include: {
+        ProductCategoryProductFitting: {
+          select: {
+            productFitting: true,
           },
         },
-      })
-      .then((productCategory) => {
-        if (!productCategory) {
-          return null;
-        }
-        const productFittingIds =
-          productCategory.ProductCategoryProductFitting.map(
-            (pfs) => pfs.productFittingId,
-          );
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { ProductCategoryProductFitting, ...rest } = productCategory;
-        return { ...rest, productFittingIds };
-      });
+      },
+    });
+
+    if (!productCategory) {
+      throw new NotFoundException(`productCategory with ID ${id} not found.`);
+    }
+
+    const { ProductCategoryProductFitting, ...productFittingData } =
+      productCategory;
+    const productFittings = ProductCategoryProductFitting.map(
+      (pcf) => pcf.productFitting,
+    );
+
+    return new ProductCategoryEntity({
+      ...productFittingData,
+      productFittings: productFittings.map(
+        (productFitting) =>
+          new ProductFittingEntity(createEntityProps(productFitting)),
+      ),
+    });
   }
 
   async update(
     id: number,
     updateProductCategoryDto: UpdateProductCategoryDto,
   ): Promise<ProductCategoryEntity> {
-    const { name, productFittingIds, updatedByUserId, productTypeId } =
+    const { productFittingIds, ...productCategoryData } =
       updateProductCategoryDto;
 
-    // Find the existing ProductCategory
-    const existingProductCategory =
-      await this.prisma.productCategory.findUnique({
-        where: { id },
-      });
+    // Perform the update operation within a transaction
+    const updatedProductCategory = await this.prisma.$transaction(
+      async (prisma) => {
+        // Find the existing ProductCategory
+        const existingProductCategory = await prisma.productCategory.findUnique(
+          {
+            where: { id, AND: this.whereCheckingNullClause },
+          },
+        );
 
-    if (!existingProductCategory) {
-      throw new NotFoundException(`ProductCategory with id ${id} not found`);
-    }
+        if (!existingProductCategory) {
+          throw new NotFoundException(
+            `ProductCategory with id ${id} not found`,
+          );
+        }
 
-    // Update the ProductCategory entity
-    const updatedProductCategory = await this.prisma.productCategory.update({
-      where: { id },
-      data: {
-        name,
-        updatedByUserId,
-        productTypeId,
+        // Update the ProductCategory entity
+        const updatedProductCategory = await prisma.productCategory.update({
+          where: { id },
+          data: productCategoryData,
+        });
+
+        // If productFittingIds are provided, update the associations
+        if (productFittingIds) {
+          // Delete existing associations
+          await prisma.productCategoryProductFitting.deleteMany({
+            where: { productCategoryId: id },
+          });
+
+          // Create new associations
+          const productCategoryProductFittings = productFittingIds.map(
+            (productFittingId) => ({
+              productCategoryId: id,
+              productFittingId,
+            }),
+          );
+
+          await prisma.productCategoryProductFitting.createMany({
+            data: productCategoryProductFittings,
+          });
+        }
+
+        return updatedProductCategory;
       },
-    });
-
-    // If productSizingIds are provided, update the associations
-    if (productFittingIds) {
-      // Delete existing associations
-      await this.prisma.productCategoryProductFitting.deleteMany({
-        where: { productCategoryId: id },
-      });
-
-      // Create new associations
-      const productCategoryProductFittings = productFittingIds.map(
-        (productFittingId) => ({
-          productCategoryId: id,
-          productFittingId,
-        }),
-      );
-
-      await this.prisma.productCategoryProductFitting.createMany({
-        data: productCategoryProductFittings,
-      });
-    }
+    );
 
     const updatedProductFittingIds = await this.getProductFittingIds(id);
 

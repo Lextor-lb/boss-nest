@@ -1,5 +1,6 @@
 import { ProductBrand } from '@prisma/client';
 import { Exclude } from 'class-transformer';
+import { MediaEntity } from 'src/media';
 import { formatDate } from 'src/shared/utils';
 import { UserEntity } from 'src/users/entities/user.entity';
 
@@ -11,6 +12,8 @@ export class ProductBrandEntity implements ProductBrand {
 
   isArchived: Date | null;
   image: string | null;
+
+  media?: MediaEntity;
 
   @Exclude()
   createdAt: Date;
@@ -35,15 +38,19 @@ export class ProductBrandEntity implements ProductBrand {
   }
 
   constructor({
-    media = null,
-    createdByUser = null,
-    updatedByUser = null,
+    media,
+    createdByUser,
+    updatedByUser,
     ...data
   }: Partial<ProductBrandEntity & { media?: { url: string } }>) {
     Object.assign(this, data);
 
+    // if (media) {
+    //   this.image = media.url;
+    // }
+
     if (media) {
-      this.image = media.url;
+      this.media = new MediaEntity(media);
     }
 
     if (createdByUser) {

@@ -6,7 +6,6 @@ import {
   IsString,
   MaxLength,
   MinLength,
-  ValidateNested,
 } from 'class-validator';
 import { IsUniqueBarcode } from 'customValidation/barcodeValidation';
 import { IsEntityExists } from 'customValidation/validation';
@@ -59,5 +58,4 @@ export class CreateProductVariantDto {
 
   @IsOptional()
   imageFileUrl?: string;
-  // imageFile?: Express.Multer.File;
 }

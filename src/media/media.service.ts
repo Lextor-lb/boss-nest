@@ -9,4 +9,20 @@ export class MediaService {
       data: mediaDto,
     });
   }
+
+  async updateMedia(prisma: PrismaClient, id: number, mediaDto: MediaDto) {
+    return prisma.media.update({
+      where: { id },
+      data: mediaDto,
+    });
+  }
 }
+
+// async saveMedia(prisma: PrismaClient, mediaDto: MediaDto) {
+//   const baseUrl = this.configService.get<string>('app.baseUrl');
+
+//   const media = await prisma.media.create({
+//     data: mediaDto,
+//   });
+//   return new MediaEntity({ ...media, baseUrl });
+// }

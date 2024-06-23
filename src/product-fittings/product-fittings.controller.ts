@@ -1,10 +1,9 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -19,7 +18,11 @@ import { CreateProductFittingDto } from './dto/create-product-fitting.dto';
 import { ProductFittingEntity } from './entity/product-fitting.entity';
 import { UpdateProductFittingDto } from './dto/update-product-fitting.dto';
 import { RemoveManyProductFittingDto } from './dto/removeMany-product-fitting.dto';
-import { MessageWithProductFitting } from 'src/shared/types/productFitting';
+import {
+  FetchProductFitting,
+  MessageWithProductFitting,
+  PaginatedProductFitting,
+} from 'src/shared/types/productFitting';
 import { SearchOption } from 'src';
 
 @Controller('product-fittings')
@@ -47,11 +50,15 @@ export class ProductFittingsController {
   }
 
   @Get('all')
-  async indexAll() {
+  async indexAll(): Promise<FetchProductFitting> {
     const productFittings = await this.productFittingsService.indexAll();
-    return productFittings.map(
-      (productFitting) => new ProductFittingEntity(productFitting),
-    );
+    return {
+      status: true,
+      message: 'Fetched Successfully!',
+      data: productFittings.map(
+        (productFitting) => new ProductFittingEntity(productFitting),
+      ),
+    };
   }
 
   @Get()
@@ -61,7 +68,7 @@ export class ProductFittingsController {
     @Query('search') search?: string,
     @Query('orderBy') orderBy: string = 'createdAt',
     @Query('orderDirection') orderDirection: 'asc' | 'desc' = 'desc',
-  ) {
+  ): Promise<PaginatedProductFitting> {
     const searchOptions: SearchOption = {
       page,
       limit: limit ? parseInt(limit, 10) : 10,
@@ -82,20 +89,11 @@ export class ProductFittingsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    try {
-      const productFitting = await this.productFittingsService.findOne(id);
-      if (!productFitting) {
-        return { status: false, message: 'Product fitting not found' };
-      }
-      return new ProductFittingEntity(productFitting);
-    } catch (error) {
-      console.error('Error fetching product fitting:', error);
-      throw new HttpException(
-        'Internal Server Error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ProductFittingEntity> {
+    const productFitting = await this.productFittingsService.findOne(id);
+    return new ProductFittingEntity(productFitting);
   }
 
   @Patch(':id')
@@ -103,12 +101,11 @@ export class ProductFittingsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductFittingDto: UpdateProductFittingDto,
     @Req() req,
-  ) {
-    const updatedByUserId = req.user.id;
+  ): Promise<MessageWithProductFitting> {
+    updateProductFittingDto.updatedByUserId = req.user.id;
+    updateProductFittingDto.id = id;
     const updatedProductFitting = await this.productFittingsService.update(
-      id,
       updateProductFittingDto,
-      updatedByUserId,
     );
     return {
       status: true,

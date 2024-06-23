@@ -22,15 +22,13 @@ export class CreateProductCategoryDto {
 
   @IsNotEmpty()
   @IsInt()
-  @IsEntityExists('productType', { message: 'Product type does not exist' })
+  @IsEntityExists('productType')
   productTypeId: number;
 
   @IsNotEmpty()
   @IsArray()
   @IsInt({ each: true })
-  @IsEntityExists('productFittings', {
-    message: 'Some product fittings do not exist',
-  })
+  @IsEntityExists('productFittings')
   productFittingIds: number[];
 
   @IsOptional()

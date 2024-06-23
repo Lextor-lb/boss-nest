@@ -139,10 +139,13 @@ export class PrismaExistsConstraint implements ValidatorConstraintInterface {
         return await this.isProductCategoryExists(value);
       case 'productFitting':
         return await this.isProductFittingExists(value);
-      case 'productSizing':
-        return await this.isProductSizingExists(value);
       case 'productFittings':
         return await this.areProductFittingsExist(value);
+      case 'productSizing':
+        return await this.isProductSizingExists(value);
+      case 'productSizings':
+        return await this.areProductSizingsExist(value);
+
       default:
         return false;
     }
@@ -188,6 +191,17 @@ export class PrismaExistsConstraint implements ValidatorConstraintInterface {
     return !!type;
   }
 
+  // Sizings
+  private async areProductSizingsExist(productSizingIds: number[]) {
+    if (!Array.isArray(productSizingIds) || productSizingIds.length === 0)
+      return false;
+
+    const fittings = await prisma.productSizing.findMany({
+      where: { id: { in: productSizingIds }, isArchived: null },
+    });
+    return fittings.length === productSizingIds.length;
+  }
+
   // Fittings
   private async areProductFittingsExist(productFittingIds: number[]) {
     if (!Array.isArray(productFittingIds) || productFittingIds.length === 0)
@@ -212,6 +226,8 @@ export class PrismaExistsConstraint implements ValidatorConstraintInterface {
         return `Product fitting with ID ${args.value} does not exist`;
       case 'productSizing':
         return `Product sizing with ID ${args.value} does not exist`;
+      case 'productSizings':
+        return `Some product sizings with given IDs do not exist`;
       case 'productFittings':
         return `Some product fittings with given IDs do not exist`;
       default:

@@ -17,6 +17,7 @@ import {
   SearchOption,
   PrismaService,
 } from 'src';
+import { createEntityProps } from 'src/shared/utils/createEntityProps';
 
 @Injectable()
 export class ProductsService {
@@ -143,16 +144,6 @@ export class ProductsService {
       skip,
       take: limit,
       orderBy: orderByClause,
-    });
-
-    const createEntityProps = (entity: {
-      id: number;
-      name: string;
-      isArchived: Date;
-    }) => ({
-      id: entity.id,
-      name: entity.name,
-      isArchived: entity.isArchived,
     });
 
     const productEntities = products.map((product) => {

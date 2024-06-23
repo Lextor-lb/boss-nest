@@ -4,6 +4,10 @@ import { Prisma } from '@prisma/client';
 import { CreateProductTypeDto } from './dto/create-product-type.dto';
 import { UpdateProductTypeDto } from './dto/update-product-type.dto';
 import { RemoveManyProductTypeDto } from './dto/removeMany-product-type.dto';
+import { ProductTypeEntity } from './entity';
+import { createEntityProps } from 'src/shared/utils/createEntityProps';
+import { SearchOption } from 'src';
+import { PaginatedProductType } from 'src/shared/types/productType';
 // import { PrismaService } from 'src';
 //
 @Injectable()
@@ -14,21 +18,34 @@ export class ProductTypesService {
     isArchived: null,
   };
 
-  create(createProductTypeDto: CreateProductTypeDto) {
-    return this.prisma.productType.create({ data: createProductTypeDto });
+  async create(
+    createProductTypeDto: CreateProductTypeDto,
+  ): Promise<ProductTypeEntity> {
+    try {
+      const productType = await this.prisma.productType.create({
+        data: createProductTypeDto,
+      });
+      return new ProductTypeEntity(productType);
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to create ProductType'); // Adjust error handling as per your application's requirements
+    }
   }
 
-  async indexAll() {
-    return await this.prisma.productType.findMany();
+  async indexAll(): Promise<ProductTypeEntity[]> {
+    const productTypes = await this.prisma.productType.findMany();
+    return productTypes.map(
+      (productType) => new ProductTypeEntity(createEntityProps(productType)),
+    );
   }
 
-  async findAll(
-    page: number,
-    limit: number,
-    searchName?: string,
-    orderBy: string = 'createdAt',
-    orderDirection: 'asc' | 'desc' = 'desc',
-  ) {
+  async findAll({
+    page,
+    limit,
+    search = '',
+    orderBy = 'createdAt',
+    orderDirection = 'desc',
+  }: SearchOption): Promise<PaginatedProductType> {
     const total = await this.prisma.productType.count({
       where: this.whereCheckingNullClause,
     });
@@ -38,7 +55,7 @@ export class ProductTypesService {
       where: {
         ...this.whereCheckingNullClause,
         name: {
-          contains: searchName || '',
+          contains: search || '',
         },
       },
       skip,
@@ -47,16 +64,28 @@ export class ProductTypesService {
         [orderBy]: orderDirection,
       },
     });
-    return { data: productTypes, total, page, limit };
+    return {
+      data: productTypes.map((pt) => new ProductTypeEntity(pt)),
+      total,
+      page,
+      limit,
+    };
   }
 
-  findOne(id: number) {
-    return this.prisma.productType.findUnique({
+  async findOne(id: number): Promise<ProductTypeEntity> {
+    const productType = await this.prisma.productType.findUnique({
       where: { id, AND: this.whereCheckingNullClause },
     });
+    if (!productType) {
+      throw new NotFoundException(`productType with ID ${id} not found.`);
+    }
+    return new ProductTypeEntity(productType);
   }
 
-  async update(id: number, updateProductTypeDto: UpdateProductTypeDto) {
+  async update(
+    id: number,
+    updateProductTypeDto: UpdateProductTypeDto,
+  ): Promise<ProductTypeEntity> {
     const existingProductType = await this.prisma.productType.findUnique({
       where: { id, AND: this.whereCheckingNullClause },
     });
@@ -64,10 +93,11 @@ export class ProductTypesService {
     if (!existingProductType) {
       throw new NotFoundException(`Product type with ID ${id} not found`);
     }
-    return this.prisma.productType.update({
+    const productType = await this.prisma.productType.update({
       where: { id },
       data: updateProductTypeDto,
     });
+    return new ProductTypeEntity(productType);
   }
 
   async removeMany(removeManyProductTypeDto: RemoveManyProductTypeDto) {

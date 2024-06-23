@@ -1,5 +1,6 @@
-import { ProductFitting } from '@prisma/client';
+import { ProductFitting, ProductSizing } from '@prisma/client';
 import { Exclude, Expose, Transform } from 'class-transformer';
+import { ProductSizingEntity } from 'src/product-sizings';
 import { formatDate } from 'src/shared/utils';
 import { UserEntity } from 'src/users/entities/user.entity';
 
@@ -21,11 +22,16 @@ export class ProductFittingEntity implements ProductFitting {
   createdByUser?: UserEntity;
 
   updatedByUser?: UserEntity;
-  // productSizingIds?: number[];
+  @Transform(({ value }) => (value && value.length > 0 ? value : undefined), {
+    toPlainOnly: true,
+  })
+  productSizings: ProductSizing[];
+
   @Transform(({ value }) => (value && value.length > 0 ? value : undefined), {
     toPlainOnly: true,
   })
   productSizingIds?: number[];
+
   @Expose()
   @Transform(({ value }) => (value ? formatDate(new Date(value)) : undefined), {
     toPlainOnly: true,
@@ -38,9 +44,10 @@ export class ProductFittingEntity implements ProductFitting {
   }
 
   constructor({
-    createdByUser = null,
-    updatedByUser = null,
-    productSizingIds = [],
+    createdByUser,
+    updatedByUser,
+    productSizingIds,
+    productSizings,
     ...data
   }: Partial<ProductFittingEntity>) {
     Object.assign(this, data);
@@ -51,6 +58,12 @@ export class ProductFittingEntity implements ProductFitting {
 
     if (updatedByUser) {
       this.updatedByUser = new UserEntity(updatedByUser);
+    }
+
+    if (productSizings) {
+      this.productSizings = productSizings.map(
+        (productSizing) => new ProductSizingEntity(productSizing),
+      );
     }
 
     this.productSizingIds = productSizingIds;

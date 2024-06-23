@@ -1,9 +1,18 @@
+import { Optional } from '@nestjs/common';
 import { Media } from '@prisma/client';
 import { Exclude, Expose, Transform } from 'class-transformer';
 
 export class MediaEntity implements Media {
   id: number;
+  @Optional()
+  @Exclude()
   url: string;
+
+  @Expose({ name: 'url' })
+  image(): string {
+    const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+    return `${BASE_URL}${this.url}`;
+  }
 
   @Exclude()
   createdAt: Date;
@@ -17,7 +26,7 @@ export class MediaEntity implements Media {
   @Exclude()
   isArchived: Date | null;
 
-  constructor(partial: Partial<MediaEntity>) {
-    Object.assign(this, partial);
+  constructor(data: Partial<MediaEntity>) {
+    Object.assign(this, data);
   }
 }
