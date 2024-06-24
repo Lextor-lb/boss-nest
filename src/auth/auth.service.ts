@@ -31,6 +31,7 @@ export class AuthService {
     }
 
     return {
+      status: true,
       user: new UserEntity({ id: user.id, name: user.name, email: user.email }),
       accessToken: this.jwtService.sign({ userId: user.id }),
     };
