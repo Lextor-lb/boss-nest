@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
+import { UserEntity } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +31,7 @@ export class AuthService {
     }
 
     return {
+      user: new UserEntity({ id: user.id, name: user.name, email: user.email }),
       accessToken: this.jwtService.sign({ userId: user.id }),
     };
   }
