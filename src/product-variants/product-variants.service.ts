@@ -11,6 +11,8 @@ import { ProductVariantEntity } from './entity/product-variant.entity';
 import { MediaEntity } from 'src/media/entity/media.entity';
 import { MediaDto } from 'src/media/dto/media.dto';
 import { PrismaService } from 'src/prisma';
+import { UpdateProductVariantDto } from './dto/update-product-variant.dto';
+import { deleteFile } from 'src/shared/utils/deleteOldImageFile';
 // import { PrismaService } from 'src';
 
 @Injectable()
@@ -85,6 +87,59 @@ export class ProductVariantsService {
       }
       console.error(error);
       throw new BadRequestException('Error creating product variant');
+    }
+  }
+
+  async updateWithTransaction(
+    transactionClient: PrismaClient,
+    id: number,
+    updateProductVariantDto: UpdateProductVariantDto,
+  ) {
+    try {
+      const { imageFileUrl, ...variantData } = updateProductVariantDto;
+
+      // Fetch existing product variant
+      const existingVariant = await transactionClient.productVariant.findUnique(
+        {
+          where: { id },
+          include: { media: true },
+        },
+      );
+
+      if (!existingVariant) {
+        throw new BadRequestException('Product variant not found');
+      }
+
+      // Update media (if imageFileUrl is provided)
+      if (imageFileUrl) {
+        const mediaDto = new MediaDto();
+        mediaDto.url = imageFileUrl;
+        await this.mediaService.updateMedia(
+          transactionClient,
+          existingVariant.mediaId,
+          mediaDto,
+        );
+        const oldImageFileUrl = existingVariant.media?.url;
+        deleteFile(oldImageFileUrl);
+      }
+
+      // Update product variant
+      const updatedVariant = await transactionClient.productVariant.update({
+        where: { id },
+        data: {
+          ...variantData,
+        },
+      });
+
+      return updatedVariant;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new ConflictException('The barcode must be unique.');
+        }
+      }
+      console.error(error);
+      throw new BadRequestException('Error updating product variant');
     }
   }
 

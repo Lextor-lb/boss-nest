@@ -21,8 +21,8 @@ export class MediaEntity implements Media {
   updatedAt: Date;
   @Transform(({ value }) => (value !== null ? value : undefined))
   productId: number | null;
-  productBrandId: number | null;
-  productVariantId: number | null;
+  // productBrandId: number | null;
+  // productVariantId: number | null;
   @Exclude()
   isArchived: Date | null;
 
