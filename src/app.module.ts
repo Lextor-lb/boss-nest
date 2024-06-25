@@ -17,6 +17,8 @@ import configuration from 'config/configuration';
 import { MediaModule } from './media/media.module';
 import { ProductVariantsModule } from './product-variants/product-variants.module';
 import { FileValidatorPipe } from './shared/pipes/file-validator.pipe';
+import { CustomersModule } from './customers/customers.module';
+import { SpecialsModule } from './specials/specials.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { FileValidatorPipe } from './shared/pipes/file-validator.pipe';
     ProductsModule,
     MediaModule,
     ProductVariantsModule,
+    CustomersModule,
+    SpecialsModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],
