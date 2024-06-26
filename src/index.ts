@@ -9,3 +9,5 @@ export * from './prisma';
 export * from './auth';
 export * from './shared/types';
 export * from './products';
+export * from './customers';
+export * from './specials';

@@ -259,3 +259,38 @@ enum Gender {
 enum StatusStock {
   SOLDOUT
 }
+
+model Customer {
+   id          Int    @id @default(autoincrement())
+   name        String
+   phoneNumber Int    @unique
+   address     String?
+
+   // One to Many
+   createdByUser User? @relation("CreatedProductVariants", fields: [createdByUserId], references: [id])
+   createdByUserId Int?
+   updatedByUser User? @relation("UpdatedProductVariants", fields: [updatedByUserId], references: [id])
+   updatedByUserId Int?
+
+   // One to One
+   specialId Special @relation("SpecialCustomerId", fields: [specialId], references: [id])
+   specialId Int
+
+   createdAt DateTime @default(now())
+   updatedAt DateTime @updatedAt
+}
+
+model Special {
+   id            Int    @id @default(autoincrement())
+   promotionRate Int    
+   isArchived    Int?
+
+   // One to Many
+   createdByUser User? @relation("CreatedProductVariants", fields: [createdByUserId], references: [id])
+   createdByUserId Int?
+   updatedByUser User? @relation("UpdatedProductVariants", fields: [updatedByUserId], references: [id])
+   updatedByUserId Int?
+  
+   createdAt DateTime @default(now())
+   updatedAt DateTime @updatedAt
+}
