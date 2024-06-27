@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+} from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
@@ -6,7 +15,7 @@ import {
   CustomerEntity,
   CustomerPagination,
   SearchOption,
-  MessageWithCustomer
+  MessageWithCustomer,
 } from 'src';
 import { ParseIntPipe } from '@nestjs/common';
 
@@ -27,13 +36,13 @@ export class CustomersController {
       limit: limit ? parseInt(limit, 10) : 10,
       search: search || '',
       orderBy: orderBy || 'id',
-      orderDirection: orderDirection || 'ASC'
+      orderDirection: orderDirection || 'ASC',
     };
     const customers = await this.customersService.findAll(searchOptions);
     return {
       data: customers.data.map((customer) => new CustomerEntity(customer)),
       page: customers.page,
-      limit: customers.limit
+      limit: customers.limit,
     };
   }
 
@@ -47,24 +56,29 @@ export class CustomersController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
-    @Body() updateCustomerDto: UpdateCustomerDto
+    @Body() updateCustomerDto: UpdateCustomerDto,
   ): Promise<MessageWithCustomer> {
     updateCustomerDto.updatedByUserId = req.user.id;
-    const updatedCustomer = await this.customersService.update(id, updateCustomerDto);
+    const updatedCustomer = await this.customersService.update(
+      id,
+      updateCustomerDto,
+    );
     return {
       status: true,
       message: 'Updated Successfully!',
-      data: new CustomerEntity(updatedCustomer)
+      data: new CustomerEntity(updatedCustomer),
     };
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<MessageWithCustomer> {
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<MessageWithCustomer> {
     const result = await this.customersService.remove(id);
     return {
       status: true,
       message: 'Deleted Successfully!',
-      data: result
+      data: result,
     };
   }
 }

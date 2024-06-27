@@ -39,6 +39,12 @@ model User {
 
   createdProductVariants ProductVariant[] @relation("CreatedProductVariants")
   updatedProductVariants ProductVariant[] @relation("UpdatedProductVariants")
+
+  createdCustomers Customer[] @relation("CreatedCustomers")
+  updatedCustomers Customer[] @relation("UpdatedCustomers")
+
+  createdSpecials Special[] @relation("CreatedSpecials")
+  updatedSpecials Special[] @relation("UpdatedSpecials")
 }
 
 model ProductSizing {
@@ -261,36 +267,39 @@ enum StatusStock {
 }
 
 model Customer {
-   id          Int    @id @default(autoincrement())
-   name        String
-   phoneNumber Int    @unique
-   address     String?
+  id          Int     @id @default(autoincrement())
+  name        String
+  phoneNumber Int     @unique
+  address     String?
 
-   // One to Many
-   createdByUser User? @relation("CreatedProductVariants", fields: [createdByUserId], references: [id])
-   createdByUserId Int?
-   updatedByUser User? @relation("UpdatedProductVariants", fields: [updatedByUserId], references: [id])
-   updatedByUserId Int?
+  // One to Many
+  createdByUser   User? @relation("CreatedCustomers", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedCustomers", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
 
-   // One to One
-   specialId Special @relation("SpecialCustomerId", fields: [specialId], references: [id])
-   specialId Int
+  // One to One
+  special   Special @relation("SpecialId", fields: [specialId], references: [id])
+  specialId Int     @unique
 
-   createdAt DateTime @default(now())
-   updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Special {
-   id            Int    @id @default(autoincrement())
-   promotionRate Int    
-   isArchived    Int?
+  id            Int  @id @default(autoincrement())
+  promotionRate Int
+  isArchived    Int?
 
-   // One to Many
-   createdByUser User? @relation("CreatedProductVariants", fields: [createdByUserId], references: [id])
-   createdByUserId Int?
-   updatedByUser User? @relation("UpdatedProductVariants", fields: [updatedByUserId], references: [id])
-   updatedByUserId Int?
-  
-   createdAt DateTime @default(now())
-   updatedAt DateTime @updatedAt
+  // One to Many
+  createdByUser   User? @relation("CreatedSpecials", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedSpecials", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  // One to One Inverse
+  customer Customer? @relation("SpecialId")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
