@@ -2,12 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import {
-  CustomerEntity,
-  CustomerPagination,
-  SearchOption,
-  MessageWithCustomer
-} from 'src';
+import { CustomerEntity, CustomerPagination, SearchOption, MessageWithCustomer } from 'src';
 import { ParseIntPipe } from '@nestjs/common';
 
 @Controller('customers')
@@ -33,7 +28,8 @@ export class CustomersController {
     return {
       data: customers.data.map((customer) => new CustomerEntity(customer)),
       page: customers.page,
-      limit: customers.limit
+      limit: customers.limit,
+      total: customers.total,
     };
   }
 
@@ -64,7 +60,7 @@ export class CustomersController {
     return {
       status: true,
       message: 'Deleted Successfully!',
-      data: result
+      data: new CustomerEntity(result),
     };
   }
 }

@@ -1,6 +1,7 @@
 import { Exclude } from 'class-transformer';
 import { Special } from 'src/specials/entities/special.entity';
 import { UserEntity } from 'src/users/entities/user.entity';
+import { Customer } from '@prisma/client';
 
 export class CustomerEntity implements Customer{
   id: number;

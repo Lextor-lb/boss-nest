@@ -29,7 +29,7 @@ export class SpecialsController {
 
     const specials = await this.specialsService.findAll(searchOptions);
     return {
-      data: specials.data.map((special) => new SpecialEntity(special));
+      data: specials.data.map((special) => new SpecialEntity(special)),
       page: specials.page,
       limit: specials.limit
     }

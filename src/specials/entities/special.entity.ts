@@ -2,8 +2,9 @@ import { Exclude } from "class-transformer";
 import { ProductFittingEntity } from "src/product-fittings";
 import { formatDate } from "src/shared/utils";
 import { UserEntity } from "src/users/entities/user.entity";
+import { Special } from "@prisma/client";
 
-export class SpecialEntity implements Speical {
+export class SpecialEntity implements Special {
     id: number;
     promotionRate: number;
     isArchived: Date | null;
