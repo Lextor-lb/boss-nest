@@ -90,7 +90,17 @@ export class ProductsService {
 
   async indexAll() {
     return await this.prisma.product.findMany({
-      include: { productVariants: true },
+      where: {
+        isArchived: null,
+      },
+      include: {
+        productVariants: {
+          where: {
+            isArchived: null,
+            statusStock: null,
+          },
+        },
+      },
     });
   }
 
