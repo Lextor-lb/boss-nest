@@ -1,8 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 import { SpecialsService } from './specials.service';
 import { CreateSpecialDto } from './dto/create-special.dto';
 import { UpdateSpecialDto } from './dto/update-special.dto';
-import { MessageWithSpecial, SearchOption, SpecialPagination } from 'src/shared/types';
+import {
+  MessageWithSpecial,
+  SearchOption,
+  SpecialPagination,
+} from 'src/shared/types';
 import { SpecialEntity } from './entities';
 
 @Controller('specials')
@@ -27,7 +42,7 @@ export class SpecialsController {
       limit: limit ? parseInt(limit, 10) : 10,
       search,
       orderBy,
-      orderDirection
+      orderDirection,
     };
 
     const specials = await this.specialsService.findAll(searchOptions);
@@ -35,7 +50,7 @@ export class SpecialsController {
       data: specials.data.map((special) => new SpecialEntity(special)),
       page: specials.page,
       limit: specials.limit,
-      total: specials.total
+      total: specials.total,
     };
   }
 
@@ -49,25 +64,31 @@ export class SpecialsController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
-    @Body() updateSpecialDto: UpdateSpecialDto
+    @Body() updateSpecialDto: UpdateSpecialDto,
   ): Promise<MessageWithSpecial> {
     updateSpecialDto.updatedByUserId = req.user.id;
-    const updatedSpecial = await this.specialsService.update(id, updateSpecialDto);
+    const updatedSpecial = await this.specialsService.update(
+      id,
+      updateSpecialDto,
+    );
 
     return {
       status: true,
       message: 'Updated Successfully!',
-      data: new SpecialEntity(updatedSpecial)
+      data: new SpecialEntity(updatedSpecial), // Include data here
     };
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<MessageWithSpecial> {
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<MessageWithSpecial> {
     const result = await this.specialsService.remove(id);
 
     return {
       status: true,
-      message: 'Deleted Successfully!'
+      message: 'Deleted Successfully!',
+      data: null, // Include data as null
     };
   }
 }

@@ -175,7 +175,7 @@ CREATE TABLE "Customer" (
 CREATE TABLE "Special" (
     "id" SERIAL NOT NULL,
     "promotionRate" INTEGER NOT NULL,
-    "isArchived" INTEGER,
+    "isArchived" TIMESTAMP(3),
     "createdByUserId" INTEGER,
     "updatedByUserId" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

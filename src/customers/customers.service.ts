@@ -1,16 +1,18 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { CustomerEntity, CustomerPagination, SearchOption } from 'src';
+import { SearchOption, CustomerPagination } from 'src/shared/types';
+import { CustomerEntity } from './entities/customer.entity';
 
 @Injectable()
 export class CustomersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
-  async create(createCustomerDto: CreateCustomerDto): Promise<CustomerEntity> {
+  async create(createCustomerDto: CreateCustomerDto) {
     const customer = await this.prisma.customer.create({
       data: createCustomerDto,
+      include: { special: true }, // Include special
     });
     return new CustomerEntity(customer);
   }
@@ -18,55 +20,72 @@ export class CustomersService {
   async findAll(searchOptions: SearchOption): Promise<CustomerPagination> {
     const { page, limit, search, orderBy, orderDirection } = searchOptions;
 
-    // Assuming Prisma client has a method to fetch data with pagination
-    const customers = await this.prisma.customer.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      where: {
-        name: {
-          contains: search,
+    const [total, customers] = await this.prisma.$transaction([
+      this.prisma.customer.count({
+        where: {
+          name: {
+            contains: search,
+            mode: 'insensitive',
+          },
         },
-      },
-      orderBy: {
-        [orderBy]: orderDirection,
-      },
-    });
-
-    const total = await this.prisma.customer.count({
-      where: {
-        name: {
-          contains: search,
+      }),
+      this.prisma.customer.findMany({
+        where: {
+          name: {
+            contains: search,
+            mode: 'insensitive',
+          },
         },
-      },
-    });
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: {
+          [orderBy]: orderDirection,
+        },
+        include: { special: true }, // Include special
+      }),
+    ]);
 
     return {
-      data: customers,
+      data: customers.map((customer) => new CustomerEntity(customer)),
       page,
       limit,
       total,
     };
   }
 
-  async findOne(id: number): Promise<CustomerEntity> {
+  async findOne(id: number) {
     const customer = await this.prisma.customer.findUnique({
       where: { id },
+      include: { special: true }, // Include special
     });
+
+    if (!customer) {
+      throw new NotFoundException(`Customer with ID ${id} not found`);
+    }
+
     return new CustomerEntity(customer);
   }
 
-  async update(id: number, updateCustomerDto: UpdateCustomerDto): Promise<CustomerEntity> {
+  async update(id: number, updateCustomerDto: UpdateCustomerDto) {
+    await this.findOne(id);
+
     const customer = await this.prisma.customer.update({
       where: { id },
       data: updateCustomerDto,
+      include: { special: true }, // Include special
     });
+
     return new CustomerEntity(customer);
   }
 
-  async remove(id: number): Promise<CustomerEntity> {
+  async remove(id: number) {
+    await this.findOne(id);
+
     const customer = await this.prisma.customer.delete({
       where: { id },
+      include: { special: true }, // Include special
     });
+
     return new CustomerEntity(customer);
   }
 }
