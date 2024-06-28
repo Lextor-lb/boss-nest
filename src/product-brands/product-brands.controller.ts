@@ -108,7 +108,7 @@ export class ProductBrandsController {
   }
 
   @Put(':id')
-  @UseInterceptors()
+  @UseInterceptors(FileInterceptor('image', multerOptions))
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductBrandDto: UpdateProductBrandDto,
