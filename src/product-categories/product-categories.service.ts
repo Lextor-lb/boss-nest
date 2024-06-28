@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
@@ -111,6 +112,7 @@ export class ProductCategoriesService {
       const {
         ProductCategoryProductFitting,
         productType,
+        productTypeId,
         ...productCategoryData
       } = productCategory;
       const productFittings = ProductCategoryProductFitting.map(
@@ -136,6 +138,7 @@ export class ProductCategoriesService {
         AND: this.whereCheckingNullClause,
       },
       include: {
+        productType: true,
         ProductCategoryProductFitting: {
           select: {
             productFitting: true,
@@ -148,14 +151,19 @@ export class ProductCategoriesService {
       throw new NotFoundException(`productCategory with ID ${id} not found.`);
     }
 
-    const { ProductCategoryProductFitting, ...productFittingData } =
-      productCategory;
+    const {
+      ProductCategoryProductFitting,
+      productType,
+      productTypeId,
+      ...productFittingData
+    } = productCategory;
     const productFittings = ProductCategoryProductFitting.map(
       (pcf) => pcf.productFitting,
     );
 
     return new ProductCategoryEntity({
       ...productFittingData,
+      productType: new ProductTypeEntity(createEntityProps(productType)),
       productFittings: productFittings.map(
         (productFitting) =>
           new ProductFittingEntity(createEntityProps(productFitting)),
