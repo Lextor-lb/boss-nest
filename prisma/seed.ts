@@ -49,6 +49,35 @@ async function main() {
     },
   });
 
+  await prisma.special.create({
+    data: {
+      name: 'VIP',
+      promotionRate: 10,
+      createdByUserId: user2.id,
+      updatedByUserId: user1.id,
+    }
+  });
+
+  await prisma.special.create({
+    data: {
+      name: 'VVIP',
+      promotionRate: 15,
+      createdByUserId: user2.id,
+      updatedByUserId: user1.id,
+    }
+  });
+
+  await prisma.customer.create({
+    data: {
+      name: 'Your Customer',
+      phoneNumber: 93785383,
+      address: 'Yangon',
+      createdByUserId: user2.id,
+      updatedByUserId: user1.id,
+      specialId: 2
+    }
+  });
+
   await prisma.productType.create({
     data: {
       name: 'Clothing',

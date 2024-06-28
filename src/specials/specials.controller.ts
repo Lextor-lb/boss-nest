@@ -1,8 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 import { SpecialsService } from './specials.service';
 import { CreateSpecialDto } from './dto/create-special.dto';
 import { UpdateSpecialDto } from './dto/update-special.dto';
-import { MessageWithSpecial, SearchOption, SpecialPagination } from 'src/shared/types';
+import {
+  MessageWithSpecial,
+  SearchOption,
+  SpecialPagination,
+} from 'src/shared/types';
 import { SpecialEntity } from './entities';
 
 @Controller('specials')
@@ -16,60 +31,64 @@ export class SpecialsController {
 
   @Get()
   async findAll(
-    @Req() req
+    @Query('page') page: number = 1,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('orderBy') orderBy: string = 'createdAt',
+    @Query('orderDirection') orderDirection: 'asc' | 'desc' = 'desc',
   ): Promise<SpecialPagination> {
-    const {page, limit, search, orderBy, orderDirection} = req.query;
     const searchOptions: SearchOption = {
-      page: parseInt(page, 10) || 1,
+      page,
       limit: limit ? parseInt(limit, 10) : 10,
-      search: search || '',
-      orderBy: orderBy || 'id',
-      orderDirection: orderDirection || 'ASC'
+      search,
+      orderBy,
+      orderDirection,
     };
 
     const specials = await this.specialsService.findAll(searchOptions);
     return {
-      data: specials.data.map((special) => new SpecialEntity(special));
+      data: specials.data.map((special) => new SpecialEntity(special)),
       page: specials.page,
-      limit: specials.limit
-    }
+      limit: specials.limit,
+      total: specials.total,
+    };
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const special = await this.specialsService.findOne(id);
-
     return new SpecialEntity(special);
   }
 
   @Patch(':id')
   async update(
-    @Param('id', ParseIntPipe) id: number, 
+    @Param('id', ParseIntPipe) id: number,
     @Req() req,
-    @Body() updateSpecialDto: UpdateSpecialDto
+    @Body() updateSpecialDto: UpdateSpecialDto,
   ): Promise<MessageWithSpecial> {
     updateSpecialDto.updatedByUserId = req.user.id;
     const updatedSpecial = await this.specialsService.update(
       id,
-      updateSpecialDto
+      updateSpecialDto,
     );
 
     return {
       status: true,
       message: 'Updated Successfully!',
-      data: new SpecialEntity(updatedSpecial)
+      data: new SpecialEntity(updatedSpecial), // Include data here
     };
   }
 
   @Delete(':id')
   async remove(
-    @Param('id', ParseIntPipe) id: number): Promise<MessageWithSpecial> {
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<MessageWithSpecial> {
     const result = await this.specialsService.remove(id);
 
     return {
       status: true,
       message: 'Deleted Successfully!',
-      data: result
-    }
+      data: null, // Include data as null
+    };
   }
 }

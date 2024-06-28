@@ -1,12 +1,16 @@
-import { IsOptional, isInt, isNotEmpty} from "class-validator"
+import { IsInt, IsNotEmpty, IsOptional, IsString} from "class-validator"
 
 export class CreateSpecialDto {
-   @isNotEmpty()
-   @isInt()
+   @IsNotEmpty()
+   @IsString()
+   name: string;
+
+   @IsNotEmpty()
+   @IsInt()
    promotionRate: number;
 
    @IsOptional()
-   isArchieved?: Date;
+   isArchived?: Date;
 
    @IsOptional()
    createdByUserId: number;

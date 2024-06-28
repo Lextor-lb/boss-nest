@@ -288,8 +288,9 @@ model Customer {
 
 model Special {
   id            Int  @id @default(autoincrement())
+  name          String
   promotionRate Int
-  isArchived    Int?
+  isArchived    DateTime?
 
   // One to Many
   createdByUser   User? @relation("CreatedSpecials", fields: [createdByUserId], references: [id])

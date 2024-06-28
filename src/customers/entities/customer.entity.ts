@@ -1,48 +1,30 @@
 import { Customer } from '@prisma/client';
 import { Exclude } from 'class-transformer';
-import { Special } from 'src/specials/entities/special.entity';
+import { SpecialEntity } from 'src/specials/entities/special.entity';
 import { UserEntity } from 'src/users/entities/user.entity';
 
-export class CustomerEntity implements Customer {
+export class CustomerEntity {
   id: number;
   name: string;
   phoneNumber: number;
   address: string;
 
   @Exclude()
-  createdAt: Date;
+  createdByUserId: number;
 
+  @Exclude()
+  updatedByUserId: number;
+  special: SpecialEntity; // Change from specialId: number to special: SpecialEntity
+ 
+  @Exclude()
+  createdAt: Date;
   @Exclude()
   updatedAt: Date;
 
-  @Exclude()
-  createdByUserId: number | null;
-
-  @Exclude()
-  updatedByUserId: number | null;
-
-  specialId?: Special;
-  createdByUser?: UserEntity;
-  updatedByUser?: UserEntity;
-
-  constructor({
-    specialId,
-    createdByUser,
-    updatedByUser,
-    ...data
-  }: Partial<CustomerEntity>) {
+  constructor(data: Partial<CustomerEntity>) {
     Object.assign(this, data);
-
-    if (specialId) {
-      this.specialId = new Special(specialId);
-    }
-
-    if (createdByUser) {
-      this.createdByUser = new UserEntity(createdByUser);
-    }
-
-    if (updatedByUser) {
-      this.updatedByUser = new UserEntity(updatedByUser);
+    if (data.special) {
+      this.special = new SpecialEntity(data.special);
     }
   }
 }
