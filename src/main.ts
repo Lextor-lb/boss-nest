@@ -26,6 +26,7 @@ async function bootstrap() {
     .setDescription('The Median API description')
     .setVersion('0.1')
     .build();
+    
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 

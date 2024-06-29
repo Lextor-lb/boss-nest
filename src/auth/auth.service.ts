@@ -4,36 +4,98 @@ import { PrismaService } from './../prisma/prisma.service';
 import {
   Injectable,
   NotFoundException,
+  Req,
+  Res,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { UserEntity } from 'src/users/entities/user.entity';
+import { v4 as uuidv4 } from 'uuid';
+import { RefreshTokenEntity } from './entity/refresh-token.entity';
+
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
+  ) {
+
+  }
 
   async login(email: string, password: string): Promise<AuthEntity> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
 
-    if (!user) {
-      throw new NotFoundException(`No user found for email: ${email}`);
-    }
+      const user = await this.prisma.user.findUnique({ where: { email } });
 
-    const isPasswordValid = await argon2.verify(user.password, password);
+      const token = uuidv4();
 
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid password');
-    }
+      const refreshToken = this.jwtService.sign({ id: user.id, name: user.name, email: user.email , tokenId: token }, { expiresIn: '9999 years' } )
 
-    return {
-      status: true,
-      user: new UserEntity({ id: user.id, name: user.name, email: user.email }),
-      accessToken: this.jwtService.sign({ userId: user.id }),
-    };
+      if (!user) {
+        throw new NotFoundException(`No user found for email: ${email}`);
+      }
+
+      const isPasswordValid = await argon2.verify(user.password, password);
+
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Invalid password');
+      }
+
+      return {
+        status: true,
+        user: new UserEntity({ id: user.id, name: user.name, email: user.email }),
+        accessToken: this.jwtService.sign({ userId: user.id }),
+        refreshToken : refreshToken,
+      };
+
   }
+
+  async refresh(refreshToken : string) : Promise<AuthEntity> 
+  {
+    
+        const token = uuidv4();
+        const { id, name, email} = this.jwtService.verify(refreshToken);
+        const newRefreshToken = this.jwtService.sign({ id: id, name: name, email: email , tokenId: token },{ expiresIn: '9999 years' })
+
+        return {
+
+            status: true,
+            user: new UserEntity({ id: id, name: name, email: email }),
+            accessToken: this.jwtService.sign({ userId: id }),
+            refreshToken : newRefreshToken,
+        }
+
+  }
+
+
+
+  // async refresh(@Res() res: Response, @Req() req: Request) {
+
+  //   const oldRefreshToken = req.cookies['refreshToken'];
+    
+  //   // Validate old refresh token, if invalid, throw an error.
+    
+  //   const userId = this.authService.decodeRefreshToken(oldRefreshToken).id;
+  //   const newAccessToken = await this.authService.createAccessToken(userId);
+  //   const newRefreshToken = await this.authService.createRefreshToken(userId);
+
+  //   return {
+  //     status : true,
+  //     accessToken : newAccessToken,
+  //     refreshToken : newRefreshToken,
+  //   }
+    
+  //   // res.cookie('refreshToken', newRefreshToken, {
+  //   //   httpOnly: true,
+  //   //   secure: true,
+  //   //   sameSite: 'strict'
+  //   // });
+    
+  //   return res.send({ accessToken: newAccessToken });
+  // }
+
+
+
+
 }

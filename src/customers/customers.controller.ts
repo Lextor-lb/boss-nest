@@ -25,6 +25,7 @@ export class CustomersController {
       orderDirection: orderDirection || 'ASC'
     };
     const customers = await this.customersService.findAll(searchOptions);
+    
     return {
       data: customers.data.map((customer) => new CustomerEntity(customer)),
       page: customers.page,

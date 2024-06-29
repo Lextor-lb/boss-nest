@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export default async function seedProductBrand() {
+  
   const brandsWithMedia = [
     { name: 'Hugo Boss', mediaUrl: '/uploads/boy.jpg' },
     { name: 'Versace', mediaUrl: '/uploads/boy.jpg' },
