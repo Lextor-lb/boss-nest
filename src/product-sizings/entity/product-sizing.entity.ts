@@ -1,11 +1,13 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { ProductSizing } from '@prisma/client';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { formatDate } from 'src/shared/utils';
 import { UserEntity } from 'src/users/entities/user.entity';
 
 export class ProductSizingEntity implements ProductSizing {
+  @ApiProperty()
   id: number;
-
+  @ApiProperty()
   name: string;
   @Exclude()
   createdAt: Date;
@@ -15,7 +17,7 @@ export class ProductSizingEntity implements ProductSizing {
   createdByUserId: number;
   @Exclude()
   updatedByUserId: number;
-
+  @ApiProperty()
   isArchived: Date | null;
 
   createdByUser?: UserEntity;
@@ -26,6 +28,7 @@ export class ProductSizingEntity implements ProductSizing {
   @Transform(({ value }) => (value ? formatDate(new Date(value)) : undefined), {
     toPlainOnly: true,
   })
+  @ApiProperty()
   get date(): string | null {
     if (!this.createdAt) {
       return null;

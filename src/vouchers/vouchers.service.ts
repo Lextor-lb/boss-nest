@@ -1,0 +1,214 @@
+import { Prisma, PrismaClient } from '@prisma/client';
+import { CreateVoucherDto, voucherRecordDto } from './dto/create-voucher.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { VoucherEntity } from './entities/voucher.entity';
+import { VoucherRecordEntity } from './entities/voucherRecord.entity';
+import { CustomerEntity } from 'src/customers';
+import { SpecialEntity } from 'src/specials';
+import { BarcodeEntity } from './entities/barcode.entity';
+
+@Injectable()
+export class VouchersService {
+  constructor(private prisma: PrismaService) {}
+  whereCheckingNullClause: Prisma.ProductVariantWhereInput = {
+    isArchived: null,
+    statusStock: null,
+  };
+
+  async barcode(barcode: string) {
+    try {
+      const {
+        productSizing: { name: productSizing },
+        product: {
+          name: productName,
+          gender,
+          salePrice,
+          productBrand: { name: productBrand },
+          productType: { name: productType },
+          productCategory: { name: productCategory },
+          productFitting: { name: productFitting },
+        },
+        barcode: Barcode,
+      } = await this.prisma.productVariant.findUnique({
+        where: { barcode, AND: this.whereCheckingNullClause },
+        select: {
+          barcode: true,
+          productSizing: { select: { name: true } },
+          product: {
+            select: {
+              name: true,
+              gender: true,
+              salePrice: true,
+              productBrand: { select: { name: true } },
+              productType: { select: { name: true } },
+              productCategory: { select: { name: true } },
+              productFitting: { select: { name: true } },
+            },
+          },
+        },
+      });
+      return new BarcodeEntity({
+        barcode: Barcode,
+        productName,
+        gender,
+        productBrand,
+        productType,
+        productCategory,
+        productFitting,
+        productSizing,
+        price: salePrice,
+      });
+    } catch (error) {
+      throw new NotFoundException('Barcode not found!');
+    }
+  }
+
+  // select: { product: { select: { name: true } } },
+  async create({ voucherRecords, ...voucherData }: CreateVoucherDto) {
+    return this.prisma.$transaction(async (transactionClient: PrismaClient) => {
+      try {
+        const voucher = await this.createVoucher(
+          transactionClient,
+          voucherData,
+          voucherRecords,
+        );
+
+        await this.createVoucherRecords(
+          transactionClient,
+          voucher.id,
+          voucherRecords,
+        );
+
+        return { status: true, message: 'Created Successfully!' };
+      } catch (error) {
+        throw new Error('Failed to create Voucher');
+      }
+    });
+  }
+
+  private async createVoucher(
+    transactionClient: PrismaClient,
+    voucherData: Omit<CreateVoucherDto, 'voucherRecords'>,
+    voucherRecords: voucherRecordDto[],
+  ) {
+    return transactionClient.voucher.create({
+      data: {
+        ...voucherData,
+        quantity: voucherRecords.length,
+      },
+    });
+  }
+
+  private async createVoucherRecords(
+    transactionClient: PrismaClient,
+    voucherId: number,
+    voucherRecords: voucherRecordDto[],
+  ) {
+    for (const record of voucherRecords) {
+      await this.createVoucherRecord(transactionClient, voucherId, record);
+    }
+  }
+
+  private async createVoucherRecord(
+    transactionClient: PrismaClient,
+    voucherId: number,
+    record: voucherRecordDto,
+  ) {
+    const { productVariantId, salePrice, ...recordData } = record;
+
+    const productDetails = await this.getProductDetails(
+      transactionClient,
+      productVariantId,
+    );
+    const productJson = this.formatProductDetails(productDetails, salePrice);
+
+    await transactionClient.voucherRecord.create({
+      data: {
+        ...recordData,
+        product: productJson,
+        voucher: { connect: { id: voucherId } },
+        productVariant: { connect: { id: productVariantId } },
+      },
+    });
+
+    await this.updateProductVariantStatus(transactionClient, productVariantId);
+  }
+
+  private async getProductDetails(
+    transactionClient: PrismaClient,
+    productVariantId: number,
+  ) {
+    return transactionClient.productVariant.findUnique({
+      where: { id: productVariantId },
+      select: {
+        productSizing: { select: { name: true } },
+        product: {
+          select: {
+            name: true,
+            gender: true,
+            stockPrice: true,
+            productBrand: { select: { name: true } },
+            productType: { select: { name: true } },
+            productCategory: { select: { name: true } },
+            productFitting: { select: { name: true } },
+          },
+        },
+      },
+    });
+  }
+
+  private formatProductDetails(productDetails: any, salePrice: number) {
+    const { product, productSizing } = productDetails;
+    return JSON.stringify({
+      name: product.name,
+      gender: product.gender,
+      productBrand: product.productBrand.name,
+      productType: product.productType.name,
+      productCategory: product.productCategory.name,
+      productFitting: product.productFitting.name,
+      productSizing: productSizing.name,
+      salePrice,
+      stockPrice: product.stockPrice,
+    });
+  }
+
+  private async updateProductVariantStatus(
+    transactionClient: PrismaClient,
+    productVariantId: number,
+  ) {
+    await transactionClient.productVariant.update({
+      where: { id: productVariantId },
+      data: { statusStock: 'SOLDOUT' },
+    });
+  }
+  async findOne(id: number): Promise<VoucherEntity> {
+    const voucher = await this.prisma.voucher.findUnique({
+      where: { id },
+      include: {
+        voucherRecords: true,
+        customer: {
+          select: {
+            name: true,
+            special: { select: { promotionRate: true } },
+          },
+        },
+      },
+    });
+
+    if (!voucher) {
+      throw new NotFoundException(`Voucher with ID ${id} not found.`);
+    }
+
+    const { voucherRecords, customer, ...restVoucher } = voucher;
+    const name = customer?.name ?? null;
+    const promotionRate = customer?.special?.promotionRate ?? null;
+
+    return new VoucherEntity({
+      ...restVoucher,
+      customer: name ? new CustomerEntity({ name }) : undefined,
+      special: promotionRate ? new SpecialEntity({ promotionRate }) : undefined,
+      voucherRecord: voucherRecords.map((vr) => new VoucherRecordEntity(vr)),
+    });
+  }
+}

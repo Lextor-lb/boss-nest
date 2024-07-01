@@ -1,0 +1,17 @@
+import { Gender } from '@prisma/client';
+
+export class BarcodeEntity {
+  barcode: string;
+  productName: string;
+  gender: Gender;
+  productBrand: string;
+  productType: string;
+  productCategory: string;
+  productFitting: string;
+  productSizing: string;
+  price: number;
+
+  constructor(partial: Partial<BarcodeEntity> = {}) {
+    Object.assign(this, partial);
+  }
+}

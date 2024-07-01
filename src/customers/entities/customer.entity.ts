@@ -14,8 +14,8 @@ export class CustomerEntity {
 
   @Exclude()
   updatedByUserId: number;
-  special: SpecialEntity; // Change from specialId: number to special: SpecialEntity
- 
+  @Exclude()
+  // special?: SpecialEntity; // Change from specialId: number to special: SpecialEntity
   @Exclude()
   createdAt: Date;
   @Exclude()
@@ -23,8 +23,8 @@ export class CustomerEntity {
 
   constructor(data: Partial<CustomerEntity>) {
     Object.assign(this, data);
-    if (data.special) {
-      this.special = new SpecialEntity(data.special);
-    }
+    // if (data.special) {
+    //   this.special = new SpecialEntity(data.special);
+    // }
   }
 }

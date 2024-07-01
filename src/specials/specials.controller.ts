@@ -51,6 +51,7 @@ export class SpecialsController {
       page: specials.page,
       limit: specials.limit,
       total: specials.total,
+      totalPages: specials.totalPages,
     };
   }
 

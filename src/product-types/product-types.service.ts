@@ -33,7 +33,9 @@ export class ProductTypesService {
   }
 
   async indexAll(): Promise<ProductTypeEntity[]> {
-    const productTypes = await this.prisma.productType.findMany();
+    const productTypes = await this.prisma.productType.findMany({
+      where: this.whereCheckingNullClause,
+    });
     return productTypes.map(
       (productType) => new ProductTypeEntity(createEntityProps(productType)),
     );
@@ -50,6 +52,7 @@ export class ProductTypesService {
       where: this.whereCheckingNullClause,
     });
     const skip = (page - 1) * limit;
+    const totalPages = Math.ceil(total / limit);
 
     const productTypes = await this.prisma.productType.findMany({
       where: {
@@ -69,6 +72,7 @@ export class ProductTypesService {
       total,
       page,
       limit,
+      totalPages,
     };
   }
 
@@ -98,6 +102,22 @@ export class ProductTypesService {
       data: updateProductTypeDto,
     });
     return new ProductTypeEntity(productType);
+  }
+
+  async remove(id: number) {
+    await this.prisma.productType.update({
+      where: { id },
+      data: { isArchived: new Date() },
+    });
+    await this.prisma.productCategory.updateMany({
+      where: { productTypeId: id },
+      data: { isArchived: new Date() },
+    });
+
+    return {
+      status: true,
+      message: `Deleted product type successfully.`,
+    };
   }
 
   async removeMany(removeManyProductTypeDto: RemoveManyProductTypeDto) {

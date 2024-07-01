@@ -19,6 +19,7 @@ import { ProductVariantsModule } from './product-variants/product-variants.modul
 import { FileValidatorPipe } from './shared/pipes/file-validator.pipe';
 import { CustomersModule } from './customers/customers.module';
 import { SpecialsModule } from './specials/specials.module';
+import { VouchersModule } from './vouchers/vouchers.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { SpecialsModule } from './specials/specials.module';
     ProductVariantsModule,
     CustomersModule,
     SpecialsModule,
+    VouchersModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],

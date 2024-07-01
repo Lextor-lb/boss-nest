@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -85,6 +84,7 @@ export class ProductFittingsController {
       total: productFittings.total,
       page: productFittings.page,
       limit: productFittings.limit,
+      totalPages: productFittings.totalPages,
     };
   }
 
@@ -113,7 +113,10 @@ export class ProductFittingsController {
       data: new ProductFittingEntity(updatedProductFitting),
     };
   }
-
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.productFittingsService.remove(id);
+  }
   @Delete()
   async removeMany(
     @Body() removeManyProductFittingDto: RemoveManyProductFittingDto,
