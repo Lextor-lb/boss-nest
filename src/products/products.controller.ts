@@ -1,4 +1,7 @@
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import {
+  AnyFilesInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 import { CustomBadRequestExceptionFilter } from 'src/shared/exception/CustomBadRequestExceptionFilter';
 import {
   Controller,
@@ -14,6 +17,8 @@ import {
   UseFilters,
   Param,
   ParseIntPipe,
+  Delete,
+  Put,
 } from '@nestjs/common';
 import {
   ProductVariantsService,
@@ -25,6 +30,10 @@ import {
   SearchOption,
   JwtAuthGuard,
 } from 'src';
+import { ProductDetailEntity } from './entity/productDetail.entity';
+import { RemoveManyProductDto } from './dto/removeMany-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { promises } from 'dns';
 
 @Controller('products')
 @UseGuards(JwtAuthGuard)
@@ -107,12 +116,50 @@ export class ProductsController {
       total: products.total,
       page: products.page,
       limit: products.limit,
+      totalPages: products.totalPages,
     };
+  }
+  @Put(':id')
+  @UseInterceptors(AnyFilesInterceptor(multerOptions))
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateProductDto: UpdateProductDto,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Req() req,
+  ): Promise<any> {
+    const imageFiles = files.filter((file) => file.fieldname === 'images');
+    updateProductDto.imageFilesUrl = imageFiles.map(
+      (file) => `/uploads/${file.filename}`,
+    );
+    updateProductDto.updatedByUserId = req.user.id;
+    return await this.productsService.update(id, updateProductDto);
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const product = await this.productsService.findOne(id);
-    return new ProductEntity(product);
+    return new ProductDetailEntity(product);
+  }
+
+  @Delete('media/:id')
+  async removeProductMedia(@Param('id', ParseIntPipe) id: number) {
+    return await this.productsService.removeProductMedia(id);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.productsService.remove(id);
+  }
+
+  @Delete()
+  async removeMany(@Body() removeManyProductTypeDto: RemoveManyProductDto) {
+    const result = await this.productsService.removeMany(
+      removeManyProductTypeDto,
+    );
+    return {
+      status: true,
+      message: 'Deleted Successfully!',
+      data: result,
+    };
   }
 }

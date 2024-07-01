@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
-import { unlinkSync } from 'fs';
 import {
   RemoveManyProductBrandDto,
   UpdateProductBrandDto,
@@ -15,8 +14,6 @@ import {
 import { PaginatedProductBrand } from 'src/shared/types/productBrand';
 import { createEntityProps } from 'src/shared/utils/createEntityProps';
 import { deleteFile } from 'src/shared/utils/deleteOldImageFile';
-import * as fs from 'fs';
-import * as path from 'path';
 
 @Injectable()
 export class ProductBrandsService {
@@ -60,7 +57,9 @@ export class ProductBrandsService {
   }
 
   async indexAll(): Promise<ProductBrandEntity[]> {
-    const productBrands = await this.prisma.productBrand.findMany();
+    const productBrands = await this.prisma.productBrand.findMany({
+      where: this.whereCheckingNullClause,
+    });
     return productBrands.map(
       (pb) => new ProductBrandEntity(createEntityProps(pb)),
     );
@@ -77,6 +76,7 @@ export class ProductBrandsService {
       where: this.whereCheckingNullClause,
     });
     const skip = (page - 1) * limit;
+    const totalPages = Math.ceil(total / limit);
 
     const productBrands = await this.prisma.productBrand.findMany({
       where: {
@@ -107,6 +107,7 @@ export class ProductBrandsService {
       total,
       page,
       limit,
+      totalPages,
     };
   }
 
@@ -142,8 +143,10 @@ export class ProductBrandsService {
         throw new NotFoundException(`ProductBrand with id ${id} not found`);
       }
 
-      // Store the old image file URL
       const oldImageFileUrl = existingProductBrand.media?.url;
+      if (imageFileUrl && oldImageFileUrl) {
+        deleteFile(oldImageFileUrl);
+      }
 
       const updatedProductBrand = await this.prisma.$transaction(
         async (transactionClient: PrismaClient) => {
@@ -165,15 +168,14 @@ export class ProductBrandsService {
             where: { id },
             data: productBrandData,
           });
-
+          const oldImageFileUrl = existingProductBrand.media?.url;
+          if (imageFileUrl && oldImageFileUrl) {
+            deleteFile(oldImageFileUrl);
+          }
           return { ...productBrand, media: updatedMedia };
         },
       );
 
-      // Delete the old image file if a new one was provided
-      if (imageFileUrl && oldImageFileUrl) {
-        deleteFile(oldImageFileUrl);
-      }
       const { media, ...updatedProductBrandData } = updatedProductBrand;
 
       return new ProductBrandEntity({
@@ -184,6 +186,18 @@ export class ProductBrandsService {
       throw error;
     }
   }
+
+  async remove(id: number) {
+    await this.prisma.productBrand.update({
+      where: { id },
+      data: { isArchived: new Date() },
+    });
+    return {
+      status: true,
+      message: `Deleted product brand successfully.`,
+    };
+  }
+
   async removeMany(removeManyProductBrandDto: RemoveManyProductBrandDto) {
     const { ids } = removeManyProductBrandDto;
 

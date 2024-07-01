@@ -1,11 +1,6 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { MediaService } from 'src/media/media.service';
-// import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductVariantDto } from './dto/create-product-variant.dto';
 import { ProductVariantEntity } from './entity/product-variant.entity';
 import { MediaEntity } from 'src/media/entity/media.entity';
@@ -13,7 +8,7 @@ import { MediaDto } from 'src/media/dto/media.dto';
 import { PrismaService } from 'src/prisma';
 import { UpdateProductVariantDto } from './dto/update-product-variant.dto';
 import { deleteFile } from 'src/shared/utils/deleteOldImageFile';
-// import { PrismaService } from 'src';
+import { RemoveManyProductVariantDto } from './dto/removeMany-product-variant.dto';
 
 @Injectable()
 export class ProductVariantsService {
@@ -50,13 +45,8 @@ export class ProductVariantsService {
         media: new MediaEntity(productVariant.media),
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ConflictException('The barcode must be unique.');
-        }
-      }
       console.error(error);
-      throw new BadRequestException('Error creating product');
+      throw new BadRequestException('Error creating product variant');
     }
   }
 
@@ -80,69 +70,88 @@ export class ProductVariantsService {
 
       return productVariant;
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ConflictException('The barcode must be unique.');
-        }
-      }
       console.error(error);
       throw new BadRequestException('Error creating product variant');
     }
   }
 
-  async updateWithTransaction(
-    transactionClient: PrismaClient,
+  async update(
     id: number,
     updateProductVariantDto: UpdateProductVariantDto,
-  ) {
+  ): Promise<any> {
     try {
       const { imageFileUrl, ...variantData } = updateProductVariantDto;
 
-      // Fetch existing product variant
-      const existingVariant = await transactionClient.productVariant.findUnique(
-        {
-          where: { id },
-          include: { media: true },
-        },
-      );
+      const existingVariant = await this.prisma.productVariant.findUnique({
+        where: { id },
+        include: { media: true },
+      });
 
       if (!existingVariant) {
         throw new BadRequestException('Product variant not found');
       }
 
-      // Update media (if imageFileUrl is provided)
-      if (imageFileUrl) {
-        const mediaDto = new MediaDto();
-        mediaDto.url = imageFileUrl;
-        await this.mediaService.updateMedia(
-          transactionClient,
-          existingVariant.mediaId,
-          mediaDto,
-        );
-        const oldImageFileUrl = existingVariant.media?.url;
+      await this.prisma.$transaction(
+        async (transactionClient: PrismaClient) => {
+          if (imageFileUrl) {
+            const mediaDto = new MediaDto();
+            mediaDto.url = imageFileUrl;
+            await this.mediaService.updateMedia(
+              transactionClient,
+              existingVariant.mediaId,
+              mediaDto,
+            );
+          }
+          await transactionClient.productVariant.update({
+            where: { id, AND: this.whereCheckingNullClause },
+            data: variantData,
+          });
+        },
+      );
+      const oldImageFileUrl = existingVariant.media?.url;
+      if (imageFileUrl && oldImageFileUrl) {
         deleteFile(oldImageFileUrl);
       }
 
-      // Update product variant
-      const updatedVariant = await transactionClient.productVariant.update({
-        where: { id },
-        data: {
-          ...variantData,
-        },
-      });
-
-      return updatedVariant;
+      return {
+        status: true,
+        message: 'Updated Successfully!',
+      };
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ConflictException('The barcode must be unique.');
-        }
-      }
       console.error(error);
       throw new BadRequestException('Error updating product variant');
     }
   }
 
+  async remove(id: number) {
+    await this.prisma.productVariant.update({
+      where: { id },
+      data: { isArchived: new Date() },
+    });
+    return {
+      status: true,
+      message: `Deleted product variant successfully.`,
+    };
+  }
+
+  async removeMany(removeManyProductSizingDto: RemoveManyProductVariantDto) {
+    const { ids } = removeManyProductSizingDto;
+
+    const { count } = await this.prisma.productVariant.updateMany({
+      where: {
+        id: { in: ids },
+      },
+      data: {
+        isArchived: new Date(),
+      },
+    });
+
+    return {
+      status: true,
+      message: `Deleted ${count} product variants successfully.`,
+      archivedIds: ids,
+    };
+  }
   async countAvailableStock(): Promise<number> {
     return this.prisma.productVariant.count({
       where: {

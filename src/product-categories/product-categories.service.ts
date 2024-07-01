@@ -66,7 +66,9 @@ export class ProductCategoriesService {
   }
 
   async indexAll(): Promise<ProductCategoryEntity[]> {
-    const productCategories = await this.prisma.productCategory.findMany();
+    const productCategories = await this.prisma.productCategory.findMany({
+      where: this.whereCheckingNullClause,
+    });
     return productCategories.map(
       (productCategory) =>
         new ProductCategoryEntity(createEntityProps(productCategory)),
@@ -84,6 +86,7 @@ export class ProductCategoriesService {
       where: this.whereCheckingNullClause,
     });
     const skip = (page - 1) * limit;
+    const totalPages = Math.ceil(total / limit);
 
     const productCategories = await this.prisma.productCategory.findMany({
       where: {
@@ -128,7 +131,7 @@ export class ProductCategoriesService {
       });
     });
 
-    return { data: productCategoryEntities, total, page, limit };
+    return { data: productCategoryEntities, total, page, limit, totalPages };
   }
 
   async findOne(id: number) {
@@ -244,6 +247,16 @@ export class ProductCategoriesService {
     return associatedProductFittings.map(
       (association) => association.productFittingId,
     );
+  }
+  async remove(id: number) {
+    await this.prisma.productCategory.update({
+      where: { id },
+      data: { isArchived: new Date() },
+    });
+    return {
+      status: true,
+      message: `Deleted product category successfully.`,
+    };
   }
 
   async removeMany(removeManyProductCategoryDto: RemoveManyProductCategoryDto) {

@@ -3,6 +3,7 @@ import { Exclude, Expose, Transform } from 'class-transformer';
 import { ProductFittingEntity } from 'src/product-fittings';
 import { ProductTypeEntity } from 'src/product-types';
 import { formatDate } from 'src/shared/utils';
+import { createEntity, createEntityArray } from 'src/shared/utils/createEntity';
 import { UserEntity } from 'src/users/entities/user.entity';
 
 export class ProductCategoryEntity implements ProductCategory {
@@ -24,7 +25,6 @@ export class ProductCategoryEntity implements ProductCategory {
   createdByUser?: UserEntity;
   updatedByUser?: UserEntity;
 
-  // @Exclude()
   productType: ProductTypeEntity;
   productFittingIds: number[];
   productFittings: ProductFitting[];
@@ -42,32 +42,16 @@ export class ProductCategoryEntity implements ProductCategory {
     return formatDate(this.createdAt);
   }
 
-  constructor({
-    createdByUser,
-    updatedByUser,
-    productFittingIds,
-    productFittings,
-    productType,
-    ...data
-  }: Partial<ProductCategoryEntity>) {
-    Object.assign(this, data);
+  constructor(partial: Partial<ProductCategoryEntity> = {}) {
+    Object.assign(this, partial);
+    this.initializeEntities(partial);
+  }
+  private initializeEntities(partial: Partial<ProductCategoryEntity>): void {
+    this.productType = createEntity(ProductTypeEntity, partial.productType);
 
-    if (createdByUser) {
-      this.createdByUser = new UserEntity(createdByUser);
-    }
-
-    if (updatedByUser) {
-      this.updatedByUser = new UserEntity(updatedByUser);
-    }
-    if (productType) {
-      this.productType = new ProductTypeEntity(productType);
-    }
-    if (productFittings) {
-      this.productFittings = productFittings.map(
-        (productFitting) => new ProductFittingEntity(productFitting),
-      );
-    }
-
-    this.productFittingIds = productFittingIds;
+    this.productFittings = createEntityArray(
+      ProductFittingEntity,
+      partial.productFittings,
+    );
   }
 }

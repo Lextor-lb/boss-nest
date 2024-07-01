@@ -45,7 +45,7 @@ export class CreateProductVariantDto {
   @IsOptional()
   @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
-  //   @IsEntityExists('productSizing', { message: 'Product sizing does not exist' })
+  @IsEntityExists('product')
   productId: number;
 
   @IsOptional()

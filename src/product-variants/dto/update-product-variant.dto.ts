@@ -41,18 +41,16 @@ export class UpdateProductVariantDto {
   @IsEntityExists('productSizing')
   productSizingId: number;
 
-  @IsOptional()
-  @IsInt()
-  @Transform(({ value }) => parseInt(value, 10))
-  //   @IsEntityExists('productSizing', { message: 'Product sizing does not exist' })
-  productId: number;
+  // @IsOptional()
+  // @IsInt()
+  // @Transform(({ value }) => parseInt(value, 10))
+  // //   @IsEntityExists('productSizing', { message: 'Product sizing does not exist' })
+  // productId: number;
 
   @IsOptional()
-  //   @IsNumber()
   createdByUserId: number;
 
   @IsOptional()
-  //   @IsNumber()
   updatedByUserId: number;
 
   @IsOptional()

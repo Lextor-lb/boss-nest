@@ -4,8 +4,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -31,22 +29,6 @@ import { SearchOption } from 'src';
 @UseGuards(JwtAuthGuard)
 export class ProductSizingsController {
   constructor(private readonly productSizingsService: ProductSizingsService) {}
-
-  //   @Post()
-  //   async create(
-  //     @Body() createProductSizingDto: CreateProductSizingDto,
-  //     @Req() req,
-  //   ) {
-  //     createProductSizingDto.createdByUserId = req.user.id;
-  //     const createdProductSizing = await this.productSizingsService.create(
-  //       createProductSizingDto,
-  //     );
-  //     return {
-  //       status: true,
-  //       message: 'Created Successfully!',
-  //       data: new ProductSizingEntity(createdProductSizing),
-  //     };
-  //   }
 
   @Post()
   async createMultiple(
@@ -110,6 +92,7 @@ export class ProductSizingsController {
       total: productSizings.total,
       page: productSizings.page,
       limit: productSizings.limit,
+      totalPages: productSizings.totalPages,
     };
   }
 
@@ -139,6 +122,11 @@ export class ProductSizingsController {
     };
   }
 
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.productSizingsService.remove(id);
+  }
+
   @Delete()
   async removeMany(
     @Body() removeManyProductSizingDto: RemoveManyProductSizingDto,
@@ -153,4 +141,3 @@ export class ProductSizingsController {
     };
   }
 }
-//    @UploadedFile() file: Express.Multer.File,

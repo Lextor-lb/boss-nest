@@ -79,6 +79,7 @@ export class ProductTypesController {
       total: productTypes.total,
       page: productTypes.page,
       limit: productTypes.limit,
+      totalPages: productTypes.totalPages,
     };
   }
 
@@ -107,7 +108,10 @@ export class ProductTypesController {
       data: new ProductTypeEntity(updatedProductType),
     };
   }
-
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.productTypesService.remove(id);
+  }
   @Delete()
   async removeMany(@Body() removeManyProductTypeDto: RemoveManyProductTypeDto) {
     const result = await this.productTypesService.removeMany(

@@ -88,7 +88,7 @@ export class CreateProductDto {
   @IsOptional()
   imageFilesUrl?: string[];
 
-  @IsOptional()
+  @IsNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => CreateProductVariantDto)
   productVariants?: CreateProductVariantDto[];

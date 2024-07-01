@@ -40,12 +40,14 @@ export class SpecialsService {
         },
       }),
     ]);
+    const totalPages = Math.ceil(total / limit);
 
     return {
       data: specials,
       page,
       limit,
       total,
+      totalPages,
     };
   }
 

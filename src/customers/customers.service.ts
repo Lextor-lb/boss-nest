@@ -44,12 +44,14 @@ export class CustomersService {
         include: { special: true }, // Include special
       }),
     ]);
+    const totalPages = Math.ceil(total / limit);
 
     return {
       data: customers.map((customer) => new CustomerEntity(customer)),
       page,
       limit,
       total,
+      totalPages,
     };
   }
 

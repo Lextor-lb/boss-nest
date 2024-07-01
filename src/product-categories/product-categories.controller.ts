@@ -86,6 +86,7 @@ export class ProductCategoriesController {
       total: productCategories.total,
       page: productCategories.page,
       limit: productCategories.limit,
+      totalPages: productCategories.totalPages,
     };
   }
 
@@ -113,6 +114,11 @@ export class ProductCategoriesController {
       message: 'Updated Successfully!',
       data: new ProductCategoryEntity(updatedProductCategory),
     };
+  }
+
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.productCategoriesService.remove(id);
   }
 
   @Delete()

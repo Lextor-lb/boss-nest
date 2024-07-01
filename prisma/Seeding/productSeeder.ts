@@ -43,7 +43,7 @@ export default async function seedProduct() {
       // Create media for the product
       const productMedia = await prisma.media.create({
         data: {
-          url: '/uploads/boy.jpg',
+          url: '/uploads/sample/boy.jpg',
           createdAt: day,
           updatedAt: day,
           productId: product.id,
@@ -57,7 +57,7 @@ export default async function seedProduct() {
         // Create media for the product variant
         const variantMedia = await prisma.media.create({
           data: {
-            url: '/uploads/boy.jpg',
+            url: '/uploads/sample/boy.jpg',
             createdAt: day,
             updatedAt: day,
           },
