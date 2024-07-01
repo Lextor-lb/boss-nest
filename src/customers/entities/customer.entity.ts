@@ -8,6 +8,7 @@ export class CustomerEntity {
   name: string;
   phoneNumber: number;
   address: string;
+  remark: string;
 
   @Exclude()
   createdByUserId: number;

@@ -271,6 +271,7 @@ model Customer {
   name        String
   phoneNumber Int     @unique
   address     String?
+  remark      String?
 
   // One to Many
   createdByUser   User? @relation("CreatedCustomers", fields: [createdByUserId], references: [id])
