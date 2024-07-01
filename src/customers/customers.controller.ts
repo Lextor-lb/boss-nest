@@ -16,21 +16,31 @@ export class CustomersController {
 
   @Get()
   async findAll(@Req() req): Promise<CustomerPagination> {
-    const { page, limit, search, orderBy, orderDirection } = req.query;
-    const searchOptions: SearchOption = {
-      page: parseInt(page, 10) || 1,
-      limit: limit ? parseInt(limit, 10) : 10,
-      search: search || '',
-      orderBy: orderBy || 'id',
-      orderDirection: orderDirection || 'ASC'
-    };
-    const customers = await this.customersService.findAll(searchOptions);
-    return {
-      data: customers.data.map((customer) => new CustomerEntity(customer)),
-      page: customers.page,
-      limit: customers.limit,
-      total: customers.total,
-    };
+    try {
+      const { page, limit, search, orderBy, orderDirection } = req.query;
+      const searchOptions: SearchOption = {
+        page: parseInt(page, 10) || 1,
+        limit: limit ? parseInt(limit, 10) : 10,
+        search: search || '',
+        orderBy: orderBy || 'id',
+        orderDirection: orderDirection || 'ASC'
+      };
+
+      console.log('Search options:', searchOptions);  // Add logging to see search options
+
+      const customers = await this.customersService.findAll(searchOptions);
+      console.log('Customers data:', customers);  // Add logging to see returned customers
+
+      return {
+        data: customers.data.map((customer) => new CustomerEntity(customer)),
+        page: customers.page,
+        limit: customers.limit,
+        total: customers.total,
+      };
+    } catch (error) {
+      console.error('Error in findAll method:', error);  // Log the error
+      throw new Error('Internal server error');
+    }
   }
 
   @Get(':id')

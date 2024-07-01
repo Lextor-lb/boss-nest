@@ -32,4 +32,7 @@ export default async function seedCustomer() {
             })
         })
     )
+
+  await console.log('Customers have been seeded');
+
 }

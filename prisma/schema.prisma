@@ -279,9 +279,9 @@ model Customer {
   updatedByUser   User? @relation("UpdatedCustomers", fields: [updatedByUserId], references: [id])
   updatedByUserId Int?
 
-  // One to One
-  special   Special @relation("SpecialId", fields: [specialId], references: [id])
-  specialId Int     @unique
+  // Many to One
+  special   Special @relation(fields: [specialId], references: [id])
+  specialId Int  
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -299,8 +299,8 @@ model Special {
   updatedByUser   User? @relation("UpdatedSpecials", fields: [updatedByUserId], references: [id])
   updatedByUserId Int?
 
-  // One to One Inverse
-  customer Customer? @relation("SpecialId")
+  // One to Many Inverse
+  customers Customer[] // This defines the one-to-many relationship
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

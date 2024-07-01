@@ -27,4 +27,6 @@ export default async function seedSpecial() {
         })
     })
   )
+
+  await console.log('Specials have been seeded');
 }
