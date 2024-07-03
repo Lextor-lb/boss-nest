@@ -1,13 +1,18 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { CustomerEntity, CustomerPagination, SearchOption } from 'src';
+import { CustomerEntity, CustomerPagination, RemoveManyCustomerDto, SearchOption } from 'src';
+import { createEntityProps } from 'src/shared/utils/createEntityProps';
 
 @Injectable()
 export class CustomersService {
   constructor(private prisma: PrismaService) {}
+
+  whereCheckingNullClause: Prisma.CustomerWhereInput = {
+    isArchived: null
+  };
 
   async create(createCustomerDto: CreateCustomerDto) {
     const customer = await this.prisma.customer.create({
@@ -22,6 +27,7 @@ export class CustomersService {
   
     const total = await this.prisma.customer.count({
       where: {
+        ...this.whereCheckingNullClause,
         name: {
           contains: search || '',
           mode: 'insensitive',
@@ -45,6 +51,9 @@ export class CustomersService {
       },
       include: { special: true }, // Include special
     });
+
+     // Map customers using the createEntityProps function if necessary
+  const mappedCustomers = customers.map((customer) => new CustomerEntity(createEntityProps(customer)));
   
     return {
       data: customers.map(
@@ -66,6 +75,15 @@ export class CustomersService {
   }
 
   async update(id: number, updateCustomerDto: UpdateCustomerDto): Promise<CustomerEntity> {
+
+    const existingCustomer = await this.prisma.customer.findUnique({
+      where: {id, AND: this.whereCheckingNullClause}
+    });
+
+    if(!existingCustomer) {
+      throw new NotFoundException(`Customer with id ${id} not found.`)
+    }
+
     const updatedCustomer = await this.prisma.customer.update({
       where: { id },
       data: updateCustomerDto,
@@ -80,5 +98,24 @@ export class CustomersService {
       include: { special: true }, // Include special
     });
     return new CustomerEntity(deletedCustomer);
+  }
+
+  async removeMany(removeManyCustomerDto: RemoveManyCustomerDto) {
+    const {ids} = removeManyCustomerDto;
+
+    const {count} = await this.prisma.customer.updateMany({
+      where: {
+        id: {in: ids},
+      },
+      data: {
+        isArchived: new Date(),
+      }
+    });
+
+    return {
+      status: true,
+      message: `Customers with ids count of ${count} have been deleted sucessfull.`,
+      archivedIds: ids
+    }
   }
 }

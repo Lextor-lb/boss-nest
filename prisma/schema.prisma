@@ -272,6 +272,7 @@ model Customer {
   phoneNumber Int     @unique
   address     String?
   remark      String?
+  isArchived    DateTime?
 
   // One to Many
   createdByUser   User? @relation("CreatedCustomers", fields: [createdByUserId], references: [id])

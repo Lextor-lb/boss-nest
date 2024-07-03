@@ -1,25 +1,25 @@
 import {
-  IsEmpty,
   IsInt,
+  IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
   IsString,
 } from 'class-validator';
 
 export class CreateCustomerDto {
-  @IsEmpty()
+  @IsNotEmpty()
   @IsString()
   name: string;
 
-  @IsEmpty()
-  @IsPhoneNumber()
+  @IsNotEmpty()
+  // @IsPhoneNumber()
   phoneNumber: number;
 
-  @IsEmpty()
+  @IsNotEmpty()
   @IsString()
   address: string;
 
-  @IsEmpty()
+  @IsNotEmpty()
   @IsInt()
   specialId: number;
 
