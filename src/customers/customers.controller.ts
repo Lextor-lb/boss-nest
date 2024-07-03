@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { CustomerEntity, CustomerPagination, SearchOption, MessageWithCustomer } from 'src';
+import { CustomerEntity, CustomerPagination, SearchOption, MessageWithCustomer, FetchedCustomer } from 'src';
 import { ParseIntPipe } from '@nestjs/common';
 
 @Controller('customers')
@@ -26,10 +26,10 @@ export class CustomersController {
         orderDirection: orderDirection || 'ASC'
       };
 
-      console.log('Search options:', searchOptions);  // Add logging to see search options
+      await console.log('Search options:', searchOptions);  // Add logging to see search options
 
       const customers = await this.customersService.findAll(searchOptions);
-      console.log('Customers data:', customers);  // Add logging to see returned customers
+      await console.log('Customers data:', customers);  // Add logging to see returned customers
 
       return {
         data: customers.data.map((customer) => new CustomerEntity(customer)),

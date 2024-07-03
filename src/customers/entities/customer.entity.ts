@@ -1,7 +1,5 @@
-import { Customer } from '@prisma/client';
 import { Exclude } from 'class-transformer';
-import { SpecialEntity } from 'src/specials/entities/special.entity';
-import { UserEntity } from 'src/users/entities/user.entity';
+import { SpecialEntity } from 'src/specials';
 
 export class CustomerEntity {
   id: number;
@@ -15,10 +13,12 @@ export class CustomerEntity {
 
   @Exclude()
   updatedByUserId: number;
-  special: SpecialEntity; // Change from specialId: number to special: SpecialEntity
- 
+
+  special: SpecialEntity;
+
   @Exclude()
   createdAt: Date;
+
   @Exclude()
   updatedAt: Date;
 
