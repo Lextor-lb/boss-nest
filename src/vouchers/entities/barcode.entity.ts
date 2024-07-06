@@ -1,6 +1,7 @@
 import { Gender } from '@prisma/client';
 
 export class BarcodeEntity {
+  id: number;
   barcode: string;
   productName: string;
   gender: Gender;

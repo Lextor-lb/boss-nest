@@ -16,55 +16,70 @@ export class VouchersService {
     statusStock: null,
   };
 
-  async barcode(barcode: string) {
+  async barcode(barcode: string): Promise<BarcodeEntity> {
     try {
-      const {
-        productSizing: { name: productSizing },
-        product: {
-          name: productName,
-          gender,
-          salePrice,
-          productBrand: { name: productBrand },
-          productType: { name: productType },
-          productCategory: { name: productCategory },
-          productFitting: { name: productFitting },
-        },
-        barcode: Barcode,
-      } = await this.prisma.productVariant.findUnique({
-        where: { barcode, AND: this.whereCheckingNullClause },
-        select: {
-          barcode: true,
-          productSizing: { select: { name: true } },
-          product: {
-            select: {
-              name: true,
-              gender: true,
-              salePrice: true,
-              productBrand: { select: { name: true } },
-              productType: { select: { name: true } },
-              productCategory: { select: { name: true } },
-              productFitting: { select: { name: true } },
-            },
-          },
-        },
-      });
-      return new BarcodeEntity({
-        barcode: Barcode,
-        productName,
-        gender,
-        productBrand,
-        productType,
-        productCategory,
-        productFitting,
-        productSizing,
-        price: salePrice,
-      });
+      const productVariant = await this.getProductVariant(barcode);
+      return this.mapToBarcodeEntity(productVariant);
     } catch (error) {
       throw new NotFoundException('Barcode not found!');
     }
   }
 
-  // select: { product: { select: { name: true } } },
+  private async getProductVariant(barcode: string) {
+    return await this.prisma.productVariant.findUnique({
+      where: {
+        barcode,
+        AND: this.whereCheckingNullClause,
+      },
+      select: {
+        id: true,
+        barcode: true,
+        productSizing: { select: { name: true } },
+        product: {
+          select: {
+            name: true,
+            gender: true,
+            salePrice: true,
+            productBrand: { select: { name: true } },
+            productType: { select: { name: true } },
+            productCategory: { select: { name: true } },
+            productFitting: { select: { name: true } },
+          },
+        },
+      },
+    });
+  }
+
+  private mapToBarcodeEntity(productVariant: any): BarcodeEntity {
+    const {
+      id,
+      barcode,
+      productSizing: { name: productSizing },
+      product: {
+        name: productName,
+        gender,
+        salePrice: price,
+        productBrand: { name: productBrand },
+        productType: { name: productType },
+        productCategory: { name: productCategory },
+        productFitting: { name: productFitting },
+      },
+    } = productVariant;
+
+    return new BarcodeEntity({
+      id,
+      barcode,
+      productName,
+      gender,
+      productBrand,
+      productType,
+      productCategory,
+      productFitting,
+      productSizing,
+      price,
+    });
+  }
+
   async create({ voucherRecords, ...voucherData }: CreateVoucherDto) {
     return this.prisma.$transaction(async (transactionClient: PrismaClient) => {
       try {
@@ -182,6 +197,7 @@ export class VouchersService {
       data: { statusStock: 'SOLDOUT' },
     });
   }
+
   async findOne(id: number): Promise<VoucherEntity> {
     const voucher = await this.prisma.voucher.findUnique({
       where: { id },

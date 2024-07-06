@@ -26,6 +26,11 @@ export class ProductEntity implements Product {
   isArchived: Date | null;
 
   @Expose()
+  get benefit(): number {
+    return this.salePrice - this.stockPrice;
+  }
+
+  @Expose()
   get stock(): number {
     return this.productVariants?.length;
   }
