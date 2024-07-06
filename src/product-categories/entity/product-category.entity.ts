@@ -27,8 +27,12 @@ export class ProductCategoryEntity implements ProductCategory {
 
   productType: ProductTypeEntity;
   productFittingIds: number[];
-  productFittings: ProductFitting[];
 
+  @Expose()
+  @Transform(({ value }) => (value && value.length > 0 ? value : undefined), {
+    toPlainOnly: true,
+  })
+  productFittings: ProductFittingEntity[];
   productTypeId: number;
 
   @Expose()

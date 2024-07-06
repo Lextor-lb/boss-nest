@@ -88,6 +88,9 @@ export class ProductsService {
       );
       return new ProductEntity({
         ...product,
+        productVariants: product.productVariants.map(
+          (pv) => new ProductVariantEntity(pv),
+        ),
         medias: product.medias.map((media) => new MediaEntity(media)),
       });
     } catch (error) {
@@ -121,13 +124,14 @@ export class ProductsService {
     return totalSalePrice;
   }
 
-  async findAll({
-    page,
-    limit,
-    search = '',
-    orderBy = 'createdAt',
-    orderDirection = 'desc',
-  }: SearchOption): Promise<ProductPagination> {
+  async findAll(options: SearchOption): Promise<ProductPagination> {
+    const {
+      page,
+      limit,
+      search = '',
+      orderBy = 'createdAt',
+      orderDirection = 'desc',
+    } = options;
     const total = await this.prisma.product.count({
       where: this.whereCheckingNullClause,
     });
@@ -208,7 +212,7 @@ export class ProductsService {
       productVariants: {
         include: { productSizing: true, media: true },
         where: {
-          isArchived: null, // Example: active: true
+          isArchived: null,
         },
       },
     };
@@ -258,24 +262,22 @@ export class ProductsService {
     }
 
     const { imageFilesUrl, ...productData } = updateProductDto;
-    const product = await this.prisma.$transaction(
-      async (transactionClient: PrismaClient) => {
-        if (imageFilesUrl) {
-          const uploadMedia = imageFilesUrl.map((url) => {
-            const mediaDto = new MediaDto();
-            mediaDto.url = url;
-            mediaDto.productId = existingProduct.id;
-            return this.mediaService.saveMedia(transactionClient, mediaDto);
-          });
-          const medias = await Promise.all(uploadMedia);
-        }
-
-        const product = await transactionClient.product.update({
-          where: { id },
-          data: productData,
+    await this.prisma.$transaction(async (transactionClient: PrismaClient) => {
+      if (imageFilesUrl) {
+        const uploadMedia = imageFilesUrl.map((url) => {
+          const mediaDto = new MediaDto();
+          mediaDto.url = url;
+          mediaDto.productId = existingProduct.id;
+          return this.mediaService.saveMedia(transactionClient, mediaDto);
         });
-      },
-    );
+        await Promise.all(uploadMedia);
+      }
+
+      await transactionClient.product.update({
+        where: { id },
+        data: productData,
+      });
+    });
     return {
       status: true,
       message: 'Updated Successfully!',
