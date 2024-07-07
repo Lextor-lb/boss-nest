@@ -45,6 +45,9 @@ model User {
 
   createdSpecials Special[] @relation("CreatedSpecials")
   updatedSpecials Special[] @relation("UpdatedSpecials")
+
+  createdVouchers Voucher[] @relation("CreatedVouchers")
+  updatedVouchers Voucher[] @relation("UpdatedVouchers")
 }
 
 model ProductSizing {
@@ -244,6 +247,8 @@ model ProductVariant {
   updatedByUser   User? @relation("UpdatedProductVariants", fields: [updatedByUserId], references: [id])
   updatedByUserId Int?
 
+  isArchived DateTime?
+
   product   Product @relation("ProductProductVariants", fields: [productId], references: [id])
   productId Int
 
@@ -253,17 +258,8 @@ model ProductVariant {
   media   Media? @relation(fields: [mediaId], references: [id])
   mediaId Int?   @unique
 
-  isArchived DateTime?
-}
-
-enum Gender {
-  MAN
-  LADY
-  UNISEX
-}
-
-enum StatusStock {
-  SOLDOUT
+  //One to Many inverse
+  voucherRecords voucherRecord[] @relation("voucherRecordproductVariants")
 }
 
 model Customer {
@@ -286,10 +282,13 @@ model Customer {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  //One to Many inverse
+  Voucher Voucher[] @relation("customerVouchers")
 }
 
 model Special {
-  id            Int  @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   name          String
   promotionRate Int
   isArchived    DateTime?
@@ -305,4 +304,71 @@ model Special {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Voucher {
+  id            Int           @id @default(autoincrement())
+  voucherCode   String        @unique
+  discount      Int           @default(0)
+  tax           Int           @default(0)
+  paymentMethod PaymentMethod
+  type          Type
+  quantity      Int
+  subTotal      Int
+  total         Int
+  remark        String?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isArchived DateTime?
+
+  // One to Many
+  createdByUser   User? @relation("CreatedVouchers", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedVouchers", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  customer   Customer? @relation("customerVouchers", fields: [customerId], references: [id])
+  customerId Int?
+
+  //One to Many inverse
+  voucherRecords voucherRecord[] @relation("voucherRecordVouchers")
+}
+
+model voucherRecord {
+  id       Int   @id @default(autoincrement())
+  discount Int   @default(0)
+  product  Json?
+
+  //One to Many
+  voucher   Voucher @relation("voucherRecordVouchers", fields: [voucherId], references: [id])
+  voucherId Int
+
+  productVariant   ProductVariant @relation("voucherRecordproductVariants", fields: [productVariantId], references: [id])
+  productVariantId Int
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isArchived DateTime?
+}
+
+enum Gender {
+  MAN
+  LADY
+  UNISEX
+}
+
+enum PaymentMethod {
+  CASH
+  WALLET
+  CARD
+}
+
+enum StatusStock {
+  SOLDOUT
+}
+
+enum Type {
+  ONLINE
+  OFFLINE
 }

@@ -1,9 +1,4 @@
-export const createEntityProps = (entity: {
-  id: number;
-  name: string;
-  isArchived: Date;
-}) => ({
+export const createEntityProps = (entity: { id: number; name: string }) => ({
   id: entity.id,
   name: entity.name,
-  isArchived: entity.isArchived,
 });

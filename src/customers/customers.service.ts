@@ -62,6 +62,7 @@ export class CustomersService {
       include: { special: true }, // Include special
     });
 
+
      // Map customers using the createEntityProps function if necessary
   const mappedCustomers = customers.map((customer) => new CustomerEntity(createEntityProps(customer)));
   
@@ -72,6 +73,7 @@ export class CustomersService {
       total,
       page,
       limit,
+      totalPages,
     };
   }
   

@@ -9,6 +9,7 @@ import {
   Req,
   NotFoundException,
   UseGuards,
+
 } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -41,6 +42,23 @@ export class CustomersController {
       status: true,
       message: 'Fetched Successfully!',
       data: customers.map((customer) => new CustomerEntity(customer)),
+  @Get()
+  async findAll(@Req() req): Promise<CustomerPagination> {
+    const { page, limit, search, orderBy, orderDirection } = req.query;
+    const searchOptions: SearchOption = {
+      page: parseInt(page, 10) || 1,
+      limit: limit ? parseInt(limit, 10) : 10,
+      search: search || '',
+      orderBy: orderBy || 'id',
+      orderDirection: orderDirection || 'ASC',
+    };
+    const customers = await this.customersService.findAll(searchOptions);
+    return {
+      data: customers.data.map((customer) => new CustomerEntity(customer)),
+      page: customers.page,
+      limit: customers.limit,
+      total: customers.total,
+      totalPages: customers.totalPages,
     };
   }
 

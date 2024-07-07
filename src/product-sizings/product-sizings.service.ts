@@ -17,10 +17,6 @@ export class ProductSizingsService {
     isArchived: null,
   };
 
-  // create(createProductSizingDto: CreateProductSizingDto) {
-  //   return this.prisma.productSizing.create({ data: createProductSizingDto });
-  // }
-
   async createMultiple(
     createProductSizingDtos: CreateProductSizingDto[],
   ): Promise<ProductSizingEntity[]> {
@@ -41,7 +37,9 @@ export class ProductSizingsService {
   }
 
   async indexAll(): Promise<ProductSizingEntity[]> {
-    const productSizings = await this.prisma.productSizing.findMany();
+    const productSizings = await this.prisma.productSizing.findMany({
+      where: this.whereCheckingNullClause,
+    });
     return productSizings.map(
       (productSizing) =>
         new ProductSizingEntity(createEntityProps(productSizing)),
@@ -59,6 +57,7 @@ export class ProductSizingsService {
       where: this.whereCheckingNullClause,
     });
     const skip = (page - 1) * limit;
+    const totalPages = Math.ceil(total / limit);
 
     const productSizings = await this.prisma.productSizing.findMany({
       where: {
@@ -80,6 +79,7 @@ export class ProductSizingsService {
       total,
       page,
       limit,
+      totalPages,
     };
   }
 
@@ -109,6 +109,17 @@ export class ProductSizingsService {
       data: updateProductSizingDto,
     });
     return new ProductSizingEntity(productSizing);
+  }
+
+  async remove(id: number) {
+    await this.prisma.productSizing.update({
+      where: { id },
+      data: { isArchived: new Date() },
+    });
+    return {
+      status: true,
+      message: `Deleted product sizing successfully.`,
+    };
   }
 
   async removeMany(removeManyProductSizingDto: RemoveManyProductSizingDto) {

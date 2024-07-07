@@ -4,19 +4,19 @@ const prisma = new PrismaClient();
 
 export default async function seedProductBrand() {
   const brandsWithMedia = [
-    { name: 'Hugo Boss', mediaUrl: '/uploads/boy.jpg' },
-    { name: 'Versace', mediaUrl: '/uploads/boy.jpg' },
+    { name: 'Hugo Boss', mediaUrl: '/uploads/sample/boy.jpg' },
+    { name: 'Versace', mediaUrl: '/uploads/sample/boy.jpg' },
     {
       name: 'Versace Jeans Culture',
-      mediaUrl: '/uploads/boy.jpg',
+      mediaUrl: '/uploads/sample/boy.jpg',
     },
-    { name: 'Adidas', mediaUrl: '/uploads/boy.jpg' },
+    { name: 'Adidas', mediaUrl: '/uploads/sample/boy.jpg' },
     {
       name: 'Underamour',
-      mediaUrl: '/uploads/boy.jpg',
+      mediaUrl: '/uploads/sample/boy.jpg',
     },
-    { name: 'CR7', mediaUrl: '/uploads/boy.jpg' },
-    { name: 'LV', mediaUrl: '/uploads/boy.jpg' },
+    { name: 'CR7', mediaUrl: '/uploads/sample/boy.jpg' },
+    { name: 'LV', mediaUrl: '/uploads/sample/boy.jpg' },
   ];
 
   await Promise.all(

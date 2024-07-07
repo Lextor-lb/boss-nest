@@ -17,6 +17,7 @@ export class CustomerEntity {
   special: SpecialEntity;
   isArchived: Date | null;
 
+
   @Exclude()
   createdAt: Date;
 
@@ -28,5 +29,8 @@ export class CustomerEntity {
     if (data.special) {
       this.special = data.special ?? null;
     }
+    // if (data.special) {
+    //   this.special = new SpecialEntity(data.special);
+    // }
   }
 }

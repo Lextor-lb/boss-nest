@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 import {
   MediaDto,
@@ -18,6 +22,10 @@ import {
   PrismaService,
 } from 'src';
 import { createEntityProps } from 'src/shared/utils/createEntityProps';
+import { ProductDetailEntity } from './entity/productDetail.entity';
+import { RemoveManyProductDto } from './dto/removeMany-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { deleteFile } from 'src/shared/utils/deleteOldImageFile';
 
 @Injectable()
 export class ProductsService {
@@ -80,6 +88,9 @@ export class ProductsService {
       );
       return new ProductEntity({
         ...product,
+        productVariants: product.productVariants.map(
+          (pv) => new ProductVariantEntity(pv),
+        ),
         medias: product.medias.map((media) => new MediaEntity(media)),
       });
     } catch (error) {
@@ -90,9 +101,7 @@ export class ProductsService {
 
   async indexAll() {
     return await this.prisma.product.findMany({
-      where: {
-        isArchived: null,
-      },
+      where: this.whereCheckingNullClause,
       include: {
         productVariants: {
           where: {
@@ -115,17 +124,19 @@ export class ProductsService {
     return totalSalePrice;
   }
 
-  async findAll({
-    page,
-    limit,
-    search = '',
-    orderBy = 'createdAt',
-    orderDirection = 'desc',
-  }: SearchOption): Promise<ProductPagination> {
+  async findAll(options: SearchOption): Promise<ProductPagination> {
+    const {
+      page,
+      limit,
+      search = '',
+      orderBy = 'createdAt',
+      orderDirection = 'desc',
+    } = options;
     const total = await this.prisma.product.count({
       where: this.whereCheckingNullClause,
     });
     const skip = (page - 1) * limit;
+    const totalPages = Math.ceil(total / limit);
     const totalStock = await this.productVariantsService.countAvailableStock(); // Make sure this is awaited and is a number
     const totalSalePrice = await this.calculateTotalSalePrice();
     const whereClause = {
@@ -145,7 +156,7 @@ export class ProductsService {
       productCategory: true,
       productFitting: true,
       medias: true,
-      // productVariants: true,
+      productVariants: { where: { isArchived: null, statusStock: null } },
     };
 
     const products = await this.prisma.product.findMany({
@@ -174,9 +185,9 @@ export class ProductsService {
         medias: product.medias.map(
           (media) => new MediaEntity({ id: media.id, url: media.url }),
         ),
-        // productVariants: product.productVariants.map(
-        //   (productVariant) => new ProductVariantEntity(productVariant),
-        // ),
+        productVariants: product.productVariants.map(
+          (productVariant) => new ProductVariantEntity(productVariant),
+        ),
       });
     });
 
@@ -187,35 +198,44 @@ export class ProductsService {
       total,
       page,
       limit,
+      totalPages,
     };
   }
 
-  async findOne(id: number): Promise<ProductEntity> {
+  async findOne(id: number): Promise<ProductDetailEntity> {
     const includeClause = {
       productBrand: true,
       productType: true,
       productCategory: true,
       productFitting: true,
       medias: true,
-      productVariants: true,
-    };
-
-    const nestedIncludeClause = {
-      ...includeClause,
-      productVariants: { include: { productSizing: true, media: true } },
+      productVariants: {
+        include: { productSizing: true, media: true },
+        where: {
+          isArchived: null,
+        },
+      },
     };
 
     const product = await this.prisma.product.findUnique({
       where: { id },
-      include: nestedIncludeClause,
+      include: includeClause,
     });
 
-    return new ProductEntity({
+    return new ProductDetailEntity({
       ...product,
-      productType: new ProductTypeEntity(product.productType),
-      productBrand: new ProductBrandEntity(product.productBrand),
-      productCategory: new ProductCategoryEntity(product.productCategory),
-      productFitting: new ProductFittingEntity(product.productFitting),
+      productType: new ProductTypeEntity(
+        createEntityProps(product.productType),
+      ),
+      productBrand: new ProductBrandEntity(
+        createEntityProps(product.productBrand),
+      ),
+      productCategory: new ProductCategoryEntity(
+        createEntityProps(product.productCategory),
+      ),
+      productFitting: new ProductFittingEntity(
+        createEntityProps(product.productFitting),
+      ),
       medias: product.medias.map(
         (media) => new MediaEntity({ id: media.id, url: media.url }),
       ),
@@ -226,10 +246,106 @@ export class ProductsService {
             media: new MediaEntity(productVariant.media),
 
             productSizing: new ProductSizingEntity(
-              productVariant.productSizing,
+              createEntityProps(productVariant.productSizing),
             ),
           }),
       ),
     });
+  }
+
+  async update(id: number, updateProductDto: UpdateProductDto): Promise<any> {
+    const existingProduct = await this.prisma.product.findUnique({
+      where: { id, AND: this.whereCheckingNullClause },
+    });
+    if (!existingProduct) {
+      throw new NotFoundException(`Product with id ${id} not found`);
+    }
+
+    const { imageFilesUrl, ...productData } = updateProductDto;
+    await this.prisma.$transaction(async (transactionClient: PrismaClient) => {
+      if (imageFilesUrl) {
+        const uploadMedia = imageFilesUrl.map((url) => {
+          const mediaDto = new MediaDto();
+          mediaDto.url = url;
+          mediaDto.productId = existingProduct.id;
+          return this.mediaService.saveMedia(transactionClient, mediaDto);
+        });
+        await Promise.all(uploadMedia);
+      }
+
+      await transactionClient.product.update({
+        where: { id },
+        data: productData,
+      });
+    });
+    return {
+      status: true,
+      message: 'Updated Successfully!',
+    };
+  }
+
+  async removeProductMedia(id: number) {
+    try {
+      const media = this.prisma.media.findUnique({ where: { id } });
+
+      if (media) deleteFile((await media).url);
+      await this.mediaService.removeMedia(id);
+
+      return {
+        status: true,
+        message: `Deleted productImage successfully.`,
+      };
+    } catch (error) {
+      throw new BadRequestException('Failed to delete!');
+    }
+  }
+
+  async remove(id: number) {
+    await this.prisma.product.update({
+      where: { id },
+      data: { isArchived: new Date() },
+    });
+    await this.prisma.productVariant.updateMany({
+      where: { productId: id },
+      data: { isArchived: new Date() },
+    });
+
+    return {
+      status: true,
+      message: `Deleted product successfully.`,
+    };
+  }
+
+  async removeMany(removeManyProductDto: RemoveManyProductDto) {
+    const { ids } = removeManyProductDto;
+
+    // Archive the ProductType instances
+    const archivedProducts = await this.prisma.product.updateMany({
+      where: {
+        id: { in: ids },
+      },
+      data: {
+        isArchived: new Date(),
+      },
+    });
+
+    // Archive the related ProductCategory instances
+    const archivedProductVariants = await this.prisma.productVariant.updateMany(
+      {
+        where: {
+          productId: { in: ids },
+        },
+        data: {
+          isArchived: new Date(),
+        },
+      },
+    );
+
+    return {
+      status: true,
+      message: `Archived ${archivedProducts.count} product and ${archivedProductVariants.count} related product variants successfully.`,
+      archivedProductIds: ids,
+      archivedVariantCount: archivedProductVariants.count,
+    };
   }
 }

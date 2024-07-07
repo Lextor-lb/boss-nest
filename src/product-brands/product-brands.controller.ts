@@ -6,8 +6,6 @@ import {
   UploadedFile,
   UseInterceptors,
   Req,
-  HttpException,
-  HttpStatus,
   UseGuards,
   Get,
   ParseIntPipe,
@@ -95,6 +93,7 @@ export class ProductBrandsController {
       total: productBrands.total,
       page: productBrands.page,
       limit: productBrands.limit,
+      totalPages: productBrands.totalPages,
     };
   }
 
@@ -129,6 +128,11 @@ export class ProductBrandsController {
       message: 'Updated Successfully!',
       data: new ProductBrandEntity(updatedProductBrand),
     };
+  }
+
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.productBrandsService.remove(id);
   }
 
   @Delete()

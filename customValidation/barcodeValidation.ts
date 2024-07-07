@@ -10,6 +10,20 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 @ValidatorConstraint({ async: true })
+class IsUniqueVoucherCodeConstraint implements ValidatorConstraintInterface {
+  async validate(voucherCode: string, args: ValidationArguments) {
+    const voucher = await prisma.voucher.findUnique({
+      where: { voucherCode },
+    });
+    return !voucher; // Return true if no voucher with the same voucherCode is found
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return `${args.value} already exists. Please use another voucher code.`;
+  }
+}
+
+@ValidatorConstraint({ async: true })
 class IsUniqueBarcodeConstraint implements ValidatorConstraintInterface {
   async validate(barcode: string, args: ValidationArguments) {
     const productVariant = await prisma.productVariant.findUnique({
@@ -21,6 +35,18 @@ class IsUniqueBarcodeConstraint implements ValidatorConstraintInterface {
   defaultMessage(args: ValidationArguments) {
     return `${args.value} already exists. Please use another barcode.`;
   }
+}
+
+export function IsUniqueVoucherCode(validationOptions?: ValidationOptions) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      constraints: [],
+      validator: IsUniqueVoucherCodeConstraint,
+    });
+  };
 }
 
 export function IsUniqueBarcode(validationOptions?: ValidationOptions) {

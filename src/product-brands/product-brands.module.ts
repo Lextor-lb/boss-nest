@@ -8,5 +8,6 @@ import { MediaModule } from 'src/media/media.module';
   controllers: [ProductBrandsController],
   providers: [ProductBrandsService],
   imports: [ConfigModule, MediaModule],
+  exports: [ProductBrandsService],
 })
 export class ProductBrandsModule {}

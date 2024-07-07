@@ -24,6 +24,12 @@ export class MediaService {
       data: mediaDto,
     });
   }
+
+  async removeMedia(id: number) {
+    return this.prismaSeed.media.delete({
+      where: { id, AND: { productId: { not: null } } },
+    });
+  }
 }
 
 // async saveMedia(prisma: PrismaClient, mediaDto: MediaDto) {
