@@ -22,6 +22,16 @@ export class CustomersService {
     return new CustomerEntity(customer);
   }
 
+  async indexAll(): Promise<CustomerEntity[]> {
+    const customers = await this.prisma.customer.findMany({
+      where: this.whereCheckingNullClause,
+    });
+
+    return customers.map(
+      (customer) => new CustomerEntity(createEntityProps(customer)),
+    );
+  }
+
   async findAll(searchOptions: SearchOption): Promise<CustomerPagination> {
     const { page, limit, search, orderBy, orderDirection } = searchOptions;
   
@@ -71,7 +81,7 @@ export class CustomersService {
       where: { id },
       include: { special: true }, // Include special
     });
-    return new CustomerEntity(customer);
+    return customer ? new CustomerEntity(customer) : null;
   }
 
   async update(id: number, updateCustomerDto: UpdateCustomerDto): Promise<CustomerEntity> {
@@ -93,10 +103,15 @@ export class CustomersService {
   }
 
   async remove(id: number): Promise<CustomerEntity> {
-    const deletedCustomer = await this.prisma.customer.delete({
-      where: { id },
-      include: { special: true }, // Include special
-    });
+    const deletedCustomer = await this.prisma.customer.update({
+      where: {
+        id
+      },
+      data: {
+        isArchived: new Date()
+      }
+    })
+    
     return new CustomerEntity(deletedCustomer);
   }
 

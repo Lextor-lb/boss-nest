@@ -1,17 +1,47 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  NotFoundException,
+  UseGuards,
+} from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { CustomerEntity, CustomerPagination, SearchOption, MessageWithCustomer, FetchedCustomer } from 'src';
+import {
+  CustomerEntity,
+  CustomerPagination,
+  SearchOption,
+  MessageWithCustomer,
+  FetchedCustomer,
+  JwtAuthGuard,
+} from 'src';
 import { ParseIntPipe } from '@nestjs/common';
 
 @Controller('customers')
+@UseGuards(JwtAuthGuard)
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
   @Post()
   async create(@Body() createCustomerDto: CreateCustomerDto, @Req() req) {
     return this.customersService.create(createCustomerDto);
+  }
+
+  @Get('all')
+  async indexAll(): Promise<FetchedCustomer> {
+    const customers = await this.customersService.indexAll();
+
+    return {
+      status: true,
+      message: 'Fetched Successfully!',
+      data: customers.map((customer) => new CustomerEntity(customer)),
+    };
   }
 
   @Get()
@@ -23,13 +53,13 @@ export class CustomersController {
         limit: limit ? parseInt(limit, 10) : 10,
         search: search || '',
         orderBy: orderBy || 'id',
-        orderDirection: orderDirection || 'ASC'
+        orderDirection: orderDirection || 'ASC',
       };
 
-      await console.log('Search options:', searchOptions);  // Add logging to see search options
+      await console.log('Search options:', searchOptions); // Add logging to see search options
 
       const customers = await this.customersService.findAll(searchOptions);
-      await console.log('Customers data:', customers);  // Add logging to see returned customers
+      await console.log('Customers data:', customers); // Add logging to see returned customers
 
       return {
         data: customers.data.map((customer) => new CustomerEntity(customer)),
@@ -38,7 +68,7 @@ export class CustomersController {
         total: customers.total,
       };
     } catch (error) {
-      console.error('Error in findAll method:', error);  // Log the error
+      console.error('Error in findAll method:', error); // Log the error
       throw new Error('Internal server error');
     }
   }
@@ -46,6 +76,10 @@ export class CustomersController {
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const customer = await this.customersService.findOne(id);
+    // when id doesn't match with any customer
+    if (!customer) {
+      return new NotFoundException(`Customer with id ${id} not found`);
+    }
     return new CustomerEntity(customer);
   }
 
@@ -53,19 +87,25 @@ export class CustomersController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
-    @Body() updateCustomerDto: UpdateCustomerDto
+    @Body() updateCustomerDto: UpdateCustomerDto,
   ): Promise<MessageWithCustomer> {
+    // Get Update User
     updateCustomerDto.updatedByUserId = req.user.id;
-    const updatedCustomer = await this.customersService.update(id, updateCustomerDto);
+    const updatedCustomer = await this.customersService.update(
+      id,
+      updateCustomerDto,
+    );
     return {
       status: true,
       message: 'Updated Successfully!',
-      data: new CustomerEntity(updatedCustomer)
+      data: new CustomerEntity(updatedCustomer),
     };
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<MessageWithCustomer> {
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<MessageWithCustomer> {
     const result = await this.customersService.remove(id);
     return {
       status: true,

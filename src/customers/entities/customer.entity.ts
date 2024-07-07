@@ -4,7 +4,7 @@ import { SpecialEntity } from 'src/specials';
 export class CustomerEntity {
   id: number;
   name: string;
-  phoneNumber: number;
+  phoneNumber: string;
   address: string;
   remark: string;
 
@@ -26,7 +26,7 @@ export class CustomerEntity {
   constructor(data: Partial<CustomerEntity>) {
     Object.assign(this, data);
     if (data.special) {
-      this.special = new SpecialEntity(data.special);
+      this.special = data.special ?? null;
     }
   }
 }

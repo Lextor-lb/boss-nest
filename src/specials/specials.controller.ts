@@ -9,24 +9,40 @@ import {
   Req,
   ParseIntPipe,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { SpecialsService } from './specials.service';
 import { CreateSpecialDto } from './dto/create-special.dto';
 import { UpdateSpecialDto } from './dto/update-special.dto';
 import {
+  FetchedSpecial,
   MessageWithSpecial,
   SearchOption,
   SpecialPagination,
 } from 'src/shared/types';
 import { SpecialEntity } from './entities';
+import { JwtAuthGuard } from 'src/auth';
+import { RemoveManySpecialDto } from './dto';
 
 @Controller('specials')
+@UseGuards(JwtAuthGuard)
 export class SpecialsController {
   constructor(private readonly specialsService: SpecialsService) {}
 
   @Post()
   async create(@Body() createSpecialDto: CreateSpecialDto) {
     return this.specialsService.create(createSpecialDto);
+  }
+
+  @Get('all')
+  async indexAll(): Promise<FetchedSpecial> {
+    const specials = await this.specialsService.indexAll();
+
+    return {
+      status: true,
+      message: 'Fetched Successfully!',
+      data: specials.map((special) => new SpecialEntity(special)),
+    };
   }
 
   @Get()
@@ -89,6 +105,17 @@ export class SpecialsController {
       status: true,
       message: 'Deleted Successfully!',
       data: null, // Include data as null
+    };
+  }
+
+  @Delete()
+  async removeMany(@Body() removeManySpecialDto: RemoveManySpecialDto) {
+    const result = await this.specialsService.removeMany(removeManySpecialDto);
+
+    return {
+      status: true,
+      message: 'Deleted Successfully',
+      data: result,
     };
   }
 }

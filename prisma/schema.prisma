@@ -269,7 +269,7 @@ enum StatusStock {
 model Customer {
   id          Int     @id @default(autoincrement())
   name        String
-  phoneNumber Int     @unique
+  phoneNumber String     @unique
   address     String?
   remark      String?
   isArchived    DateTime?
