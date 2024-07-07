@@ -9,7 +9,7 @@ import {
   Req,
   NotFoundException,
   UseGuards,
-
+  ParseIntPipe,
 } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -22,7 +22,6 @@ import {
   FetchedCustomer,
   JwtAuthGuard,
 } from 'src';
-import { ParseIntPipe } from '@nestjs/common';
 
 @Controller('customers')
 @UseGuards(JwtAuthGuard)
@@ -37,28 +36,10 @@ export class CustomersController {
   @Get('all')
   async indexAll(): Promise<FetchedCustomer> {
     const customers = await this.customersService.indexAll();
-
     return {
       status: true,
       message: 'Fetched Successfully!',
       data: customers.map((customer) => new CustomerEntity(customer)),
-  @Get()
-  async findAll(@Req() req): Promise<CustomerPagination> {
-    const { page, limit, search, orderBy, orderDirection } = req.query;
-    const searchOptions: SearchOption = {
-      page: parseInt(page, 10) || 1,
-      limit: limit ? parseInt(limit, 10) : 10,
-      search: search || '',
-      orderBy: orderBy || 'id',
-      orderDirection: orderDirection || 'ASC',
-    };
-    const customers = await this.customersService.findAll(searchOptions);
-    return {
-      data: customers.data.map((customer) => new CustomerEntity(customer)),
-      page: customers.page,
-      limit: customers.limit,
-      total: customers.total,
-      totalPages: customers.totalPages,
     };
   }
 
@@ -74,16 +55,17 @@ export class CustomersController {
         orderDirection: orderDirection || 'ASC',
       };
 
-      await console.log('Search options:', searchOptions); // Add logging to see search options
+      console.log('Search options:', searchOptions); // Add logging to see search options
 
       const customers = await this.customersService.findAll(searchOptions);
-      await console.log('Customers data:', customers); // Add logging to see returned customers
+      console.log('Customers data:', customers); // Add logging to see returned customers
 
       return {
         data: customers.data.map((customer) => new CustomerEntity(customer)),
         page: customers.page,
         limit: customers.limit,
         total: customers.total,
+        totalPages: customers.totalPages,
       };
     } catch (error) {
       console.error('Error in findAll method:', error); // Log the error
@@ -96,7 +78,7 @@ export class CustomersController {
     const customer = await this.customersService.findOne(id);
     // when id doesn't match with any customer
     if (!customer) {
-      return new NotFoundException(`Customer with id ${id} not found`);
+      throw new NotFoundException(`Customer with id ${id} not found`);
     }
     return new CustomerEntity(customer);
   }
