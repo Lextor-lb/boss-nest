@@ -7,6 +7,9 @@ import {
   Param,
   Delete,
   Req,
+  NotFoundException,
+  UseGuards,
+
 } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -16,10 +19,13 @@ import {
   CustomerPagination,
   SearchOption,
   MessageWithCustomer,
+  FetchedCustomer,
+  JwtAuthGuard,
 } from 'src';
 import { ParseIntPipe } from '@nestjs/common';
 
 @Controller('customers')
+@UseGuards(JwtAuthGuard)
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
@@ -28,6 +34,14 @@ export class CustomersController {
     return this.customersService.create(createCustomerDto);
   }
 
+  @Get('all')
+  async indexAll(): Promise<FetchedCustomer> {
+    const customers = await this.customersService.indexAll();
+
+    return {
+      status: true,
+      message: 'Fetched Successfully!',
+      data: customers.map((customer) => new CustomerEntity(customer)),
   @Get()
   async findAll(@Req() req): Promise<CustomerPagination> {
     const { page, limit, search, orderBy, orderDirection } = req.query;
@@ -48,9 +62,42 @@ export class CustomersController {
     };
   }
 
+  @Get()
+  async findAll(@Req() req): Promise<CustomerPagination> {
+    try {
+      const { page, limit, search, orderBy, orderDirection } = req.query;
+      const searchOptions: SearchOption = {
+        page: parseInt(page, 10) || 1,
+        limit: limit ? parseInt(limit, 10) : 10,
+        search: search || '',
+        orderBy: orderBy || 'id',
+        orderDirection: orderDirection || 'ASC',
+      };
+
+      await console.log('Search options:', searchOptions); // Add logging to see search options
+
+      const customers = await this.customersService.findAll(searchOptions);
+      await console.log('Customers data:', customers); // Add logging to see returned customers
+
+      return {
+        data: customers.data.map((customer) => new CustomerEntity(customer)),
+        page: customers.page,
+        limit: customers.limit,
+        total: customers.total,
+      };
+    } catch (error) {
+      console.error('Error in findAll method:', error); // Log the error
+      throw new Error('Internal server error');
+    }
+  }
+
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const customer = await this.customersService.findOne(id);
+    // when id doesn't match with any customer
+    if (!customer) {
+      return new NotFoundException(`Customer with id ${id} not found`);
+    }
     return new CustomerEntity(customer);
   }
 
@@ -60,6 +107,7 @@ export class CustomersController {
     @Req() req,
     @Body() updateCustomerDto: UpdateCustomerDto,
   ): Promise<MessageWithCustomer> {
+    // Get Update User
     updateCustomerDto.updatedByUserId = req.user.id;
     const updatedCustomer = await this.customersService.update(
       id,

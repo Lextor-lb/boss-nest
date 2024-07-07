@@ -1,13 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { SearchOption, CustomerPagination } from 'src/shared/types';
-import { CustomerEntity } from './entities/customer.entity';
+import { CustomerEntity, CustomerPagination, RemoveManyCustomerDto, SearchOption } from 'src';
+import { createEntityProps } from 'src/shared/utils/createEntityProps';
 
 @Injectable()
 export class CustomersService {
   constructor(private prisma: PrismaService) {}
+
+  whereCheckingNullClause: Prisma.CustomerWhereInput = {
+    isArchived: null
+  };
 
   async create(createCustomerDto: CreateCustomerDto) {
     const customer = await this.prisma.customer.create({
@@ -17,77 +22,117 @@ export class CustomersService {
     return new CustomerEntity(customer);
   }
 
+  async indexAll(): Promise<CustomerEntity[]> {
+    const customers = await this.prisma.customer.findMany({
+      where: this.whereCheckingNullClause,
+    });
+
+    return customers.map(
+      (customer) => new CustomerEntity(createEntityProps(customer)),
+    );
+  }
+
   async findAll(searchOptions: SearchOption): Promise<CustomerPagination> {
     const { page, limit, search, orderBy, orderDirection } = searchOptions;
+  
+    const total = await this.prisma.customer.count({
+      where: {
+        ...this.whereCheckingNullClause,
+        name: {
+          contains: search || '',
+          mode: 'insensitive',
+        },
+      },
+    });
+  
+    const skip = (page - 1) * limit;
+  
+    const customers = await this.prisma.customer.findMany({
+      where: {
+        name: {
+          contains: search || '',
+          mode: 'insensitive',
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        [orderBy]: orderDirection.toLowerCase() as 'asc' | 'desc', // Convert to lowercase and type assertion
+      },
+      include: { special: true }, // Include special
+    });
 
-    const [total, customers] = await this.prisma.$transaction([
-      this.prisma.customer.count({
-        where: {
-          name: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-      }),
-      this.prisma.customer.findMany({
-        where: {
-          name: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: {
-          [orderBy]: orderDirection,
-        },
-        include: { special: true }, // Include special
-      }),
-    ]);
-    const totalPages = Math.ceil(total / limit);
 
+     // Map customers using the createEntityProps function if necessary
+  const mappedCustomers = customers.map((customer) => new CustomerEntity(createEntityProps(customer)));
+  
     return {
-      data: customers.map((customer) => new CustomerEntity(customer)),
+      data: customers.map(
+        (customer) => new CustomerEntity(customer),
+      ),
+      total,
       page,
       limit,
-      total,
       totalPages,
     };
   }
+  
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<CustomerEntity> {
     const customer = await this.prisma.customer.findUnique({
       where: { id },
       include: { special: true }, // Include special
     });
-
-    if (!customer) {
-      throw new NotFoundException(`Customer with ID ${id} not found`);
-    }
-
-    return new CustomerEntity(customer);
+    return customer ? new CustomerEntity(customer) : null;
   }
 
-  async update(id: number, updateCustomerDto: UpdateCustomerDto) {
-    await this.findOne(id);
+  async update(id: number, updateCustomerDto: UpdateCustomerDto): Promise<CustomerEntity> {
 
-    const customer = await this.prisma.customer.update({
+    const existingCustomer = await this.prisma.customer.findUnique({
+      where: {id, AND: this.whereCheckingNullClause}
+    });
+
+    if(!existingCustomer) {
+      throw new NotFoundException(`Customer with id ${id} not found.`)
+    }
+
+    const updatedCustomer = await this.prisma.customer.update({
       where: { id },
       data: updateCustomerDto,
       include: { special: true }, // Include special
     });
-
-    return new CustomerEntity(customer);
+    return new CustomerEntity(updatedCustomer);
   }
 
-  async remove(id: number) {
-    await this.findOne(id);
+  async remove(id: number): Promise<CustomerEntity> {
+    const deletedCustomer = await this.prisma.customer.update({
+      where: {
+        id
+      },
+      data: {
+        isArchived: new Date()
+      }
+    })
+    
+    return new CustomerEntity(deletedCustomer);
+  }
 
-    const customer = await this.prisma.customer.delete({
-      where: { id },
-      include: { special: true }, // Include special
+  async removeMany(removeManyCustomerDto: RemoveManyCustomerDto) {
+    const {ids} = removeManyCustomerDto;
+
+    const {count} = await this.prisma.customer.updateMany({
+      where: {
+        id: {in: ids},
+      },
+      data: {
+        isArchived: new Date(),
+      }
     });
 
-    return new CustomerEntity(customer);
+    return {
+      status: true,
+      message: `Customers with ids count of ${count} have been deleted sucessfull.`,
+      archivedIds: ids
+    }
   }
 }
