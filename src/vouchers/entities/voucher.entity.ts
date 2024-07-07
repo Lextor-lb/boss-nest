@@ -23,7 +23,7 @@ export class VoucherEntity implements Voucher {
     return this.customer ? this.customer.name : undefined;
   }
   @Expose()
-  get phone(): number | undefined {
+  get phone(): string | undefined {
     return this.customer ? this.customer.phoneNumber : undefined;
   }
   @Expose()

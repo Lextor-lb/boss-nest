@@ -7,6 +7,7 @@ import { seedProductCategory } from './Seeding/productCategorySeeder';
 import seedProduct from './Seeding/productSeeder';
 import seedSpecial from './Seeding/specialSeeder';
 import seedCustomer from './Seeding/customerSeeder';
+import seedVouchers from './Seeding/voucherSeeder';
 
 // Initialize the Prisma Client
 const prisma = new PrismaClient();
@@ -20,6 +21,7 @@ async function main() {
   await seedProduct();
   await seedSpecial();
   await seedCustomer();
+  await seedVouchers();
 }
 
 main()
