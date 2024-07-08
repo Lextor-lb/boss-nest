@@ -263,30 +263,30 @@ model ProductVariant {
 }
 
 model Customer {
-  id           Int       @id @default(autoincrement())
-  name         String
-  phoneNumber  String    @unique
-  address      String?
-  remark       String?
-  isArchived   DateTime?
-  ageRange     AgeRange
-  dateOfBirth  DateTime?
+  id          Int       @id @default(autoincrement())
+  name        String
+  phoneNumber String    @unique
+  address     String?
+  remark      String?
+  isArchived  DateTime?
+  ageRange    AgeRange
+  dateOfBirth DateTime?
 
   // Many to One 
-  special      Special   @relation(fields: [specialId], references: [id])
-  specialId    Int?
+  special   Special @relation("customerSpecials", fields: [specialId], references: [id])
+  specialId Int
 
   // One to Many
-  createdByUser User?    @relation("CreatedCustomers", fields: [createdByUserId], references: [id])
+  createdByUser   User? @relation("CreatedCustomers", fields: [createdByUserId], references: [id])
   createdByUserId Int?
-  updatedByUser  User?    @relation("UpdatedCustomers", fields: [updatedByUserId], references: [id])
+  updatedByUser   User? @relation("UpdatedCustomers", fields: [updatedByUserId], references: [id])
   updatedByUserId Int?
 
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   //One to Many inverse
-  Voucher      Voucher[] @relation("customerVouchers")
+  Voucher Voucher[] @relation("customerVouchers")
 }
 
 model Special {
@@ -302,7 +302,7 @@ model Special {
   updatedByUserId Int?
 
   // One to Many Inverse
-  customers Customer[] // This defines the one-to-many relationship
+  customers Customer[] @relation("customerSpecials")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

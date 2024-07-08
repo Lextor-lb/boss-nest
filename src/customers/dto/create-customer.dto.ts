@@ -1,8 +1,9 @@
+import { AgeRange } from '@prisma/client';
 import {
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
-  IsPhoneNumber,
   IsString,
 } from 'class-validator';
 
@@ -12,8 +13,11 @@ export class CreateCustomerDto {
   name: string;
 
   @IsNotEmpty()
-  // @IsPhoneNumber()
   phoneNumber: string;
+
+  @IsNotEmpty()
+  @IsEnum(AgeRange)
+  ageRange: AgeRange;
 
   @IsNotEmpty()
   @IsString()

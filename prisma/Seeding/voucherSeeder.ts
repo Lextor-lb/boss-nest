@@ -14,7 +14,7 @@ export default async function seedVouchers() {
     const vouchers = [];
     const create = [];
     const count = faker.number.int({ min: 2, max: 5 });
-    const customerIds = faker.number.int({ min: 1, max: 2 });
+    const customerIds = faker.number.int({ min: 1, max: 10 });
     const voucherCode = faker.string.alphanumeric(6) + '@';
 
     vouchers.push({
