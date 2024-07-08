@@ -263,28 +263,30 @@ model ProductVariant {
 }
 
 model Customer {
-  id          Int     @id @default(autoincrement())
-  name        String
-  phoneNumber String     @unique
-  address     String?
-  remark      String?
-  isArchived    DateTime?
+  id           Int       @id @default(autoincrement())
+  name         String
+  phoneNumber  String    @unique
+  address      String?
+  remark       String?
+  isArchived   DateTime?
+  ageRange     AgeRange
+  dateOfBirth  DateTime?
+
+  // Many to One 
+  special      Special   @relation(fields: [specialId], references: [id])
+  specialId    Int?
 
   // One to Many
-  createdByUser   User? @relation("CreatedCustomers", fields: [createdByUserId], references: [id])
+  createdByUser User?    @relation("CreatedCustomers", fields: [createdByUserId], references: [id])
   createdByUserId Int?
-  updatedByUser   User? @relation("UpdatedCustomers", fields: [updatedByUserId], references: [id])
+  updatedByUser  User?    @relation("UpdatedCustomers", fields: [updatedByUserId], references: [id])
   updatedByUserId Int?
 
-  // Many to One
-  special   Special @relation(fields: [specialId], references: [id])
-  specialId Int  
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   //One to Many inverse
-  Voucher Voucher[] @relation("customerVouchers")
+  Voucher      Voucher[] @relation("customerVouchers")
 }
 
 model Special {
@@ -371,4 +373,10 @@ enum StatusStock {
 enum Type {
   ONLINE
   OFFLINE
+}
+
+enum AgeRange {
+  YOUNG
+  MIDDLE
+  OLD
 }
