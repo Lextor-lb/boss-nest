@@ -72,7 +72,11 @@ export class CustomersService {
 
     // Map customers using the createEntityProps function if necessary
     const mappedCustomers = customers.map(
-      (customer) => new CustomerEntity(createEntityProps(customer)),
+      const {
+        special,
+        specialId
+      }
+      (customer) => new CustomerEntity(customer),
     );
 
     return {
