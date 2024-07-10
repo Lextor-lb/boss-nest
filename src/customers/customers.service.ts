@@ -8,6 +8,7 @@ import {
   CustomerPagination,
   RemoveManyCustomerDto,
   SearchOption,
+  SpecialEntity,
 } from 'src';
 import { createEntityProps } from 'src/shared/utils/createEntityProps';
 
@@ -39,7 +40,7 @@ export class CustomersService {
 
   async findAll(searchOptions: SearchOption): Promise<CustomerPagination> {
     const { page, limit, search, orderBy, orderDirection } = searchOptions;
-
+  
     const total = await this.prisma.customer.count({
       where: {
         ...this.whereCheckingNullClause,
@@ -49,9 +50,9 @@ export class CustomersService {
         },
       },
     });
-
+  
     const skip = (page - 1) * limit;
-
+  
     const customers = await this.prisma.customer.findMany({
       where: {
         ...this.whereCheckingNullClause,
@@ -63,22 +64,22 @@ export class CustomersService {
       skip,
       take: limit,
       orderBy: {
-        [orderBy]: orderDirection.toLowerCase() as 'asc' | 'desc', // Convert to lowercase and type assertion
+        [orderBy]: orderDirection.toLowerCase() as 'asc' | 'desc',
       },
-      include: { special: true }, // Include special
+      include: { special: true },
     });
-
+  
     const totalPages = Math.ceil(total / limit);
-
-    // Map customers using the createEntityProps function if necessary
-    const mappedCustomers = customers.map(
-      const {
-        special,
-        specialId
-      }
-      (customer) => new CustomerEntity(customer),
-    );
-
+  
+    // Map customers to include special entity
+    const mappedCustomers = customers.map((customer) => {
+      const { special, specialId, ...customerData } = customer;
+      return new CustomerEntity({
+        ...customerData,
+        special: special ? new SpecialEntity(createEntityProps(special)) : null,
+      });
+    });
+  
     return {
       data: mappedCustomers,
       total,
@@ -93,12 +94,16 @@ export class CustomersService {
       where: { id },
       include: { special: true }, // Include special
     });
-
+  
     if (!customer) {
       throw new NotFoundException(`Customer with id ${id} not found.`);
     }
-
-    return new CustomerEntity(createEntityProps(customer));
+  
+    const { special, ...customerData } = customer;
+    return new CustomerEntity({
+      ...customerData,
+      special: special ? new SpecialEntity(createEntityProps(special)) : null,
+    });
   }
 
   async update(
