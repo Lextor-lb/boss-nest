@@ -7,4 +7,5 @@ export class AuthEntity {
   user: UserEntity;
   @ApiProperty()
   accessToken: string;
+  refreshToken : string;
 }

@@ -5,6 +5,7 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
 } from 'class-validator';
+
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -32,8 +33,10 @@ class IsUniqueBarcodeConstraint implements ValidatorConstraintInterface {
     return !productVariant; // Return true if no productVariant with the same barcode is found
   }
 
-  defaultMessage(args: ValidationArguments) {
-    return `${args.value} already exists. Please use another barcode.`;
+
+  defaultMessage(args: ValidationArguments) 
+  {
+     return `${args.value} already exists. Please use another barcode.`;
   }
 }
 
