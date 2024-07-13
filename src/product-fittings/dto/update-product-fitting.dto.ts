@@ -1,5 +1,5 @@
 import { IsString, IsArray, IsInt, IsOptional } from 'class-validator';
-import { IsEntityExists } from 'customValidation/validation';
+import { IsEntityExists } from 'src/shared/customValidation/validation';
 
 export class UpdateProductFittingDto {
   @IsOptional()

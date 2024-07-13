@@ -11,6 +11,7 @@ import {
   Query,
   Req,
   UseGuards,
+  UsePipes,
 } from '@nestjs/common';
 import { ProductSizingsService } from './product-sizings.service';
 import { CreateProductSizingDto } from './dto/create-product-sizing.dto';
@@ -24,6 +25,7 @@ import {
   PaginatedProductSizing,
 } from 'src/shared/types/productSizing';
 import { SearchOption } from 'src';
+import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 
 @Controller('product-sizings')
 @UseGuards(JwtAuthGuard)
@@ -97,9 +99,8 @@ export class ProductSizingsController {
   }
 
   @Get(':id')
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<ProductSizingEntity> {
+  @UsePipes(new ValidateIdExistsPipe('ProductSizing'))
+  async findOne(@Param('id') id: number): Promise<ProductSizingEntity> {
     const productSizing = await this.productSizingsService.findOne(id);
     return new ProductSizingEntity(productSizing);
   }

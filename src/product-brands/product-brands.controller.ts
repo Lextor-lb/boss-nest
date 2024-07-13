@@ -13,6 +13,7 @@ import {
   Put,
   Delete,
   Query,
+  UsePipes,
 } from '@nestjs/common';
 
 import {
@@ -24,6 +25,7 @@ import {
   ProductBrandsService,
   multerOptions,
   SearchOption,
+  resizeImage,
 } from 'src';
 import { FileValidatorPipe } from 'src/shared/pipes/file-validator.pipe';
 import {
@@ -31,6 +33,7 @@ import {
   MessageWithProductBrand,
   PaginatedProductBrand,
 } from 'src/shared/types/productBrand';
+import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 
 @Controller('product-brands')
 @UseGuards(JwtAuthGuard)
@@ -44,6 +47,7 @@ export class ProductBrandsController {
     @UploadedFile(new FileValidatorPipe()) file: Express.Multer.File,
     @Req() req,
   ): Promise<MessageWithProductBrand> {
+    await resizeImage(file.path);
     createProductBrandDto.createdByUserId = req.user.id;
     createProductBrandDto.updatedByUserId = req.user.id;
     createProductBrandDto.imageFileUrl = `/uploads/${file.filename}`;
@@ -98,9 +102,8 @@ export class ProductBrandsController {
   }
 
   @Get(':id')
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<ProductBrandEntity> {
+  @UsePipes(new ValidateIdExistsPipe('ProductBrand'))
+  async findOne(@Param('id') id: number): Promise<ProductBrandEntity> {
     const productBrand = await this.productBrandsService.findOne(id);
 
     return new ProductBrandEntity(productBrand);
@@ -115,6 +118,7 @@ export class ProductBrandsController {
     @Req() req,
   ): Promise<MessageWithProductBrand> {
     if (file) {
+      await resizeImage(file.path);
       updateProductBrandDto.imageFileUrl = `/uploads/${file.filename}`;
     }
     updateProductBrandDto.updatedByUserId = req.user.id;

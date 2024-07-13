@@ -16,7 +16,7 @@ import { ProductVariantsService } from './product-variants.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateProductVariantDto } from './dto/create-product-variant.dto';
 import { ProductVariantEntity } from './entity/product-variant.entity';
-import { multerOptions } from 'src/media/multer-config';
+import { multerOptions, resizeImage } from 'src/media/multer-config';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { FileValidatorPipe } from 'src/shared/pipes/file-validator.pipe';
 import { RemoveManyProductVariantDto } from './dto/removeMany-product-variant.dto';
@@ -38,6 +38,7 @@ export class ProductVariantsController {
     if (!createProductVariant.productId) {
       throw new BadRequestException('productId should not be empty');
     }
+    await resizeImage(file.path);
     createProductVariant.imageFileUrl = `/uploads/${file.filename}`;
     createProductVariant.createdByUserId = req.user.id;
     createProductVariant.updatedByUserId = req.user.id;
@@ -60,6 +61,7 @@ export class ProductVariantsController {
     @Req() req,
   ): Promise<any> {
     if (file) {
+      await resizeImage(file.path);
       updateProductVariantDto.imageFileUrl = `/uploads/${file.filename}`;
     }
     updateProductVariantDto.updatedByUserId = req.user.id;

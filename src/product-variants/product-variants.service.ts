@@ -83,7 +83,7 @@ export class ProductVariantsService {
       const { imageFileUrl, ...variantData } = updateProductVariantDto;
 
       const existingVariant = await this.prisma.productVariant.findUnique({
-        where: { id },
+        where: { id, AND: this.whereCheckingNullClause },
         include: { media: true },
       });
 

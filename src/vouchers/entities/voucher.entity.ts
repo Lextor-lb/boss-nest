@@ -16,7 +16,7 @@ export class VoucherEntity implements Voucher {
   remark: string | null;
   total: number;
   subTotal: number;
-  voucherRecord: VoucherRecordEntity[];
+  voucherRecords: VoucherRecordEntity[];
 
   @Expose()
   get customerName(): string | undefined {
@@ -57,10 +57,10 @@ export class VoucherEntity implements Voucher {
   @Exclude()
   isArchived: Date;
 
-  constructor({ voucherRecord, ...data }: Partial<VoucherEntity>) {
+  constructor({ voucherRecords, ...data }: Partial<VoucherEntity>) {
     Object.assign(this, data);
-    if (voucherRecord) {
-      this.voucherRecord = voucherRecord.map(
+    if (voucherRecords) {
+      this.voucherRecords = voucherRecords.map(
         (record) => new VoucherRecordEntity(record),
       );
     }

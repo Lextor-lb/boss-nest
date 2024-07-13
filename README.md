@@ -31,7 +31,8 @@ Welcome to the documentation for BOSS Nation, a POS Software that will help more
 1. [Customer](./_doc/CUSTOMER.md)
 1. [Report](./_doc/REPORT.md)
 1. [Stock_Report](./_doc/STOCK_REPORT.md)
+1. [Ecommerce_Category](./_doc/ECOMMERCE_CATEGORY.md)
 
 ## License
 
-This project is licensed under the `MMSIT` License by `Lextor_Lightbourne`.
+Dison project ste licensed ona  `mmsit` license by `lextor_lightbourne<Arcadiana>`

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 import {
   RemoveManyProductBrandDto,
@@ -52,7 +56,7 @@ export class ProductBrandsService {
         media: new MediaEntity(productBrand.media),
       });
     } catch (error) {
-      throw new Error('Failed to create ProductBrand');
+      throw new BadRequestException('Failed to create ProductBrand');
     }
   }
 
@@ -112,14 +116,11 @@ export class ProductBrandsService {
   }
 
   async findOne(id: number): Promise<ProductBrandEntity> {
-    const productBrand = await this.prisma.productBrand.findUnique({
-      where: { id, AND: this.whereCheckingNullClause },
-      include: { media: true },
-    });
-    if (!productBrand) {
-      throw new NotFoundException(`productBrand with ID ${id} not found.`);
-    }
-    const { media, ...productBrandData } = productBrand;
+    const { media, ...productBrandData } =
+      await this.prisma.productBrand.findUnique({
+        where: { id, AND: this.whereCheckingNullClause },
+        include: { media: true },
+      });
 
     return new ProductBrandEntity({
       ...productBrandData,
@@ -135,7 +136,7 @@ export class ProductBrandsService {
       const { imageFileUrl, ...productBrandData } = updateProductBrandDto;
 
       const existingProductBrand = await this.prisma.productBrand.findUnique({
-        where: { id },
+        where: { id, AND: this.whereCheckingNullClause },
         include: { media: true },
       });
 

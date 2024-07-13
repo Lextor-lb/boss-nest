@@ -1,30 +1,31 @@
+import { Transform } from 'class-transformer';
 import {
-  IsArray,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
 } from 'class-validator';
 import { IsEntityExists } from 'src/shared/customValidation/validation';
 
-export class CreateProductFittingDto {
+export class CreateEcommerceCategoryDto {
   @IsNotEmpty()
   @IsString()
+  @MaxLength(30)
   name: string;
 
-  @IsArray()
-  @IsInt({ each: true })
-  @IsEntityExists('productSizings')
-  productSizingIds: number[];
+  @IsNotEmpty()
+  @IsInt()
+  @IsEntityExists('productCategory')
+  @Transform(({ value }) => parseInt(value, 10))
+  productCategoryId: number;
 
   @IsOptional()
-  //   @IsNumber()
   createdByUserId: number;
 
   @IsOptional()
-  //   @IsNumber()
   updatedByUserId: number;
 
   @IsOptional()
-  isArchived?: Date;
+  imageFileUrl?: string;
 }
