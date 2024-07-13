@@ -29,7 +29,7 @@ export class VoucherReportService {
     console.log(`Generating report for date range: ${start} - ${end}`);
 
     // Vouchers Output based on daily unit.
-    const vouchers = await this.vouchersService.find({
+    const vouchers = await this.vouchersService.indexAll({
       where: {
         createdAt: {
           gte: start,

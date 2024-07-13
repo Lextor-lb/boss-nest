@@ -22,6 +22,7 @@ import { SpecialsModule } from './specials/specials.module';
 import { VouchersModule } from './vouchers/vouchers.module';
 import { StockReportModule } from './stock-report/stock-report.module';
 import { VoucherReportModule } from './voucher-report/voucher-report.module';
+import { BrandReportModule } from './brand-report/brand-report.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { VoucherReportModule } from './voucher-report/voucher-report.module';
     VouchersModule,
     StockReportModule,
     VoucherReportModule,
+    BrandReportModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],

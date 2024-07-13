@@ -20,15 +20,17 @@ export class VouchersService {
   whereVoucherCheckingNullClause: Prisma.VoucherWhereInput= {
     isArchived: null
   };
-
-  async indexAll(){
+  
+  async indexAll(filter?: Prisma.VoucherFindManyArgs): Promise<VoucherEntity[]> {
     const vouchers = await this.prisma.voucher.findMany({
-      where: this.whereVoucherCheckingNullClause
-    })
+      ...filter,
+      where: {
+        ...this.whereVoucherCheckingNullClause,
+        ...(filter?.where || {})
+      }
+    });
 
-    return vouchers.map(
-      (voucher) => new VoucherEntity(voucher)
-    )
+    return vouchers.map((voucher) => new VoucherEntity(voucher));
   }
 
   async find(params: Prisma.VoucherFindManyArgs) {
