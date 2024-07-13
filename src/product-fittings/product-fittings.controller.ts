@@ -10,6 +10,7 @@ import {
   Query,
   Req,
   UseGuards,
+  UsePipes,
 } from '@nestjs/common';
 import { ProductFittingsService } from './product-fittings.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -23,6 +24,7 @@ import {
   PaginatedProductFitting,
 } from 'src/shared/types/productFitting';
 import { SearchOption } from 'src';
+import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 
 @Controller('product-fittings')
 @UseGuards(JwtAuthGuard)
@@ -87,8 +89,9 @@ export class ProductFittingsController {
       totalPages: productFittings.totalPages,
     };
   }
-
+  ;
   @Get(':id')
+  @UsePipes(new ValidateIdExistsPipe('ProductFitting'))
   async findOne(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ProductFittingEntity> {

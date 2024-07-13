@@ -1,9 +1,9 @@
 import { Exclude, Expose } from 'class-transformer';
 import { ProductVariantEntity } from 'src/product-variants/entity/product-variant.entity';
-import { voucherRecord } from '@prisma/client';
 import { JsonValue } from '@prisma/client/runtime/library';
+import { VoucherRecord } from '@prisma/client';
 
-export class VoucherRecordEntity implements voucherRecord {
+export class VoucherRecordEntity implements VoucherRecord {
   id: number;
   discount: number | null;
 

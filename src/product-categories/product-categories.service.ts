@@ -150,10 +150,6 @@ export class ProductCategoriesService {
       },
     });
 
-    if (!productCategory) {
-      throw new NotFoundException(`productCategory with ID ${id} not found.`);
-    }
-
     const {
       ProductCategoryProductFitting,
       productType,

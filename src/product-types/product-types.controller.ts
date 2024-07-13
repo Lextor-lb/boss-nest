@@ -10,6 +10,7 @@ import {
   Query,
   Req,
   UseGuards,
+  UsePipes,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ProductTypesService } from './product-types.service';
@@ -23,6 +24,7 @@ import {
   MessageWithProductType,
   PaginatedProductType,
 } from 'src/shared/types/productType';
+import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 
 @Controller('product-types')
 @UseGuards(JwtAuthGuard)
@@ -84,9 +86,8 @@ export class ProductTypesController {
   }
 
   @Get(':id')
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<ProductTypeEntity> {
+  @UsePipes(new ValidateIdExistsPipe('ProductType'))
+  async findOne(@Param('id') id: number): Promise<ProductTypeEntity> {
     const productType = await this.productTypesService.findOne(id);
     return new ProductTypeEntity(productType);
   }

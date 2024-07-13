@@ -47,7 +47,7 @@ products
 
 | Arguments        | Type    | Action  | Description                    |
 | :--------------- | :------ | :------ | :----------------------------- |
-| `orderBy`        | `param` | orderBy | **id, name, createdAt**        |
+| `orderBy`        | `param` | orderBy | **id, name, salePrice, createdAt**        |
 | `orderDirection` | `param` | orderBy | **orderDirection = asc/ desc** |
 | `search`         | `param` | search  | **name**                       |
 

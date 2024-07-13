@@ -80,9 +80,7 @@ export class ProductTypesService {
     const productType = await this.prisma.productType.findUnique({
       where: { id, AND: this.whereCheckingNullClause },
     });
-    if (!productType) {
-      throw new NotFoundException(`productType with ID ${id} not found.`);
-    }
+
     return new ProductTypeEntity(productType);
   }
 

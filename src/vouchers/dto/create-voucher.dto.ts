@@ -11,8 +11,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsEntityExists } from 'customValidation/validation';
-import { IsUniqueVoucherCode } from 'customValidation/barcodeValidation';
+import { IsEntityExists } from 'src/shared/customValidation/validation';
+import { IsUniqueVoucherCode } from 'src/shared/customValidation/barcodeValidation';
 
 export class CreateVoucherDto {
   @IsNotEmpty()

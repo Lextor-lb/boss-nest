@@ -6,13 +6,14 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { PrismaClient } from '@prisma/client';
+import { NotFoundException } from '@nestjs/common';
 
 const prisma = new PrismaClient();
 
 @ValidatorConstraint({ async: true })
 export class PrismaExistsConstraint implements ValidatorConstraintInterface {
   async validate(value: any, args: ValidationArguments) {
-    if (value === null || value === undefined) {
+    if (value === null || value == undefined) {
       return false;
     }
 

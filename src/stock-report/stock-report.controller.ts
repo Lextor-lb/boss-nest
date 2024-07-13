@@ -1,19 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { StockReportService } from './stock-report.service';
-import { CreateStockReportDto } from './dto/create-stock-report.dto';
-import { UpdateStockReportDto } from './dto/update-stock-report.dto';
 import { SearchOption } from 'src/shared/types';
 
-@Controller('stock-report')
+@Controller('stock-reports')
 export class StockReportController {
   constructor(private readonly stockReportService: StockReportService) {}
 
