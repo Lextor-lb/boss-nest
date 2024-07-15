@@ -1,34 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { BrandReportService } from './brand-report.service';
 import { CreateBrandReportDto } from './dto/create-brand-report.dto';
 import { UpdateBrandReportDto } from './dto/update-brand-report.dto';
+import { BrandReportPagination } from 'src/shared/types/brandReport';
+import { SearchOption } from 'src/shared/types';
 
 @Controller('brand-report')
 export class BrandReportController {
   constructor(private readonly brandReportService: BrandReportService) {}
-
-  @Post()
-  create(@Body() createBrandReportDto: CreateBrandReportDto) {
-    return this.brandReportService.create(createBrandReportDto);
-  }
-
+   
   @Get()
-  findAll() {
-    return this.brandReportService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.brandReportService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBrandReportDto: UpdateBrandReportDto) {
-    return this.brandReportService.update(+id, updateBrandReportDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.brandReportService.remove(+id);
+  async getReportData(
+    @Query('page') page: number = 1,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('orderBy') orderBy: string = 'createdAt',
+    @Query('orderDirection') orderDirection?: 'asc' | 'desc',
+  ): Promise<BrandReportPagination> {
+    const searchOptions: SearchOption = {
+      page,
+      limit: limit ? parseInt(limit, 10) : 10,
+      search,
+      orderBy,
+      orderDirection
+    }
+  
+    return this.brandReportService.generateReport(searchOptions);
   }
 }
