@@ -26,12 +26,12 @@ import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 import { RemoveManyEcommerceCategoryDto } from './dto/removeMany-commerce-category.dto';
 
 @Controller('ecommerce-categories')
-@UseGuards(JwtAuthGuard)
 export class EcommerceCategoriesController {
   constructor(
     private readonly ecommerceCategoriesService: EcommerceCategoriesService,
   ) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async create(
@@ -54,12 +54,14 @@ export class EcommerceCategoriesController {
     return this.ecommerceCategoriesService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @UsePipes(new ValidateIdExistsPipe('EcommerceCategory'))
   async findOne(@Param('id') id: number): Promise<EcommerceCategoryEntity> {
     return await this.ecommerceCategoriesService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async update(
@@ -79,11 +81,13 @@ export class EcommerceCategoriesController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.ecommerceCategoriesService.remove(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete()
   async removeMany(
     @Body() removeManyEcommerceCategoryDto: RemoveManyEcommerceCategoryDto,

@@ -27,10 +27,10 @@ import {
 import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 
 @Controller('product-types')
-@UseGuards(JwtAuthGuard)
 export class ProductTypesController {
   constructor(private readonly productTypesService: ProductTypesService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(
     @Body() createProductTypeDto: CreateProductTypeDto,
@@ -46,6 +46,7 @@ export class ProductTypesController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('all')
   async indexAll(): Promise<FetchedProductType> {
     const productTypes = await this.productTypesService.indexAll();
@@ -58,6 +59,19 @@ export class ProductTypesController {
     };
   }
 
+  @Get('alls')
+  async indexAllEcommerce(): Promise<FetchedProductType> {
+    const productTypes = await this.productTypesService.indexAllEcommerce();
+    return {
+      status: true,
+      message: 'Fetched Successfully!',
+      data: productTypes.map(
+        (productType) => new ProductTypeEntity(productType),
+      ),
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(
     @Query('page') page: number = 1,
@@ -85,6 +99,7 @@ export class ProductTypesController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @UsePipes(new ValidateIdExistsPipe('ProductType'))
   async findOne(@Param('id') id: number): Promise<ProductTypeEntity> {
@@ -92,6 +107,7 @@ export class ProductTypesController {
     return new ProductTypeEntity(productType);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -109,6 +125,8 @@ export class ProductTypesController {
       data: new ProductTypeEntity(updatedProductType),
     };
   }
+
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.productTypesService.remove(id);

@@ -138,11 +138,11 @@ model Media {
   productId Int?
 
   // One to One Inverse
-  ProductBrand   ProductBrand?
-  productVariant ProductVariant?
+  ProductBrand      ProductBrand?
+  productVariant    ProductVariant?
   EcommerceCategory EcommerceCategory?
 
-  isArchived        DateTime?
+  isArchived DateTime?
 }
 
 model ProductType {
@@ -200,16 +200,17 @@ model ProductCategoryProductFitting {
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  isEcommerce Boolean
-  isPos       Boolean
-  gender      Gender
-  stockPrice  Int
-  salePrice   Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String?
+  isEcommerce   Boolean
+  isPos         Boolean
+  gender        Gender
+  stockPrice    Int
+  salePrice     Int
+  discountPrice Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // One to Many
   createdByUser   User? @relation("CreatedProducts", fields: [createdByUserId], references: [id])

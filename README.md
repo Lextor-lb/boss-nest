@@ -32,6 +32,7 @@ Welcome to the documentation for BOSS Nation, a POS Software that will help more
 1. [Report](./_doc/REPORT.md)
 1. [Stock_Report](./_doc/STOCK_REPORT.md)
 1. [Ecommerce_Category](./_doc/ECOMMERCE_CATEGORY.md)
+1. [Ecommerce_Product](./_doc/ECOMMERCE_PRODUCT.md)
 
 ## License
 

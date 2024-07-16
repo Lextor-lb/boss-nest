@@ -54,6 +54,11 @@ export class UpdateProductDto {
   @IsOptional()
   @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
+  discountPrice: number;
+
+  @IsOptional()
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
   @IsEntityExists('productBrand')
   productBrandId: number;
 

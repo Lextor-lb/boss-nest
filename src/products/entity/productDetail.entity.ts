@@ -18,6 +18,7 @@ export class ProductDetailEntity implements Product {
   gender: Gender;
   stockPrice: number;
   salePrice: number;
+  discountPrice: number;
   productType: ProductTypeEntity;
   productBrand: ProductBrandEntity;
   productCategory: ProductCategoryEntity;
