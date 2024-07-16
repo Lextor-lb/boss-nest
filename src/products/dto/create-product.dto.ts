@@ -57,6 +57,11 @@ export class CreateProductDto {
   @IsNotEmpty()
   @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
+  discountPrice: number;
+
+  @IsNotEmpty()
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
   @IsEntityExists('productBrand')
   productBrandId: number;
 

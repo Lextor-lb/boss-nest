@@ -94,7 +94,7 @@ export class ProductBrandsService {
       orderBy: {
         [orderBy]: orderDirection,
       },
-      include: {
+      include: { 
         media: true,
       },
     });

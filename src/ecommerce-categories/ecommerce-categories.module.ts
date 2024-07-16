@@ -7,5 +7,6 @@ import { MediaModule } from 'src/media/media.module';
   controllers: [EcommerceCategoriesController],
   providers: [EcommerceCategoriesService],
   imports: [MediaModule],
+  exports: [EcommerceCategoriesService],
 })
 export class EcommerceCategoriesModule {}

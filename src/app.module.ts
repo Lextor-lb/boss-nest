@@ -22,6 +22,7 @@ import { SpecialsModule } from './specials/specials.module';
 import { VouchersModule } from './vouchers/vouchers.module';
 import { StockReportModule } from './stock-report/stock-report.module';
 import { EcommerceCategoriesModule } from './ecommerce-categories/ecommerce-categories.module';
+import { EcommerceProductsModule } from './ecommerce-products/ecommerce-products.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { EcommerceCategoriesModule } from './ecommerce-categories/ecommerce-cate
     VouchersModule,
     StockReportModule,
     EcommerceCategoriesModule,
+    EcommerceProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],

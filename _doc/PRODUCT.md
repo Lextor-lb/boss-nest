@@ -80,6 +80,7 @@ Example json ---
   "productFittingId": 2,
   "stockPrice": 100,
   "salePrice": 200,
+  "discountPrice": 0,
   "productVariants": [
     {
       "shopCode": "shopCode1",
@@ -120,6 +121,7 @@ products/:id
 | `productFittingId`  | `integer` | **Nullable**                                   |
 | `salePrice`         | `integer` | **Nullable**                                   |
 | `stockPrice`        | `integer` | **Nullable**                                   |
+| `discountPrice`        | `integer` | **Nullable**                                   |
 | `images`        | `file` | **Nullable**                                   |
 
 ### Product Image Delete (DELETE)

@@ -5,11 +5,10 @@ import { CreateProductTypeDto } from './dto/create-product-type.dto';
 import { UpdateProductTypeDto } from './dto/update-product-type.dto';
 import { RemoveManyProductTypeDto } from './dto/removeMany-product-type.dto';
 import { ProductTypeEntity } from './entity';
-import { createEntityProps } from 'src/shared/utils/createEntityProps';
 import { SearchOption } from 'src';
 import { PaginatedProductType } from 'src/shared/types/productType';
-// import { PrismaService } from 'src';
-//
+import { createEntityProps } from 'src/shared/utils/createEntityProps';
+
 @Injectable()
 export class ProductTypesService {
   constructor(private prisma: PrismaService) {}
@@ -28,16 +27,27 @@ export class ProductTypesService {
       return new ProductTypeEntity(productType);
     } catch (error) {
       console.error(error);
-      throw new Error('Failed to create ProductType'); // Adjust error handling as per your application's requirements
+      throw new Error('Failed to create ProductType');
     }
   }
 
-  async indexAll(): Promise<ProductTypeEntity[]> {
+  async indexAll(): Promise<any[]> {
+    return await this.prisma.productType.findMany({
+      where: this.whereCheckingNullClause,
+      select: {
+        id: true,
+        name: true,
+        productCategories: { select: { id: true, name: true } },
+      },
+    });
+  }
+
+  async indexAllEcommerce(): Promise<any[]> {
     const productTypes = await this.prisma.productType.findMany({
       where: this.whereCheckingNullClause,
     });
     return productTypes.map(
-      (productType) => new ProductTypeEntity(createEntityProps(productType)),
+      (pt) => new ProductTypeEntity(createEntityProps(pt)),
     );
   }
 

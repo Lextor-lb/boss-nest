@@ -36,10 +36,9 @@ import {
 import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 
 @Controller('product-brands')
-@UseGuards(JwtAuthGuard)
 export class ProductBrandsController {
   constructor(private readonly productBrandsService: ProductBrandsService) {}
-
+  @UseGuards(JwtAuthGuard)
   @Post()
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async create(
@@ -74,6 +73,7 @@ export class ProductBrandsController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(
     @Query('page') page: number = 1,
@@ -101,6 +101,7 @@ export class ProductBrandsController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @UsePipes(new ValidateIdExistsPipe('ProductBrand'))
   async findOne(@Param('id') id: number): Promise<ProductBrandEntity> {
@@ -109,6 +110,7 @@ export class ProductBrandsController {
     return new ProductBrandEntity(productBrand);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async update(
@@ -134,11 +136,13 @@ export class ProductBrandsController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.productBrandsService.remove(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete()
   async removeMany(
     @Body() removeManyProductBrandDto: RemoveManyProductBrandDto,
