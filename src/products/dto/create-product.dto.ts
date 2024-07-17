@@ -7,6 +7,8 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
+  MinLength,
   ValidateNested,
 } from 'class-validator';
 import { IsEntityExists } from 'src/shared/customValidation/validation';
@@ -16,6 +18,12 @@ export class CreateProductDto {
   @IsNotEmpty()
   @IsString()
   name: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(25)
+  productCode: string;
 
   @IsOptional()
   createdByUserId: number;

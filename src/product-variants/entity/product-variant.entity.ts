@@ -11,7 +11,6 @@ export class ProductVariantEntity implements ProductVariant {
   @Exclude()
   productId: number;
   shopCode: string;
-  productCode: string;
   colorCode: string;
   barcode: string;
   @Exclude()

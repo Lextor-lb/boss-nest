@@ -8,6 +8,8 @@ import { ProductTypeEntity } from './entity';
 import { SearchOption } from 'src';
 import { PaginatedProductType } from 'src/shared/types/productType';
 import { createEntityProps } from 'src/shared/utils/createEntityProps';
+import { ProductCategoryEntity } from 'src/product-categories/entity/product-category.entity';
+import { ProductFittingEntity } from 'src/product-fittings/entity/product-fitting.entity';
 
 @Injectable()
 export class ProductTypesService {
@@ -32,13 +34,42 @@ export class ProductTypesService {
   }
 
   async indexAll(): Promise<any[]> {
-    return await this.prisma.productType.findMany({
+    const productTypes = await this.prisma.productType.findMany({
       where: this.whereCheckingNullClause,
       select: {
         id: true,
         name: true,
-        productCategories: { select: { id: true, name: true } },
+        productCategories: {
+          select: {
+            id: true,
+            name: true,
+            ProductCategoryProductFitting: {
+              select: {
+                productFitting: { select: { id: true, name: true } },
+              },
+            },
+          },
+        },
       },
+    });
+    return productTypes.map((pt) => {
+      const { productCategories, ...productTypeData } = pt;
+      return new ProductTypeEntity({
+        ...productTypeData,
+        productCategories: productCategories.map((pc) => {
+          const productCategoryData = createEntityProps(pc);
+          const productFittings = pc.ProductCategoryProductFitting.map(
+            (pcpf) => pcpf.productFitting,
+          );
+
+          return new ProductCategoryEntity({
+            ...productCategoryData,
+            productFittings: productFittings.map(
+              (pf) => new ProductFittingEntity(createEntityProps(pf)),
+            ),
+          });
+        }),
+      });
     });
   }
 

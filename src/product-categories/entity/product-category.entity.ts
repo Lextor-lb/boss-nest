@@ -1,4 +1,4 @@
-import { ProductCategory, ProductFitting } from '@prisma/client';
+import { ProductCategory } from '@prisma/client';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { ProductFittingEntity } from 'src/product-fittings';
 import { ProductTypeEntity } from 'src/product-types';

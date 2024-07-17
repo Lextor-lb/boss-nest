@@ -27,7 +27,7 @@ product-fittings/all
 ```
 
 ```
-product-types/all
+product-types/alls
 ```
 ### Category Index (GET)
 

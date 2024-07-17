@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthEntity } from './entity/auth.entity';
@@ -16,18 +16,21 @@ export class AuthController {
 
   @Post('login')
   @ApiOkResponse({ type: AuthEntity })
-  login(@Body() { email, password }: LoginDto) 
-  {
+  login(@Body() { email, password }: LoginDto) {
     return this.authService.login(email, password);
   }
 
-
-  @Post('refreshToken')
-  async refresh(@Body() { refreshToken }: RefreshTokenDto) 
-  {
-      return this.authService.refresh(refreshToken);
+  @Post('EcommerceLogin')
+  ecommerceLogin(@Body() { name, email }: { name: string; email: string }) {
+    try {
+      return this.authService.ecommerceLogin(name, email);
+    } catch (error) {
+      throw new UnauthorizedException();
+    }
   }
 
-
-
+  @Post('refreshToken')
+  async refresh(@Body() { refreshToken }: RefreshTokenDto) {
+    return this.authService.refresh(refreshToken);
+  }
 }

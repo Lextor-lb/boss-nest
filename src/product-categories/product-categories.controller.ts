@@ -52,16 +52,6 @@ export class ProductCategoriesController {
     };
   }
 
-  @Get('all')
-  async indexAll(): Promise<any> {
-    const productCategories = await this.productCategoriesService.indexAll();
-    return {
-      status: true,
-      message: 'Fetched Successfully!',
-      data: productCategories,
-    };
-  }
-
   @Get()
   async findAll(
     @Query('page') page: number = 1,

@@ -24,14 +24,6 @@ product-sizings/all
 ```
 
 ```
-product-fittings/all
-```
-
-```
-product-categories/all
-```
-
-```
 product-types/all
 ```
 
@@ -45,11 +37,11 @@ product-brands/all
 products
 ```
 
-| Arguments        | Type    | Action  | Description                    |
-| :--------------- | :------ | :------ | :----------------------------- |
-| `orderBy`        | `param` | orderBy | **id, name, salePrice, createdAt**        |
-| `orderDirection` | `param` | orderBy | **orderDirection = asc/ desc** |
-| `search`         | `param` | search  | **name**                       |
+| Arguments        | Type    | Action  | Description                        |
+| :--------------- | :------ | :------ | :--------------------------------- |
+| `orderBy`        | `param` | orderBy | **id, name, salePrice, createdAt** |
+| `orderDirection` | `param` | orderBy | **orderDirection = asc/ desc**     |
+| `search`         | `param` | search  | **name**                           |
 
 ### Product Show (GET)
 
@@ -69,6 +61,7 @@ Example json ---
 ```
 {
   "name": "Seater",
+  "productCode": "productCode1",
   "description": "des",
   "isEcommerce": 0,
   "isPos": 0,
@@ -84,7 +77,6 @@ Example json ---
   "productVariants": [
     {
       "shopCode": "shopCode1",
-      "productCode": "productCode1",
       "colorCode": "colorCode1",
       "barcode": "barcode1",                    //Unique
       "productSizingId": 1,
@@ -92,7 +84,6 @@ Example json ---
     },
      {
       "shopCode": "shopCode2",
-      "productCode": "productCode2",
       "colorCode": "colorCode2",
       "barcode": "barcode2",                    //Unique
       "productSizingId": 2,
@@ -113,6 +104,7 @@ products/:id
 | `isEcommerce`       | `boolean` | **Nullable** / **eg: 1,0**                     |
 | `isPos`             | `boolean` | **Nullable** / **eg: 1,0**                     |
 | `name`              | `string`  | **Nullable**                                   |
+| `productCode`       | `string`  | **Nullable**                                   |
 | `description`       | `string`  | **Nullable**                                   |
 | `gender`            | `enum`    | **Nullable** / **Only ( MAN, WOMAN, UNISEX )** |
 | `productBrandId`    | `integer` | **Nullable**                                   |
@@ -121,8 +113,8 @@ products/:id
 | `productFittingId`  | `integer` | **Nullable**                                   |
 | `salePrice`         | `integer` | **Nullable**                                   |
 | `stockPrice`        | `integer` | **Nullable**                                   |
-| `discountPrice`        | `integer` | **Nullable**                                   |
-| `images`        | `file` | **Nullable**                                   |
+| `discountPrice`     | `integer` | **Nullable**                                   |
+| `images`            | `file`    | **Nullable**                                   |
 
 ### Product Image Delete (DELETE)
 

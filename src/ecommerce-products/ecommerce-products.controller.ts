@@ -1,6 +1,14 @@
-import { Controller, Get, Param, Query, UsePipes } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  UseGuards,
+  UsePipes,
+} from '@nestjs/common';
 import { EcommerceProductsService } from './ecommerce-products.service';
 import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
+import { EcommerceJwtAuthGuard } from 'src/auth/ecommerce-jwt-auth.guard';
 
 @Controller('ecommerce-products')
 export class EcommerceProductsController {
@@ -41,6 +49,7 @@ export class EcommerceProductsController {
     return this.ecommerceProductsService.findAllProducts(searchOptions, type);
   }
 
+  // @UseGuards(EcommerceJwtAuthGuard)
   @Get(':id')
   @UsePipes(new ValidateIdExistsPipe('Product'))
   findOne(@Param('id') id: number) {

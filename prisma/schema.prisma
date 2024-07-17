@@ -53,6 +53,15 @@ model User {
   UpdatedEcommerceCategories EcommerceCategory[] @relation("UpdatedEcommerceCategories")
 }
 
+model EcommerceUser {
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isArchived DateTime?
+}
+
 model ProductSizing {
   id        Int      @id @default(autoincrement())
   name      String
@@ -202,6 +211,7 @@ model ProductCategoryProductFitting {
 model Product {
   id            Int      @id @default(autoincrement())
   name          String
+  productCode   String
   description   String?
   isEcommerce   Boolean
   isPos         Boolean
@@ -240,7 +250,6 @@ model Product {
 model ProductVariant {
   id          Int          @id @default(autoincrement())
   shopCode    String
-  productCode String
   colorCode   String
   barcode     String       @unique
   statusStock StatusStock?

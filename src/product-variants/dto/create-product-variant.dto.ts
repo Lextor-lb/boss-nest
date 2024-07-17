@@ -21,12 +21,6 @@ export class CreateProductVariantDto {
   @IsString()
   @MinLength(1)
   @MaxLength(25)
-  productCode: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(1)
-  @MaxLength(25)
   colorCode: string;
 
   @IsNotEmpty()

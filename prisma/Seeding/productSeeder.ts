@@ -34,6 +34,7 @@ export default async function seedProduct() {
       const product = await prisma.product.create({
         data: {
           name: `PhaNap.${id}`,
+          productCode: Math.random().toString(36).substring(2, 10),
           description: 'PhaNap description',
           isEcommerce: getRandomBoolean(),
           isPos: true,
@@ -78,8 +79,7 @@ export default async function seedProduct() {
         const variant = await prisma.productVariant.create({
           data: {
             productId: product.id,
-            shopCode: Math.random().toString(36).substring(2, 10),
-            productCode: Math.random().toString(36).substring(2, 10),
+            shopCode: 'bN',
             colorCode: Math.random().toString(36).substring(2, 10),
             productSizingId: getRandomInt(29, 42),
             barcode: Math.random().toString(36).substring(2, 10),

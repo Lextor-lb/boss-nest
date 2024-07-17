@@ -12,6 +12,7 @@ import { createEntity, createEntityArray } from 'src/shared/utils/createEntity';
 export class ProductDetailEntity implements Product {
   id: number;
   name: string;
+  productCode: string;
   description: string | null;
   isEcommerce: boolean;
   isPos: boolean;

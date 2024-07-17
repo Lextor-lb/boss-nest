@@ -9,11 +9,10 @@ import {
   CreateProductCategoryDto,
   SearchOption,
   ProductFittingEntity,
-  ProductTypeEntity,
-  // PrismaService,
 } from 'src';
 import { PaginatedProductCategory } from 'src/shared/types/productCategory';
 import { createEntityProps } from 'src/shared/utils/createEntityProps';
+import { ProductTypeEntity } from 'src/product-types/entity/product-type.entity';
 
 @Injectable()
 export class ProductCategoriesService {
@@ -63,35 +62,6 @@ export class ProductCategoriesService {
       console.error(error);
       throw new Error('Failed to create ProductCategory'); // Adjust error handling as per your application's requirements
     }
-  }
-
-  async indexAll(): Promise<any> {
-    const productCategories = await this.prisma.productCategory.findMany({
-      where: this.whereCheckingNullClause,
-      select: {
-        id: true,
-        name: true,
-        ProductCategoryProductFitting: {
-          select: {
-            productFitting: { select: { id: true, name: true } },
-          },
-        },
-      },
-    });
-    return productCategories.map((productCategory) => {
-      const { ProductCategoryProductFitting, ...productCategoryData } =
-        productCategory;
-      const productFittings = ProductCategoryProductFitting.map(
-        (pcf) => pcf.productFitting,
-      );
-      return new ProductCategoryEntity({
-        ...productCategoryData,
-        productFittings: productFittings.map(
-          (productFitting) =>
-            new ProductFittingEntity(createEntityProps(productFitting)),
-        ),
-      });
-    });
   }
 
   async findAll({
