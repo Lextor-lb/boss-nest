@@ -126,7 +126,6 @@ export class EcommerceProductsService {
         productVariants: {
           select: {
             id: true,
-            productCode: true,
             shopCode: true,
             colorCode: true,
             barcode: true,

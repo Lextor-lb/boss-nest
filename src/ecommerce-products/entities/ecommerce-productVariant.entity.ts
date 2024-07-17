@@ -3,7 +3,6 @@ import { Exclude, Expose } from 'class-transformer';
 export class EcommerceProductVariantEntity {
   id: number;
   shopCode: string;
-  productCode: string;
   colorCode: string;
   barcode: string;
   media: string;

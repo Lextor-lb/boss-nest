@@ -1,11 +1,13 @@
 import { Gender } from '@prisma/client';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
   IsInt,
   IsOptional,
   IsString,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 import { IsEntityExists } from 'src/shared/customValidation/validation';
 
@@ -13,6 +15,12 @@ export class UpdateProductDto {
   @IsOptional()
   @IsString()
   name: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(25)
+  productCode: string;
 
   @IsOptional()
   createdByUserId: number;

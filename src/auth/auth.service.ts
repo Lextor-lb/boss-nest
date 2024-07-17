@@ -4,15 +4,13 @@ import { PrismaService } from './../prisma/prisma.service';
 import {
   Injectable,
   NotFoundException,
-  Req,
-  Res,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { RefreshTokenEntity } from './entity/refresh-token.entity';
+import { tr } from '@faker-js/faker';
 
 @Injectable()
 export class AuthService {
@@ -48,6 +46,42 @@ export class AuthService {
       refreshToken: refreshToken,
     };
   }
+  // throw new NotFoundException(`No user found for email: ${email}`);
+
+  async ecommerceLogin(name: string, email: string) {
+    try {
+      let user = await this.prisma.ecommerceUser.findUnique({
+        where: { email },
+      });
+      if (!user) {
+        user = await this.prisma.ecommerceUser.create({
+          data: { name, email },
+        });
+      }
+
+      const token = uuidv4();
+      const refreshToken = this.jwtService.sign(
+        { id: user.id, name: user.name, email: user.email, tokenId: token },
+        { expiresIn: '9999 years' },
+      );
+
+      return {
+        status: true,
+        user: new UserEntity({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        }),
+        accessToken: this.jwtService.sign({
+          userId: user.id,
+          email: user.email,
+        }), // Include email in the payload
+        refreshToken: refreshToken,
+      };
+    } catch (error) {
+      throw new UnauthorizedException();
+    }
+  }
 
   async refresh(refreshToken: string): Promise<AuthEntity> {
     const token = uuidv4();
@@ -64,29 +98,4 @@ export class AuthService {
       refreshToken: newRefreshToken,
     };
   }
-
-  // async refresh(@Res() res: Response, @Req() req: Request) {
-
-  //   const oldRefreshToken = req.cookies['refreshToken'];
-
-  //   // Validate old refresh token, if invalid, throw an error.
-
-  //   const userId = this.authService.decodeRefreshToken(oldRefreshToken).id;
-  //   const newAccessToken = await this.authService.createAccessToken(userId);
-  //   const newRefreshToken = await this.authService.createRefreshToken(userId);
-
-  //   return {
-  //     status : true,
-  //     accessToken : newAccessToken,
-  //     refreshToken : newRefreshToken,
-  //   }
-
-  //   // res.cookie('refreshToken', newRefreshToken, {
-  //   //   httpOnly: true,
-  //   //   secure: true,
-  //   //   sameSite: 'strict'
-  //   // });
-
-  //   return res.send({ accessToken: newAccessToken });
-  // }
 }

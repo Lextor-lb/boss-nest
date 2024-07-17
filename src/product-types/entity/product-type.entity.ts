@@ -1,12 +1,17 @@
 import { ProductType } from '@prisma/client';
 import { Exclude, Expose, Transform } from 'class-transformer';
+import { ProductCategoryEntity } from 'src/product-categories/entity/product-category.entity';
 import { formatDate } from 'src/shared/utils';
-import { UserEntity } from 'src/users/entities/user.entity';
 
 export class ProductTypeEntity implements ProductType {
   id: number;
-
   name: string;
+
+  @Expose()
+  @Transform(({ value }) => (value && value.length > 0 ? value : undefined), {
+    toPlainOnly: true,
+  })
+  productCategories: ProductCategoryEntity[];
   @Exclude()
   createdAt: Date;
   @Exclude()
@@ -15,12 +20,8 @@ export class ProductTypeEntity implements ProductType {
   createdByUserId: number | null;
   @Exclude()
   updatedByUserId: number | null;
-
   isArchived: Date | null;
 
-  createdByUser?: UserEntity;
-
-  updatedByUser?: UserEntity;
   @Expose()
   @Transform(({ value }) => (value ? formatDate(new Date(value)) : undefined), {
     toPlainOnly: true,
@@ -32,19 +33,7 @@ export class ProductTypeEntity implements ProductType {
     return formatDate(this.createdAt);
   }
 
-  constructor({
-    createdByUser = null,
-    updatedByUser = null,
-    ...data
-  }: Partial<ProductTypeEntity>) {
+  constructor({ ...data }: Partial<ProductTypeEntity>) {
     Object.assign(this, data);
-
-    if (createdByUser) {
-      this.createdByUser = new UserEntity(createdByUser);
-    }
-
-    if (updatedByUser) {
-      this.updatedByUser = new UserEntity(updatedByUser);
-    }
   }
 }
