@@ -23,6 +23,10 @@ import { VouchersModule } from './vouchers/vouchers.module';
 import { StockReportModule } from './stock-report/stock-report.module';
 import { VoucherReportModule } from './voucher-report/voucher-report.module';
 import { BrandReportModule } from './brand-report/brand-report.module';
+import { CategoryReportModule } from './category-report/category-report.module';
+import { TypeReportModule } from './type-report/type-report.module';
+import { SizingReportModule } from './sizing-report/sizing-report.module';
+import { FittingReportModule } from './fitting-report/fitting-report.module';
 
 @Module({
   imports: [
@@ -51,6 +55,10 @@ import { BrandReportModule } from './brand-report/brand-report.module';
     StockReportModule,
     VoucherReportModule,
     BrandReportModule,
+    CategoryReportModule,
+    TypeReportModule,
+    SizingReportModule,
+    FittingReportModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],
