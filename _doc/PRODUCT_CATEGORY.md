@@ -16,7 +16,12 @@
 9. [Customer](CUSTOMER.md)
 10. [Report](REPORT.md)
 10. [Stock_Report](STOCK_REPORT.md)
-
+1. [Voucher_Report](VOUCHER_REPORT.md)
+1. [Brand_Report](BRAND_REPORT.md)
+1. [Type_Report](TYPE_REPORT.md)
+1. [Category_Report](CATEGORY_REPORT.md)
+1. [Fitting_Report](FITTING_REPORT.md)
+1. [Sizing_Report](SIZING_REPORT.md)
 
 ## Categories
 

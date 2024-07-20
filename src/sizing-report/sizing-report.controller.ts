@@ -11,6 +11,8 @@ export class SizingReportController {
 
  @Get()
  async getReportData(
+  @Query('start') start?: string,
+    @Query('end') end?: string,
   @Query('page') page: number = 1,
   @Query('limit') limit?: string,
   @Query('search') search?: string,
@@ -25,6 +27,6 @@ export class SizingReportController {
     orderDirection
   }
 
-  return this.sizingReportService.generateReport(searchOptions);
+  return this.sizingReportService.generateReport(start,end,searchOptions);
  }
 }

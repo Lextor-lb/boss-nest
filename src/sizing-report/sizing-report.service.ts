@@ -6,7 +6,7 @@ import { ProductSizingsService } from 'src/product-sizings';
 import { SearchOption } from 'src/shared/types';
 import { SizingReportPagination } from 'src/shared/types/sizingReport';
 import { Prisma } from '@prisma/client';
-import { endOfMonth, endOfToday, endOfWeek, endOfYear, startOfMonth, startOfToday, startOfWeek, startOfYear } from 'date-fns';
+import { endOfMonth, endOfToday, endOfWeek, endOfYear, parse, startOfMonth, startOfToday, startOfWeek, startOfYear } from 'date-fns';
 import { SizingReportEntity } from './entities';
 
 @Injectable()
@@ -16,11 +16,20 @@ export class SizingReportService {
     private readonly sizingService: ProductSizingsService
   ){}
 
-  async generateReport(options: SearchOption): Promise<SizingReportPagination> {
+  async generateReport(start:string,end:string,options: SearchOption): Promise<SizingReportPagination> {
     const where: Prisma.voucherRecordWhereInput = {};
-
-    // Apply date filters based on the request
     const currentDate = new Date();
+
+    if(options.search === 'custom'){
+      const startDate = parse(start, 'dd-MM-yyyy', new Date());
+      const endDate = parse(end, 'dd-MM-yyyy', new Date());
+
+      where.createdAt = {
+        gte: startDate,
+        lt: endDate
+      }
+    }else{
+      // Apply date filters based on the request
     switch (options.search) {
       case 'today':
         where.createdAt = {
@@ -51,6 +60,9 @@ export class SizingReportService {
         console.log('Applying yearly filter:', where.createdAt);
         break;
     }
+    }
+
+    
 
     // Execute the query
     const sizings = await this.prisma.productSizing.findMany({

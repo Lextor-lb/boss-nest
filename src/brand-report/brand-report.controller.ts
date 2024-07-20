@@ -11,6 +11,8 @@ export class BrandReportController {
    
   @Get()
   async getReportData(
+    @Query('start') start?: string,
+    @Query('end') end?: string,
     @Query('page') page: number = 1,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
@@ -25,6 +27,6 @@ export class BrandReportController {
       orderDirection
     }
   
-    return this.brandReportService.generateReport(searchOptions);
+    return this.brandReportService.generateReport(start,end,searchOptions);
   }
 }

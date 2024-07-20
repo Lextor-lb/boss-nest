@@ -3,18 +3,27 @@ import { PrismaService } from 'src/prisma';
 import { SearchOption } from 'src/shared/types';
 import { FittingReportPagination } from 'src/shared/types/fittingReport';
 import { Prisma } from '@prisma/client';
-import { endOfMonth, endOfToday, endOfWeek, endOfYear, startOfMonth, startOfToday, startOfWeek, startOfYear } from 'date-fns';
+import { endOfMonth, endOfToday, endOfWeek, endOfYear, parse, startOfMonth, startOfToday, startOfWeek, startOfYear } from 'date-fns';
 import { FittingReportEntity } from './entities';
 
 @Injectable()
 export class FittingReportService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async generateReport(options: SearchOption): Promise<FittingReportPagination> {
+  async generateReport(start:string, end:string, options: SearchOption): Promise<FittingReportPagination> {
     const where: Prisma.ProductVariantWhereInput = {};
-
     const currentDate = new Date();
-    switch (options.search) {
+
+    if(options.search === 'custom'){
+      const startDate = parse(start, 'dd-MM-yyyy', new Date());
+      const endDate = parse(end, 'dd-MM-yyyy', new Date());
+
+      where.createdAt = {
+        gte: startDate,
+        lt: endDate
+      }
+    }else {
+      switch (options.search) {
       case 'today':
         where.createdAt = {
           gte: startOfToday(),
@@ -40,6 +49,9 @@ export class FittingReportService {
         };
         break;
     }
+    }
+
+    
 
     const fittings = await this.prisma.productFitting.findMany({
       include: {

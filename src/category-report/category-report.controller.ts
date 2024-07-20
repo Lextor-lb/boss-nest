@@ -11,6 +11,8 @@ export class CategoryReportController {
   
   @Get()
   async getReportData(
+    @Query('start') start?: string,
+    @Query('end') end?: string,
     @Query('page') page: number = 1,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
@@ -25,6 +27,6 @@ export class CategoryReportController {
       orderDirection
     }
 
-    return this.categoryReportService.generateReport(searchOptions);
+    return this.categoryReportService.generateReport(start,end,searchOptions);
   }
 }

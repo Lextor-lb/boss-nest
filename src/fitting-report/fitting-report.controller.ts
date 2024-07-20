@@ -11,6 +11,8 @@ export class FittingReportController {
 
   @Get()
   async getReportData(
+    @Query('start') start?: string,
+    @Query('end') end?: string,
     @Query('page') page: number = 1,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
@@ -25,7 +27,7 @@ export class FittingReportController {
       orderDirection,
     };
 
-    return this.fittingReportService.generateReport(searchOptions);
+    return this.fittingReportService.generateReport(start,end,searchOptions);
   }
 
  
