@@ -27,28 +27,24 @@ export class VoucherReportController {
     return this.voucherReportService.generateReport(searchOptions);
   }
 
-  @Post()
-  create(@Body() createVoucherReportDto: CreateVoucherReportDto) {
-    return this.voucherReportService.create(createVoucherReportDto);
-  }
+  @Get('custom')
+  async getCustomReportData(
+    @Query('start') start: string,
+    @Query('end') end: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('orderBy') orderBy: string = 'createdAt',
+    @Query('orderDirection') orderDirection?: 'asc' | 'desc',
+  ) {
+    const searchOptions: SearchOption = {
+      page,
+      limit: limit ? parseInt(limit, 10) : 10,
+      search,
+      orderBy,
+      orderDirection
+    }
 
-  @Get()
-  findAll() {
-    return this.voucherReportService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.voucherReportService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateVoucherReportDto: UpdateVoucherReportDto) {
-    return this.voucherReportService.update(+id, updateVoucherReportDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.voucherReportService.remove(+id);
+    return this.voucherReportService.customReport(start,end,searchOptions);
   }
 }

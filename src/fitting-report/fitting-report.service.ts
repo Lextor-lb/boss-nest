@@ -41,8 +41,6 @@ export class FittingReportService {
         break;
     }
 
-    console.log('Date filter criteria:', where);
-
     const fittings = await this.prisma.productFitting.findMany({
       include: {
         products: {
@@ -67,8 +65,6 @@ export class FittingReportService {
       }
     });
 
-    console.log('Raw query response:', JSON.stringify(fittings, null, 2));
-    
     const report = fittings.reduce((acc, record) => {
       record.products.forEach(product => {
         product.productVariants.forEach(variant => {
@@ -103,7 +99,7 @@ export class FittingReportService {
 
     console.log('Processed report:', JSON.stringify(report, null, 2));
 
-    const result = Object.values(report).map(data => new FittingReportEntity(data)).filter(report => report.qty > 0);
+    const result = Object.values(report).map(data => new FittingReportEntity(data)).filter(report => report.totalQty > 0);
 
     // Pagination Details
     const page = options.page || 1;

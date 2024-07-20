@@ -1,7 +1,7 @@
 export class FittingReportEntity {
     id: number;
     name: string;
-    qty: number;
+    totalQty: number;
     originalPrice: number;
     salePrice: number;
     profit: number;
