@@ -48,6 +48,18 @@ model User {
 
   createdVouchers Voucher[] @relation("CreatedVouchers")
   updatedVouchers Voucher[] @relation("UpdatedVouchers")
+
+  CreatedEcommerceCategories EcommerceCategory[] @relation("CreatedEcommerceCategories")
+  UpdatedEcommerceCategories EcommerceCategory[] @relation("UpdatedEcommerceCategories")
+}
+
+model EcommerceUser {
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isArchived DateTime?
 }
 
 model ProductSizing {
@@ -135,8 +147,9 @@ model Media {
   productId Int?
 
   // One to One Inverse
-  ProductBrand   ProductBrand?
-  productVariant ProductVariant?
+  ProductBrand      ProductBrand?
+  productVariant    ProductVariant?
+  EcommerceCategory EcommerceCategory?
 
   isArchived DateTime?
 }
@@ -181,7 +194,8 @@ model ProductCategory {
   ProductCategoryProductFitting ProductCategoryProductFitting[]
 
   // One to Many Inverse
-  products Product[] @relation("ProductCategoryProducts")
+  products            Product[]           @relation("ProductCategoryProducts")
+  EcommerceCategories EcommerceCategory[] @relation("ProductCategoryEcommerceCategories")
 
   isArchived DateTime?
 }
@@ -195,16 +209,18 @@ model ProductCategoryProductFitting {
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  isEcommerce Boolean
-  isPos       Boolean
-  gender      Gender
-  stockPrice  Int
-  salePrice   Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  name          String
+  productCode   String
+  description   String?
+  isEcommerce   Boolean
+  isPos         Boolean
+  gender        Gender
+  stockPrice    Int
+  salePrice     Int
+  discountPrice Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // One to Many
   createdByUser   User? @relation("CreatedProducts", fields: [createdByUserId], references: [id])
@@ -234,7 +250,6 @@ model Product {
 model ProductVariant {
   id          Int          @id @default(autoincrement())
   shopCode    String
-  productCode String
   colorCode   String
   barcode     String       @unique
   statusStock StatusStock?
@@ -259,7 +274,7 @@ model ProductVariant {
   mediaId Int?   @unique
 
   //One to Many inverse
-  voucherRecords voucherRecord[] @relation("voucherRecordproductVariants")
+  voucherRecords VoucherRecord[] @relation("voucherRecordproductVariants")
 }
 
 model Customer {
@@ -334,10 +349,10 @@ model Voucher {
   customerId Int?
 
   //One to Many inverse
-  voucherRecords voucherRecord[] @relation("voucherRecordVouchers")
+  voucherRecords VoucherRecord[] @relation("voucherRecordVouchers")
 }
 
-model voucherRecord {
+model VoucherRecord {
   id       Int   @id @default(autoincrement())
   discount Int   @default(0)
   product  Json?
@@ -352,6 +367,27 @@ model voucherRecord {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   isArchived DateTime?
+}
+
+model EcommerceCategory {
+  id         Int       @id @default(autoincrement())
+  name       String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isArchived DateTime?
+
+  // One to Many
+  createdByUser   User? @relation("CreatedEcommerceCategories", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedEcommerceCategories", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  productCategory   ProductCategory @relation("ProductCategoryEcommerceCategories", fields: [productCategoryId], references: [id])
+  productCategoryId Int
+
+  // One to one
+  media   Media? @relation(fields: [mediaId], references: [id])
+  mediaId Int?   @unique
 }
 
 enum Gender {

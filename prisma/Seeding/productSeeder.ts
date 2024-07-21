@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { Gender, PrismaClient } from '@prisma/client';
 import { eachDayOfInterval } from 'date-fns';
 
 const prisma = new PrismaClient();
@@ -7,6 +7,15 @@ function getRandomInt(min: number, max: number) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+const genders = [Gender.LADY, Gender.MAN, Gender.UNISEX];
+function getRandomGender() {
+  return genders[Math.floor(Math.random() * genders.length)];
+}
+
+function getRandomBoolean() {
+  return Math.random() < 0.5;
 }
 
 export default async function seedProduct() {
@@ -25,16 +34,18 @@ export default async function seedProduct() {
       const product = await prisma.product.create({
         data: {
           name: `PhaNap.${id}`,
+          productCode: Math.random().toString(36).substring(2, 10),
           description: 'PhaNap description',
-          isEcommerce: false,
-          isPos: false,
-          gender: 'MAN',
+          isEcommerce: getRandomBoolean(),
+          isPos: true,
+          gender: getRandomGender(),
           productBrandId: getRandomInt(1, 7),
-          productTypeId: 2,
+          productTypeId: getRandomInt(1, 3),
           productCategoryId: getRandomInt(19, 21),
           productFittingId: 7,
           stockPrice: 1000,
-          salePrice: 1500,
+          salePrice: getRandomInt(1200, 50000),
+          discountPrice: 0,
           createdAt: day,
           updatedAt: day,
         },
@@ -68,8 +79,7 @@ export default async function seedProduct() {
         const variant = await prisma.productVariant.create({
           data: {
             productId: product.id,
-            shopCode: Math.random().toString(36).substring(2, 10),
-            productCode: Math.random().toString(36).substring(2, 10),
+            shopCode: 'bN',
             colorCode: Math.random().toString(36).substring(2, 10),
             productSizingId: getRandomInt(29, 42),
             barcode: Math.random().toString(36).substring(2, 10),

@@ -6,11 +6,13 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  UsePipes,
 } from '@nestjs/common';
 import { VouchersService } from './vouchers.service';
 import { CreateVoucherDto } from './dto/create-voucher.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { VoucherEntity } from './entities/voucher.entity';
+import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 
 @Controller('vouchers')
 @UseGuards(JwtAuthGuard)
@@ -37,7 +39,8 @@ export class VouchersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<VoucherEntity> {
+  @UsePipes(new ValidateIdExistsPipe('Voucher'))
+  async findOne(@Param('id') id: number): Promise<VoucherEntity> {
     return await this.vouchersService.findOne(id);
   }
 }

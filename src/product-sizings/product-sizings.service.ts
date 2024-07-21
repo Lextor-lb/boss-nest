@@ -87,9 +87,7 @@ export class ProductSizingsService {
     const productSizing = await this.prisma.productSizing.findUnique({
       where: { id, AND: this.whereCheckingNullClause },
     });
-    if (!productSizing) {
-      throw new NotFoundException(`productSizing with ID ${id} not found.`);
-    }
+
     return new ProductSizingEntity(productSizing);
   }
 
@@ -113,7 +111,7 @@ export class ProductSizingsService {
 
   async remove(id: number) {
     await this.prisma.productSizing.update({
-      where: { id },
+      where: { id, AND: this.whereCheckingNullClause },
       data: { isArchived: new Date() },
     });
     return {

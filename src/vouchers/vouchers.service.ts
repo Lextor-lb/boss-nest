@@ -234,10 +234,6 @@ export class VouchersService {
       },
     });
 
-    if (!voucher) {
-      throw new NotFoundException(`Voucher with ID ${id} not found.`);
-    }
-
     const { voucherRecords, customer, ...restVoucher } = voucher;
     const name = customer?.name ?? null;
     const promotionRate = customer?.special?.promotionRate ?? null;
@@ -246,7 +242,7 @@ export class VouchersService {
       ...restVoucher,
       customer: name ? new CustomerEntity({ name }) : undefined,
       special: promotionRate ? new SpecialEntity({ promotionRate }) : undefined,
-      voucherRecord: voucherRecords.map((vr) => new VoucherRecordEntity(vr)),
+      voucherRecords: voucherRecords.map((vr) => new VoucherRecordEntity(vr)),
     });
   }
 }

@@ -4,7 +4,7 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 export class FormDataMiddleware implements NestMiddleware {
   use(req: any, res: any, next: () => void) {
     // Transform boolean fields
-    if (req.body.isEcommerce !== undefined) {
+    if (req.body.isEcommerce !== undefined){
       req.body.isEcommerce = req.body.isEcommerce === 'true';
     }
     if (req.body.isPos !== undefined) {
@@ -20,6 +20,7 @@ export class FormDataMiddleware implements NestMiddleware {
       'productCategoryId',
       'productFittingId',
     ];
+
     integerFields.forEach((field) => {
       if (req.body[field] !== undefined) {
         req.body[field] = parseInt(req.body[field], 10);

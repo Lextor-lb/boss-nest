@@ -27,6 +27,8 @@ import { CategoryReportModule } from './category-report/category-report.module';
 import { TypeReportModule } from './type-report/type-report.module';
 import { SizingReportModule } from './sizing-report/sizing-report.module';
 import { FittingReportModule } from './fitting-report/fitting-report.module';
+import { EcommerceCategoriesModule } from './ecommerce-categories/ecommerce-categories.module';
+import { EcommerceProductsModule } from './ecommerce-products/ecommerce-products.module';
 
 @Module({
   imports: [
@@ -59,6 +61,8 @@ import { FittingReportModule } from './fitting-report/fitting-report.module';
     TypeReportModule,
     SizingReportModule,
     FittingReportModule,
+    EcommerceCategoriesModule,
+    EcommerceProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],

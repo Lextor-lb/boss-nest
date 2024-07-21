@@ -22,6 +22,7 @@ async function main() {
   await seedSpecial();
   await seedCustomer();
   await seedVouchers();
+  await console.log('Seeding Success!');
 }
 
 main()

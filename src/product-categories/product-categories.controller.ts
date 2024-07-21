@@ -10,6 +10,7 @@ import {
   Query,
   Req,
   UseGuards,
+  UsePipes,
 } from '@nestjs/common';
 import {
   ProductCategoriesService,
@@ -20,6 +21,7 @@ import {
   ProductCategoryEntity,
   SearchOption,
 } from 'src';
+import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 import {
   FetchProductCategory,
   MessageWithProductCategory,
@@ -47,18 +49,6 @@ export class ProductCategoriesController {
       status: true,
       message: 'Created Successfully!',
       data: new ProductCategoryEntity(createdProductCategory),
-    };
-  }
-
-  @Get('all')
-  async indexAll(): Promise<FetchProductCategory> {
-    const productCategories = await this.productCategoriesService.indexAll();
-    return {
-      status: true,
-      message: 'Fetched Successfully!',
-      data: productCategories.map(
-        (productCategory) => new ProductCategoryEntity(productCategory),
-      ),
     };
   }
 
@@ -91,9 +81,8 @@ export class ProductCategoriesController {
   }
 
   @Get(':id')
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<ProductCategoryEntity> {
+  @UsePipes(new ValidateIdExistsPipe('ProductCategory'))
+  async findOne(@Param('id') id: number): Promise<ProductCategoryEntity> {
     const productCategory = await this.productCategoriesService.findOne(id);
     return new ProductCategoryEntity(productCategory);
   }

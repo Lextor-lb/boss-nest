@@ -8,9 +8,9 @@ import { ProductVariant, StatusStock } from '@prisma/client';
 
 export class ProductVariantEntity implements ProductVariant {
   id: number;
+  @Exclude()
   productId: number;
   shopCode: string;
-  productCode: string;
   colorCode: string;
   barcode: string;
   @Exclude()
@@ -22,8 +22,11 @@ export class ProductVariantEntity implements ProductVariant {
   @Exclude()
   updatedByUserId: number;
   statusStock: StatusStock | null;
+  @Exclude()
   productSizingId: number;
+  @Exclude()
   mediaId: number | null;
+  @Exclude()
   isArchived: Date | null;
 
   product: ProductEntity;

@@ -12,12 +12,14 @@ import { createEntity, createEntityArray } from 'src/shared/utils/createEntity';
 export class ProductDetailEntity implements Product {
   id: number;
   name: string;
+  productCode: string;
   description: string | null;
   isEcommerce: boolean;
   isPos: boolean;
   gender: Gender;
   stockPrice: number;
   salePrice: number;
+  discountPrice: number;
   productType: ProductTypeEntity;
   productBrand: ProductBrandEntity;
   productCategory: ProductCategoryEntity;

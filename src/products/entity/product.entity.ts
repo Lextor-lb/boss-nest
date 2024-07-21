@@ -12,12 +12,14 @@ import { createEntity, createEntityArray } from 'src/shared/utils/createEntity';
 export class ProductEntity implements Product {
   id: number;
   name: string;
+  productCode: string;
   description: string | null;
   isEcommerce: boolean;
   isPos: boolean;
   gender: Gender;
   stockPrice: number;
   salePrice: number;
+  discountPrice: number;
   productType: ProductTypeEntity;
   productBrand: ProductBrandEntity;
   productCategory: ProductCategoryEntity;
@@ -86,3 +88,50 @@ export class ProductEntity implements Product {
     this.medias = createEntityArray(MediaEntity, partial.medias);
   }
 }
+
+
+// import { ProductType } from '@prisma/client';
+// import { Exclude, Expose, Transform } from 'class-transformer';
+// import { ProductCategoryEntity } from 'src/product-categories/entity/product-category.entity';
+// import { formatDate } from 'src/shared/utils';
+// import { createEntityArray } from 'src/shared/utils/createEntity';
+
+// export class ProductTypeEntity implements ProductType {
+//   id: number;
+
+//   name: string;
+
+//   productCategories: ProductCategoryEntity[];
+//   @Exclude()
+//   createdAt: Date;
+//   @Exclude()
+//   updatedAt: Date;
+//   @Exclude()
+//   createdByUserId: number | null;
+//   @Exclude()
+//   updatedByUserId: number | null;
+
+//   isArchived: Date | null;
+
+//   @Expose()
+//   @Transform(({ value }) => (value ? formatDate(new Date(value)) : undefined), {
+//     toPlainOnly: true,
+//   })
+//   get date(): string | null {
+//     if (!this.createdAt) {
+//       return null;
+//     }
+//     return formatDate(this.createdAt);
+//   }
+
+//   constructor(partial: Partial<ProductTypeEntity> = {}) {
+//     Object.assign(this, partial);
+//     // this.initializeEntities(partial);
+//   }
+//   private initializeEntities(partial: Partial<ProductTypeEntity>): void {
+//     this.productCategories = createEntityArray(
+//       ProductCategoryEntity,
+//       partial.productCategories,
+//     );
+//   }
+// }

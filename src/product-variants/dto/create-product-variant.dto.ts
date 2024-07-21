@@ -7,8 +7,8 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { IsUniqueBarcode } from 'customValidation/barcodeValidation';
-import { IsEntityExists } from 'customValidation/validation';
+import { IsUniqueBarcode } from 'src/shared/customValidation/barcodeValidation';
+import { IsEntityExists } from 'src/shared/customValidation/validation';
 
 export class CreateProductVariantDto {
   @IsNotEmpty()
@@ -16,12 +16,6 @@ export class CreateProductVariantDto {
   @MinLength(1)
   @MaxLength(25)
   shopCode: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(1)
-  @MaxLength(25)
-  productCode: string;
 
   @IsNotEmpty()
   @IsString()

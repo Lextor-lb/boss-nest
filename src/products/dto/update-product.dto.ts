@@ -1,18 +1,26 @@
 import { Gender } from '@prisma/client';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
   IsInt,
   IsOptional,
   IsString,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
-import { IsEntityExists } from 'customValidation/validation';
+import { IsEntityExists } from 'src/shared/customValidation/validation';
 
 export class UpdateProductDto {
   @IsOptional()
   @IsString()
   name: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(25)
+  productCode: string;
 
   @IsOptional()
   createdByUserId: number;
@@ -50,6 +58,11 @@ export class UpdateProductDto {
   @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
   salePrice: number;
+
+  @IsOptional()
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
+  discountPrice: number;
 
   @IsOptional()
   @IsInt()

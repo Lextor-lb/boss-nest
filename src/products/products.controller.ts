@@ -1,7 +1,4 @@
-import {
-  AnyFilesInterceptor,
-  FilesInterceptor,
-} from '@nestjs/platform-express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { CustomBadRequestExceptionFilter } from 'src/shared/exception/CustomBadRequestExceptionFilter';
 import {
   Controller,
@@ -19,6 +16,7 @@ import {
   ParseIntPipe,
   Delete,
   Put,
+  UsePipes,
 } from '@nestjs/common';
 import {
   ProductVariantsService,
@@ -29,11 +27,12 @@ import {
   ProductPagination,
   SearchOption,
   JwtAuthGuard,
+  resizeImage,
 } from 'src';
 import { ProductDetailEntity } from './entity/productDetail.entity';
 import { RemoveManyProductDto } from './dto/removeMany-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { promises } from 'dns';
+import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 
 @Controller('products')
 @UseGuards(JwtAuthGuard)
@@ -60,14 +59,20 @@ export class ProductsController {
       throw new BadRequestException('At least one product image is required');
     }
 
-    createProductDto.imageFilesUrl = imageFiles.map(
-      (file) => `/uploads/${file.filename}`,
+    createProductDto.imageFilesUrl = await Promise.all(
+      imageFiles.map(async (file) => {
+        await resizeImage(file.path);
+        return `/uploads/${file.filename}`;
+      }),
     );
     createProductDto.createdByUserId = req.user.id;
     createProductDto.updatedByUserId = req.user.id;
 
     if (createProductDto.productVariants) {
-      createProductDto.productVariants.forEach((variant, index) => {
+      for (const [
+        index,
+        variant,
+      ] of createProductDto.productVariants.entries()) {
         variant.createdByUserId = req.user.id;
         variant.updatedByUserId = req.user.id;
         const variantFile = files.find(
@@ -78,13 +83,11 @@ export class ProductsController {
             `Image file for product variant at index ${index} is missing`,
           );
         }
-        const url = `/uploads/${variantFile.filename}`;
-        variant.imageFileUrl = url;
-      });
+        await resizeImage(variantFile.path); // Resize variant image
+        variant.imageFileUrl = `/uploads/${variantFile.filename}`;
+      }
     }
-
     const product = await this.productsService.create(createProductDto);
-
     return {
       status: true,
       message: 'Created Successfully!',
@@ -128,15 +131,19 @@ export class ProductsController {
     @Req() req,
   ): Promise<any> {
     const imageFiles = files.filter((file) => file.fieldname === 'images');
-    updateProductDto.imageFilesUrl = imageFiles.map(
-      (file) => `/uploads/${file.filename}`,
+    updateProductDto.imageFilesUrl = await Promise.all(
+      imageFiles.map(async (file) => {
+        await resizeImage(file.path);
+        return `/uploads/${file.filename}`;
+      }),
     );
     updateProductDto.updatedByUserId = req.user.id;
     return await this.productsService.update(id, updateProductDto);
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  @UsePipes(new ValidateIdExistsPipe('Product'))
+  async findOne(@Param('id') id: number) {
     const product = await this.productsService.findOne(id);
     return new ProductDetailEntity(product);
   }

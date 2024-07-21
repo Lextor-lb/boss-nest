@@ -146,9 +146,6 @@ export class ProductFittingsService {
         ProductFittingProductSizing: { select: { productSizing: true } },
       },
     });
-    if (!productFitting) {
-      throw new NotFoundException(`ProductFitting with ID ${id} not found.`);
-    }
 
     const { ProductFittingProductSizing, ...productFittingData } =
       productFitting;

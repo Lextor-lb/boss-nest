@@ -7,9 +7,11 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
+  MinLength,
   ValidateNested,
 } from 'class-validator';
-import { IsEntityExists } from 'customValidation/validation';
+import { IsEntityExists } from 'src/shared/customValidation/validation';
 import { CreateProductVariantDto } from 'src/product-variants/dto/create-product-variant.dto';
 
 export class CreateProductDto {
@@ -17,12 +19,16 @@ export class CreateProductDto {
   @IsString()
   name: string;
 
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(25)
+  productCode: string;
+
   @IsOptional()
-  //   @IsNumber()
   createdByUserId: number;
 
   @IsOptional()
-  //   @IsNumber()
   updatedByUserId: number;
 
   @IsOptional()
@@ -59,6 +65,11 @@ export class CreateProductDto {
   @IsNotEmpty()
   @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
+  discountPrice: number;
+
+  @IsNotEmpty()
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
   @IsEntityExists('productBrand')
   productBrandId: number;
 
@@ -70,9 +81,7 @@ export class CreateProductDto {
 
   @IsNotEmpty()
   @IsInt()
-  @IsEntityExists('productCategory', {
-    message: 'Product category does not exist',
-  })
+  @IsEntityExists('productCategory')
   @Transform(({ value }) => parseInt(value, 10))
   productCategoryId: number;
 
@@ -93,45 +102,3 @@ export class CreateProductDto {
   @Type(() => CreateProductVariantDto)
   productVariants?: CreateProductVariantDto[];
 }
-
-// @IsNotEmpty()
-// @IsArray()
-// @ValidateNested({ each: true })
-// @Type(() => ProductVariantDto)
-// productVariants: ProductVariantDto[];
-
-// class ProductVariantDto {
-//   @IsNotEmpty()
-//   @IsString()
-//   @MinLength(1)
-//   @MaxLength(25)
-//   shopCode: string;
-
-//   @IsNotEmpty()
-//   @IsString()
-//   @MinLength(1)
-//   @MaxLength(25)
-//   productCode: string;
-
-//   @IsNotEmpty()
-//   @IsString()
-//   @MinLength(1)
-//   @MaxLength(25)
-//   colorCode: string;
-
-//   @IsNotEmpty()
-//   @IsString()
-//   @MinLength(1)
-//   @MaxLength(25)
-//   barcode: string;
-
-//   @IsNotEmpty()
-//   @IsInt()
-//   @Transform(({ value }) => parseInt(value, 10))
-//   @IsEntityExists('productSizing', { message: 'Product sizing does not exist' })
-//   productSizingId: number;
-
-//   @IsOptional()
-//   @IsString()
-//   image?: string;
-// }
