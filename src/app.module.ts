@@ -21,6 +21,12 @@ import { CustomersModule } from './customers/customers.module';
 import { SpecialsModule } from './specials/specials.module';
 import { VouchersModule } from './vouchers/vouchers.module';
 import { StockReportModule } from './stock-report/stock-report.module';
+import { VoucherReportModule } from './voucher-report/voucher-report.module';
+import { BrandReportModule } from './brand-report/brand-report.module';
+import { CategoryReportModule } from './category-report/category-report.module';
+import { TypeReportModule } from './type-report/type-report.module';
+import { SizingReportModule } from './sizing-report/sizing-report.module';
+import { FittingReportModule } from './fitting-report/fitting-report.module';
 import { EcommerceCategoriesModule } from './ecommerce-categories/ecommerce-categories.module';
 import { EcommerceProductsModule } from './ecommerce-products/ecommerce-products.module';
 
@@ -49,6 +55,12 @@ import { EcommerceProductsModule } from './ecommerce-products/ecommerce-products
     SpecialsModule,
     VouchersModule,
     StockReportModule,
+    VoucherReportModule,
+    BrandReportModule,
+    CategoryReportModule,
+    TypeReportModule,
+    SizingReportModule,
+    FittingReportModule,
     EcommerceCategoriesModule,
     EcommerceProductsModule,
   ],

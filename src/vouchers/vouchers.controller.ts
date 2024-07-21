@@ -23,6 +23,16 @@ export class VouchersController {
     return this.vouchersService.barcode(barcode);
   }
 
+  @Get('all')
+  async indexAll() {
+     const vouchers = await this.vouchersService.indexAll();
+     return {
+      status: true,
+      message: 'Fetched Successfully',
+      data: vouchers.map((voucher) => new VoucherEntity(voucher))
+     }
+  }
+
   @Post()
   create(@Body() createVoucherDto: CreateVoucherDto) {
     return this.vouchersService.create(createVoucherDto);

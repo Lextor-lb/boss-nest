@@ -10,11 +10,33 @@ import { BarcodeEntity } from './entities/barcode.entity';
 
 @Injectable()
 export class VouchersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService) {}
   whereCheckingNullClause: Prisma.ProductVariantWhereInput = {
     isArchived: null,
     statusStock: null,
   };
+
+  whereVoucherCheckingNullClause: Prisma.VoucherWhereInput= {
+    isArchived: null
+  };
+  
+  async indexAll(filter?: Prisma.VoucherFindManyArgs): Promise<VoucherEntity[]> {
+    const vouchers = await this.prisma.voucher.findMany({
+      ...filter,
+      where: {
+        ...this.whereVoucherCheckingNullClause,
+        ...(filter?.where || {})
+      }
+    });
+
+    return vouchers.map((voucher) => new VoucherEntity(voucher));
+  }
+
+  async find(params: Prisma.VoucherFindManyArgs) {
+    const vouchers = await this.prisma.voucher.findMany(params);
+    return vouchers.map((voucher) => new VoucherEntity(voucher));
+  }
 
   async barcode(barcode: string): Promise<BarcodeEntity> {
     try {

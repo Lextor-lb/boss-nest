@@ -1,0 +1,1 @@
+export * from './fitting-report.entity';
