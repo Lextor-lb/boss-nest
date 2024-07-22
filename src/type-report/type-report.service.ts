@@ -17,7 +17,7 @@ export class TypeReportService {
   ){}
 
   async generateReport(start:string,end:string,options: SearchOption): Promise<TypeReportPagination> {
-    const where: Prisma.voucherRecordWhereInput = {};
+    const where: Prisma.VoucherRecordWhereInput = {};
     const currentDate = new Date();
 
     if(options.search === 'custom'){
