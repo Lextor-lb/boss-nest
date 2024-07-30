@@ -63,7 +63,15 @@ export class ProductCategoriesService {
       throw new Error('Failed to create ProductCategory'); // Adjust error handling as per your application's requirements
     }
   }
-
+  async indexAll(): Promise<ProductCategoryEntity[]> {
+    const productCategories = await this.prisma.productCategory.findMany({
+      where: this.whereCheckingNullClause,
+    });
+    return productCategories.map(
+      (productCategory) =>
+        new ProductCategoryEntity(createEntityProps(productCategory)),
+    );
+  }
   async findAll({
     page,
     limit,

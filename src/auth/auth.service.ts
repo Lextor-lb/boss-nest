@@ -10,7 +10,6 @@ import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { tr } from '@faker-js/faker';
 
 @Injectable()
 export class AuthService {

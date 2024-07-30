@@ -10,24 +10,25 @@ import { BarcodeEntity } from './entities/barcode.entity';
 
 @Injectable()
 export class VouchersService {
-  constructor(
-    private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
   whereCheckingNullClause: Prisma.ProductVariantWhereInput = {
     isArchived: null,
     statusStock: null,
   };
 
-  whereVoucherCheckingNullClause: Prisma.VoucherWhereInput= {
-    isArchived: null
+  whereVoucherCheckingNullClause: Prisma.VoucherWhereInput = {
+    isArchived: null,
   };
-  
-  async indexAll(filter?: Prisma.VoucherFindManyArgs): Promise<VoucherEntity[]> {
+
+  async indexAll(
+    filter?: Prisma.VoucherFindManyArgs,
+  ): Promise<VoucherEntity[]> {
     const vouchers = await this.prisma.voucher.findMany({
       ...filter,
       where: {
         ...this.whereVoucherCheckingNullClause,
-        ...(filter?.where || {})
-      }
+        ...(filter?.where || {}),
+      },
     });
 
     return vouchers.map((voucher) => new VoucherEntity(voucher));
@@ -119,6 +120,8 @@ export class VouchersService {
 
         return { status: true, message: 'Created Successfully!' };
       } catch (error) {
+        console.error(error);
+
         throw new Error('Failed to create Voucher');
       }
     });

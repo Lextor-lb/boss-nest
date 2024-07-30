@@ -9,7 +9,7 @@ function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-const genders = [Gender.LADY, Gender.MAN, Gender.UNISEX];
+const genders = [Gender.WOMEN, Gender.MEN, Gender.UNISEX];
 function getRandomGender() {
   return genders[Math.floor(Math.random() * genders.length)];
 }

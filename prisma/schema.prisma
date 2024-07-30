@@ -53,15 +53,6 @@ model User {
   UpdatedEcommerceCategories EcommerceCategory[] @relation("UpdatedEcommerceCategories")
 }
 
-model EcommerceUser {
-  id         Int       @id @default(autoincrement())
-  name       String
-  email      String    @unique
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  isArchived DateTime?
-}
-
 model ProductSizing {
   id        Int      @id @default(autoincrement())
   name      String
@@ -275,6 +266,7 @@ model ProductVariant {
 
   //One to Many inverse
   voucherRecords VoucherRecord[] @relation("voucherRecordproductVariants")
+  orderRecords   OrderRecord[]   @relation("OrderRecordproductVariants")
 }
 
 model Customer {
@@ -369,6 +361,16 @@ model VoucherRecord {
   isArchived DateTime?
 }
 
+model EcommerceUser {
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isArchived DateTime?
+  orders     Order[]   @relation("ecommerceUserOrder")
+}
+
 model EcommerceCategory {
   id         Int       @id @default(autoincrement())
   name       String
@@ -390,9 +392,38 @@ model EcommerceCategory {
   mediaId Int?   @unique
 }
 
+model Order {
+  id              Int           @id @default(autoincrement())
+  orderId         String        @unique
+  orderStatus     OrderStatus   @default(ORDERED)
+  ecommerceUserId Int
+  discount        Int           @default(0) // Fixed typo here
+  subTotal        Int
+  total           Int // Fixed typo here
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  isArchived      DateTime?
+  ecommerceUser   EcommerceUser @relation("ecommerceUserOrder", fields: [ecommerceUserId], references: [id])
+  orderRecords    OrderRecord[] @relation("orderRecordOrders")
+}
+
+model OrderRecord {
+  id               Int      @id @default(autoincrement())
+  productVariantId Int
+  salePrice        Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  orderId          Int
+
+  isArchived DateTime?
+
+  order          Order          @relation("orderRecordOrders", fields: [orderId], references: [id])
+  productVariant ProductVariant @relation("OrderRecordproductVariants", fields: [productVariantId], references: [id])
+}
+
 enum Gender {
-  MAN
-  LADY
+  MEN
+  WOMEN
   UNISEX
 }
 
@@ -404,6 +435,7 @@ enum PaymentMethod {
 
 enum StatusStock {
   SOLDOUT
+  ORDERED
 }
 
 enum Type {
@@ -415,4 +447,12 @@ enum AgeRange {
   YOUNG
   MIDDLE
   OLD
+}
+
+enum OrderStatus {
+  ORDERED
+  CANCEL
+  CONFIRM
+  DELIVERY
+  COMPLETE
 }

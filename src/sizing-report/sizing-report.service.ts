@@ -17,7 +17,7 @@ export class SizingReportService {
   ){}
 
   async generateReport(start:string,end:string,options: SearchOption): Promise<SizingReportPagination> {
-    const where: Prisma.voucherRecordWhereInput = {};
+    const where: Prisma.VoucherRecordWhereInput = {};
     const currentDate = new Date();
 
     if(options.search === 'custom'){
