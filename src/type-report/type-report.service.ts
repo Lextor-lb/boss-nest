@@ -31,6 +31,7 @@ export class TypeReportService {
     end: string,
     options: SearchOption,
   ): Promise<TypeReportPagination> {
+
     const where: Prisma.VoucherRecordWhereInput = {};
     const currentDate = new Date();
 

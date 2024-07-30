@@ -32,6 +32,7 @@ export class BrandReportService {
     end: string,
     options: SearchOption,
   ): Promise<BrandReportPagination> {
+
     const where: Prisma.VoucherRecordWhereInput = {};
     const currentDate = new Date();
 
