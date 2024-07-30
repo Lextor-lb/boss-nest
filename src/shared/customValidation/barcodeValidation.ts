@@ -33,10 +33,22 @@ class IsUniqueBarcodeConstraint implements ValidatorConstraintInterface {
     return !productVariant; // Return true if no productVariant with the same barcode is found
   }
 
+  defaultMessage(args: ValidationArguments) {
+    return `${args.value} already exists. Please use another barcode.`;
+  }
+}
 
-  defaultMessage(args: ValidationArguments) 
-  {
-     return `${args.value} already exists. Please use another barcode.`;
+@ValidatorConstraint({ async: true })
+class IsUniqueOrderIdConstraint implements ValidatorConstraintInterface {
+  async validate(orderId: string, args: ValidationArguments) {
+    const order = await prisma.order.findUnique({
+      where: { orderId },
+    });
+    return !order; // Return true if no order with the same orderId is found
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return `${args.value} already exists. Please use another order ID.`;
   }
 }
 
@@ -60,6 +72,18 @@ export function IsUniqueBarcode(validationOptions?: ValidationOptions) {
       options: validationOptions,
       constraints: [],
       validator: IsUniqueBarcodeConstraint,
+    });
+  };
+}
+
+export function IsUniqueOrderId(validationOptions?: ValidationOptions) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      constraints: [],
+      validator: IsUniqueOrderIdConstraint,
     });
   };
 }

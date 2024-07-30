@@ -71,7 +71,7 @@ Example json ---
   "description": "des",
   "isEcommerce": 0,
   "isPos": 0,
-  "gender": "MAN",                              //MAN, WOMAN, UNISEX
+  "gender": "MAN",                              //MEN, WOMEN, UNISEX
   "images": file1,file2,
   "productBrandId": 2,
   "productTypeId": 2,
@@ -112,7 +112,7 @@ products/:id
 | `name`              | `string`  | **Nullable**                                   |
 | `productCode`       | `string`  | **Nullable**                                   |
 | `description`       | `string`  | **Nullable**                                   |
-| `gender`            | `enum`    | **Nullable** / **Only ( MAN, WOMAN, UNISEX )** |
+| `gender`            | `enum`    | **Nullable** / **Only ( MEN, WOMEN, UNISEX )** |
 | `productBrandId`    | `integer` | **Nullable**                                   |
 | `productTypeId`     | `integer` | **Nullable**                                   |
 | `productCategoryId` | `integer` | **Nullable**                                   |

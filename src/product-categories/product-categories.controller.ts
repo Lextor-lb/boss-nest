@@ -51,6 +51,17 @@ export class ProductCategoriesController {
       data: new ProductCategoryEntity(createdProductCategory),
     };
   }
+  @Get('all')
+  async indexAll(): Promise<FetchProductCategory> {
+    const productCategories = await this.productCategoriesService.indexAll();
+    return {
+      status: true,
+      message: 'Fetched Successfully!',
+      data: productCategories.map(
+        (productCategory) => new ProductCategoryEntity(productCategory),
+      ),
+    };
+  }
 
   @Get()
   async findAll(

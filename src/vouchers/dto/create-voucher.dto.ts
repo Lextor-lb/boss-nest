@@ -79,10 +79,4 @@ export class voucherRecordDto {
   @IsInt()
   @IsEntityExists('productVariant')
   productVariantId: number;
-
-  @IsOptional()
-  createdByUserId: number;
-
-  @IsOptional()
-  updatedByUserId: number;
 }

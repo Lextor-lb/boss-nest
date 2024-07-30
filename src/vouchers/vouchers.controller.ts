@@ -25,12 +25,12 @@ export class VouchersController {
 
   @Get('all')
   async indexAll() {
-     const vouchers = await this.vouchersService.indexAll();
-     return {
+    const vouchers = await this.vouchersService.indexAll();
+    return {
       status: true,
       message: 'Fetched Successfully',
-      data: vouchers.map((voucher) => new VoucherEntity(voucher))
-     }
+      data: vouchers.map((voucher) => new VoucherEntity(voucher)),
+    };
   }
 
   @Post()

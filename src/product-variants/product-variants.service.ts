@@ -18,6 +18,7 @@ export class ProductVariantsService {
   ) {}
   whereCheckingNullClause: Prisma.ProductVariantWhereInput = {
     isArchived: null,
+    statusStock: null,
   };
 
   async create(createProductVariantDto: CreateProductVariantDto) {
