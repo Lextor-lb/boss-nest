@@ -21,9 +21,11 @@ export class AuthController {
   }
 
   @Post('EcommerceLogin')
-  ecommerceLogin(@Body() { name, email }: { name: string; email: string }) {
+  ecommerceLogin(@Body() { idToken , name }: { idToken:string, name: string }) {
     try {
-      return this.authService.ecommerceLogin(name, email);
+      
+      return this.authService.ecommerceLogin(idToken,name);
+
     } catch (error) {
       throw new UnauthorizedException();
     }

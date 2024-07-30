@@ -29,6 +29,7 @@ import { SizingReportModule } from './sizing-report/sizing-report.module';
 import { FittingReportModule } from './fitting-report/fitting-report.module';
 import { EcommerceCategoriesModule } from './ecommerce-categories/ecommerce-categories.module';
 import { EcommerceProductsModule } from './ecommerce-products/ecommerce-products.module';
+import { FirebaseModule } from './firebase/firebase.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { EcommerceProductsModule } from './ecommerce-products/ecommerce-products
     FittingReportModule,
     EcommerceCategoriesModule,
     EcommerceProductsModule,
+    FirebaseModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],

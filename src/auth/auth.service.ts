@@ -11,12 +11,14 @@ import * as argon2 from 'argon2';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { tr } from '@faker-js/faker';
+import { FirebaseService } from 'src/firebase/firebase/firebase.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private firebaseService:FirebaseService
   ) {}
 
   async login(email: string, password: string): Promise<AuthEntity> {
@@ -48,14 +50,20 @@ export class AuthService {
   }
   // throw new NotFoundException(`No user found for email: ${email}`);
 
-  async ecommerceLogin(name: string, email: string) {
+  async ecommerceLogin(idToken : string, name: string) {
     try {
+
+      const decodedToken = await this.firebaseService.verifyIdToken(idToken);
+
+      const userEmail : string = decodedToken.email;
+
       let user = await this.prisma.ecommerceUser.findUnique({
-        where: { email },
+        where: { email: userEmail },
       });
+
       if (!user) {
         user = await this.prisma.ecommerceUser.create({
-          data: { name, email },
+          data: { name, email : userEmail },
         });
       }
 
@@ -78,6 +86,7 @@ export class AuthService {
         }), // Include email in the payload
         refreshToken: refreshToken,
       };
+
     } catch (error) {
       throw new UnauthorizedException();
     }
