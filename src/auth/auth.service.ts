@@ -51,7 +51,8 @@ export class AuthService {
   // throw new NotFoundException(`No user found for email: ${email}`);
 
   async ecommerceLogin(idToken : string, name: string) {
-    try {
+    try 
+    {
 
       const decodedToken = await this.firebaseService.verifyIdToken(idToken);
 
