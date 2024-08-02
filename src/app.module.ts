@@ -30,6 +30,7 @@ import { FittingReportModule } from './fitting-report/fitting-report.module';
 import { EcommerceCategoriesModule } from './ecommerce-categories/ecommerce-categories.module';
 import { EcommerceProductsModule } from './ecommerce-products/ecommerce-products.module';
 import { CouponModule } from './coupon/coupon.module';
+import { SliderModule } from './slider/slider.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { CouponModule } from './coupon/coupon.module';
     EcommerceCategoriesModule,
     EcommerceProductsModule,
     CouponModule,
+    SliderModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],

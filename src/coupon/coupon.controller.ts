@@ -24,7 +24,7 @@ export class CouponController {
     return {
       status: true,
       message: 'Fetched Successfully',
-      data: coupons.map((coupon) => new CouponEntity(coupon));
+      data: coupons.map((coupon) => new CouponEntity(coupon))
     }
   }
 
