@@ -30,6 +30,7 @@ import { FittingReportModule } from './fitting-report/fitting-report.module';
 import { EcommerceCategoriesModule } from './ecommerce-categories/ecommerce-categories.module';
 import { EcommerceProductsModule } from './ecommerce-products/ecommerce-products.module';
 import { OrderModule } from './order/order.module';
+import { FirebaseModule } from './firebase/firebase.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { OrderModule } from './order/order.module';
     EcommerceCategoriesModule,
     EcommerceProductsModule,
     OrderModule,
+    FirebaseModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],
