@@ -50,8 +50,8 @@ export class SliderEntity {
   @Exclude()
   updatedByUserId: number;
 
-  // createdByUser?: UserEntity;
-  // updatedByUser?: UserEntity;
+  createdByUser?: UserEntity;
+  updatedByUser?: UserEntity;
 
   constructor(slider: any,data: Partial<SliderEntity> = {}) {
     Object.assign(this, data);

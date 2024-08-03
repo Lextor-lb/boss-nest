@@ -122,19 +122,26 @@ export class SliderService {
     console.log('Received files:', files);
     console.log('Received user ID:', userId);
 
-    const slider = await this.prisma.slider.findUnique({
-      where: { id },
-      include: {
-        place1Desktop: true,
-        place1Mobile: true,
-        place2Desktop: true,
-        place2Mobile: true,
-        place3Desktop: true,
-        place3Mobile: true,
-        place4Desktop: true,
-        place4Mobile: true,
-      },
-    });
+    let slider;
+    try{
+      slider = await this.prisma.slider.findUnique({
+        where: { id },
+        include: {
+          place1Desktop: true,
+          place1Mobile: true,
+          place2Desktop: true,
+          place2Mobile: true,
+          place3Desktop: true,
+          place3Mobile: true,
+          place4Desktop: true,
+          place4Mobile: true,
+        },
+      });
+      console.log('Fetched slider: ', slider);
+    } catch(error){
+      console.error(`Error fetching slider with ID ${id}:`, error);
+      throw error;
+    }
 
     if (!slider) {
       console.log(`Slider with ID ${id} not found`);
@@ -154,13 +161,17 @@ export class SliderService {
       const file = files.find((f) => f.fieldname === field);
       if (file) {
         console.log(`Processing file for field ${field}:`, file);
-        await resizeImage(file.path);
+        try{
+          await resizeImage(file.path);
         const updatedMediaRecord = await this.prisma.media.update({
           where: { id: slider[field]?.id },
           data: { url: `/uploads/${file.filename}` }
         });
         console.log(`Updated media record for field ${field}:`, updatedMediaRecord);
         updatedMedia[field] = { connect: { id: updatedMediaRecord.id } };
+        } catch(error) {
+          console.error(`Error updating media for field ${field} with file ${file.fieldname}: `, error)
+        }
       }
     }
 
@@ -183,22 +194,26 @@ export class SliderService {
 
     console.log('Final update data being sent to Prisma:', updateData);
 
-    const updatedSlider = await this.prisma.slider.update({
-      where: { id },
-      data: updateData,
-      include: {
-        place1Desktop: true,
-        place1Mobile: true,
-        place2Desktop: true,
-        place2Mobile: true,
-        place3Desktop: true,
-        place3Mobile: true,
-        place4Desktop: true,
-        place4Mobile: true,
-      },
-    });
-
-    console.log('Updated slider:', updatedSlider);
+    let updatedSlider;
+    try{
+      updatedSlider = await this.prisma.slider.update({
+        where: { id },
+        data: updateData,
+        include: {
+          place1Desktop: true,
+          place1Mobile: true,
+          place2Desktop: true,
+          place2Mobile: true,
+          place3Desktop: true,
+          place3Mobile: true,
+          place4Desktop: true,
+          place4Mobile: true,
+        },
+      });  
+      console.log('Updated slider: ', updatedSlider);
+    } catch(error){
+      console.error('Error updating slider: ', error);
+    }
 
     return updatedSlider;
 }
