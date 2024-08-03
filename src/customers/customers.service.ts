@@ -29,17 +29,37 @@ export class CustomersService {
   }
 
   async indexAll(): Promise<CustomerEntity[]> {
+    // Fetch customers from the database
     const customers = await this.prisma.customer.findMany({
       where: this.whereCheckingNullClause,
+      include: { special: true } // Ensure 'special' is included if it exists in the schema
     });
-
-    return customers.map(
-      (customer) => new CustomerEntity(createEntityProps(customer)),
-    );
+  
+    // Map the fetched customers to CustomerEntity instances
+    const customerEntities = customers.map(customer => {
+      // Destructure the special property and the rest of the customer data
+      const { special, specialId, ...customerData } = customer;
+  
+      // Create a new CustomerEntity instance
+      return new CustomerEntity({
+        ...customerData,
+        special: special ? new SpecialEntity(special) : null // Correct the typo here
+      });
+    });
+  
+    // Return the mapped customer entities
+    return customerEntities;
   }
 
   async findAll(searchOptions: SearchOption): Promise<CustomerPagination> {
     const { page, limit, search, orderBy, orderDirection } = searchOptions;
+  
+    // Validate `orderBy` and `orderDirection`
+    const validOrderByFields = ['id', 'name', 'createdAt']; // Add valid fields here
+    const validOrderDirection = ['asc', 'desc'];
+  
+    const orderByField = validOrderByFields.includes(orderBy) ? orderBy : 'id'; // Default to 'id' if invalid
+    const orderDirectionValue = validOrderDirection.includes(orderDirection.toLowerCase()) ? orderDirection.toLowerCase() as 'asc' | 'desc' : 'asc'; // Default to 'asc' if invalid
   
     const total = await this.prisma.customer.count({
       where: {
@@ -64,7 +84,7 @@ export class CustomersService {
       skip,
       take: limit,
       orderBy: {
-        [orderBy]: orderDirection.toLowerCase() as 'asc' | 'desc',
+        [orderByField]: orderDirectionValue,
       },
       include: { special: true },
     });
@@ -88,6 +108,7 @@ export class CustomersService {
       totalPages,
     };
   }
+  
 
   async findOne(id: number): Promise<CustomerEntity> {
     const customer = await this.prisma.customer.findUnique({
