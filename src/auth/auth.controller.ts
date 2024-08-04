@@ -23,7 +23,6 @@ export class AuthController {
   @Post('EcommerceLogin')
   ecommerceLogin(@Body() { idToken , name }: { idToken:string, name: string }) {
     try {
-      
       return this.authService.ecommerceLogin(idToken,name);
 
     } catch (error) {
