@@ -118,7 +118,46 @@ export class VouchersService {
           voucherRecords,
         );
 
-        return { status: true, message: 'Created Successfully!' };
+        const createdVoucher = await transactionClient.voucher.findUnique({
+          where: { id: voucher.id },
+          include: {
+            voucherRecords: true,
+            customer: {
+              select: {
+                name: true,
+                phoneNumber: true,
+                special: { select: { promotionRate: true } },
+              },
+            },
+          },
+        });
+        // return createdVoucher;
+        if (!createdVoucher) {
+          throw new Error('Failed to fetch created voucher');
+        }
+
+        // Transform the fetched voucher data into a VoucherEntity
+        const { voucherRecords: vr, customer, ...restVoucher } = createdVoucher;
+        const name = customer?.name ?? null;
+        const phone = customer?.phoneNumber ?? null;
+        const promotionRate = customer?.special?.promotionRate ?? null;
+
+        const voucherEntity = new VoucherEntity({
+          ...restVoucher,
+          customer: name
+            ? new CustomerEntity({ name, phoneNumber: phone })
+            : undefined,
+          special: promotionRate
+            ? new SpecialEntity({ promotionRate })
+            : undefined,
+          voucherRecords: vr.map((vRecord) => new VoucherRecordEntity(vRecord)),
+        });
+
+        return {
+          status: true,
+          message: 'Created Successfully!',
+          data: voucherEntity,
+        };
       } catch (error) {
         console.error(error);
 
@@ -231,6 +270,7 @@ export class VouchersService {
         customer: {
           select: {
             name: true,
+            phoneNumber: true,
             special: { select: { promotionRate: true } },
           },
         },
@@ -239,11 +279,14 @@ export class VouchersService {
 
     const { voucherRecords, customer, ...restVoucher } = voucher;
     const name = customer?.name ?? null;
+    const phone = customer?.phoneNumber ?? null;
     const promotionRate = customer?.special?.promotionRate ?? null;
 
     return new VoucherEntity({
       ...restVoucher,
-      customer: name ? new CustomerEntity({ name }) : undefined,
+      customer: name
+        ? new CustomerEntity({ name, phoneNumber: phone })
+        : undefined,
       special: promotionRate ? new SpecialEntity({ promotionRate }) : undefined,
       voucherRecords: voucherRecords.map((vr) => new VoucherRecordEntity(vr)),
     });
