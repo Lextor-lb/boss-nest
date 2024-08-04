@@ -66,12 +66,33 @@ export class ProductCategoriesService {
   async indexAll(): Promise<ProductCategoryEntity[]> {
     const productCategories = await this.prisma.productCategory.findMany({
       where: this.whereCheckingNullClause,
+      select: {
+        id: true,
+        name: true,
+        ProductCategoryProductFitting: {
+          select: {
+            productFitting: { select: { id: true, name: true } },
+          },
+        },
+      },
     });
-    return productCategories.map(
-      (productCategory) =>
-        new ProductCategoryEntity(createEntityProps(productCategory)),
-    );
+
+    return productCategories.map((productCategory) => {
+      const { ProductCategoryProductFitting, ...productCategoryData } =
+        productCategory;
+
+      const productFittings = ProductCategoryProductFitting.map(
+        (pcpf) =>
+          new ProductFittingEntity(createEntityProps(pcpf.productFitting)),
+      );
+
+      return new ProductCategoryEntity({
+        ...createEntityProps(productCategoryData),
+        productFittings,
+      });
+    });
   }
+
   async findAll({
     page,
     limit,
