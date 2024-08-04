@@ -10,8 +10,6 @@ import * as dotenv from 'dotenv';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 dotenv.config();
 
-// import { CustomBadRequestExceptionFilter } from './shared/exception/CustomBadRequestExceptionFilter';
-
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
@@ -27,12 +25,12 @@ async function bootstrap() {
     .setVersion('0.1')
     .addBearerAuth()
     .build();
-    
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
   const corsOptions: CorsOptions = {
-    origin: ['http://localhost:3000','https://bsnext.santar.store'], // Allow only this origin
+    origin: ['http://localhost:3000', 'https://bsnext.santar.store'], // Allow only this origin
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   };

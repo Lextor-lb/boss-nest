@@ -219,6 +219,7 @@ export class OrderService {
         (record) => ({
           productVariantId: record.productVariantId,
           salePrice: record.salePrice,
+          cost: record.salePrice,
           discount: 0, // Assuming no discount data is provided; adjust as needed
         }),
       );
@@ -232,6 +233,7 @@ export class OrderService {
         subTotal: order.subTotal,
         total: order.total,
         tax: 0,
+        customerId: null,
         createdByUserId: updateOrderDto.createdByUserId,
         updatedByUserId: updateOrderDto.createdByUserId,
         quantity: order.orderRecords.length,

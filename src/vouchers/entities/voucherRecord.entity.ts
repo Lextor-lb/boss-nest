@@ -6,6 +6,7 @@ import { VoucherRecord } from '@prisma/client';
 export class VoucherRecordEntity implements VoucherRecord {
   id: number;
   discount: number | null;
+  cost: number;
 
   @Expose()
   get productName() {

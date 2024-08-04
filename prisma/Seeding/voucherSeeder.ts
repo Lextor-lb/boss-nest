@@ -73,6 +73,7 @@ export default async function seedVouchers() {
         voucherId: id,
         productVariantId: variantId,
         discount: 10,
+        cost: productVariant.product.salePrice,
         product: productJsonData,
         createdAt: date,
         updatedAt: date,

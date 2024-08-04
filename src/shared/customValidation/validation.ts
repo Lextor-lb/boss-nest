@@ -6,7 +6,6 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { PrismaClient } from '@prisma/client';
-import { NotFoundException } from '@nestjs/common';
 
 const prisma = new PrismaClient();
 
@@ -19,6 +18,8 @@ export class PrismaExistsConstraint implements ValidatorConstraintInterface {
 
     const [entity] = args.constraints;
     switch (entity) {
+      case 'customer':
+        return await this.isCustomerExists(value);
       case 'product':
         return await this.isProductExists(value);
       case 'productVariant':
@@ -41,6 +42,14 @@ export class PrismaExistsConstraint implements ValidatorConstraintInterface {
       default:
         return false;
     }
+  }
+
+  // Customer
+  private async isCustomerExists(customerId: number) {
+    const type = await prisma.customer.findUnique({
+      where: { id: customerId, isArchived: null },
+    });
+    return !!type;
   }
   // Product
   private async isProductExists(productId: number) {
@@ -123,6 +132,8 @@ export class PrismaExistsConstraint implements ValidatorConstraintInterface {
   defaultMessage(args: ValidationArguments) {
     const [entity] = args.constraints;
     switch (entity) {
+      case 'customer':
+        return `Customer  with ID ${args.value} does not exist`;
       case 'product':
         return `Product  with ID ${args.value} does not exist`;
       case 'productVariant':
