@@ -1,3 +1,8 @@
+interface Sizing {
+    name: string;
+    count: number;
+  }
+  
 export class FittingReportEntity {
     id: number;
     name: string;
@@ -5,7 +10,7 @@ export class FittingReportEntity {
     originalPrice: number;
     salePrice: number;
     profit: number;
-    relatedSizings: Record<string, number>;
+    relatedSizings: Sizing[];
 
     constructor(partial: Partial<FittingReportEntity> = {}) {
         Object.assign(this, partial);
