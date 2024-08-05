@@ -2,7 +2,16 @@
 CREATE TYPE "Gender" AS ENUM ('MAN', 'LADY', 'UNISEX');
 
 -- CreateEnum
+CREATE TYPE "PaymentMethod" AS ENUM ('CASH', 'WALLET', 'CARD');
+
+-- CreateEnum
 CREATE TYPE "StatusStock" AS ENUM ('SOLDOUT');
+
+-- CreateEnum
+CREATE TYPE "Type" AS ENUM ('ONLINE', 'OFFLINE');
+
+-- CreateEnum
+CREATE TYPE "AgeRange" AS ENUM ('YOUNG', 'MIDDLE', 'OLD');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -14,6 +23,18 @@ CREATE TABLE "User" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "EcommerceUser" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "isArchived" TIMESTAMP(3),
+
+    CONSTRAINT "EcommerceUser_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -117,12 +138,14 @@ CREATE TABLE "ProductCategoryProductFitting" (
 CREATE TABLE "Product" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
+    "productCode" TEXT NOT NULL,
     "description" TEXT,
     "isEcommerce" BOOLEAN NOT NULL,
     "isPos" BOOLEAN NOT NULL,
     "gender" "Gender" NOT NULL,
     "stockPrice" INTEGER NOT NULL,
     "salePrice" INTEGER NOT NULL,
+    "discountPrice" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdByUserId" INTEGER,
@@ -140,7 +163,6 @@ CREATE TABLE "Product" (
 CREATE TABLE "ProductVariant" (
     "id" SERIAL NOT NULL,
     "shopCode" TEXT NOT NULL,
-    "productCode" TEXT NOT NULL,
     "colorCode" TEXT NOT NULL,
     "barcode" TEXT NOT NULL,
     "statusStock" "StatusStock",
@@ -148,12 +170,96 @@ CREATE TABLE "ProductVariant" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdByUserId" INTEGER,
     "updatedByUserId" INTEGER,
+    "isArchived" TIMESTAMP(3),
     "productId" INTEGER NOT NULL,
     "productSizingId" INTEGER NOT NULL,
     "mediaId" INTEGER,
-    "isArchived" TIMESTAMP(3),
 
     CONSTRAINT "ProductVariant_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Customer" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "phoneNumber" TEXT NOT NULL,
+    "address" TEXT,
+    "remark" TEXT,
+    "isArchived" TIMESTAMP(3),
+    "ageRange" "AgeRange" NOT NULL,
+    "dateOfBirth" TIMESTAMP(3),
+    "specialId" INTEGER NOT NULL,
+    "createdByUserId" INTEGER,
+    "updatedByUserId" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Customer_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Special" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "promotionRate" INTEGER NOT NULL,
+    "isArchived" TIMESTAMP(3),
+    "createdByUserId" INTEGER,
+    "updatedByUserId" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Special_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Voucher" (
+    "id" SERIAL NOT NULL,
+    "voucherCode" TEXT NOT NULL,
+    "discount" INTEGER NOT NULL DEFAULT 0,
+    "tax" INTEGER NOT NULL DEFAULT 0,
+    "paymentMethod" "PaymentMethod" NOT NULL,
+    "type" "Type" NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "subTotal" INTEGER NOT NULL,
+    "total" INTEGER NOT NULL,
+    "remark" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "isArchived" TIMESTAMP(3),
+    "createdByUserId" INTEGER,
+    "updatedByUserId" INTEGER,
+    "customerId" INTEGER,
+
+    CONSTRAINT "Voucher_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "VoucherRecord" (
+    "id" SERIAL NOT NULL,
+    "discount" INTEGER NOT NULL DEFAULT 0,
+    "product" JSONB,
+    "voucherId" INTEGER NOT NULL,
+    "productVariantId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "isArchived" TIMESTAMP(3),
+
+    CONSTRAINT "VoucherRecord_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "EcommerceCategory" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "isArchived" TIMESTAMP(3),
+    "createdByUserId" INTEGER,
+    "updatedByUserId" INTEGER,
+    "productCategoryId" INTEGER NOT NULL,
+    "mediaId" INTEGER,
+
+    CONSTRAINT "EcommerceCategory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -172,6 +278,9 @@ CREATE TABLE "_ProductCategoryToProductFitting" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "EcommerceUser_email_key" ON "EcommerceUser"("email");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "ProductBrand_mediaId_key" ON "ProductBrand"("mediaId");
 
 -- CreateIndex
@@ -179,6 +288,15 @@ CREATE UNIQUE INDEX "ProductVariant_barcode_key" ON "ProductVariant"("barcode");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ProductVariant_mediaId_key" ON "ProductVariant"("mediaId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Customer_phoneNumber_key" ON "Customer"("phoneNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Voucher_voucherCode_key" ON "Voucher"("voucherCode");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "EcommerceCategory_mediaId_key" ON "EcommerceCategory"("mediaId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_ProductFittingToProductSizing_AB_unique" ON "_ProductFittingToProductSizing"("A", "B");
@@ -275,6 +393,48 @@ ALTER TABLE "ProductVariant" ADD CONSTRAINT "ProductVariant_productSizingId_fkey
 
 -- AddForeignKey
 ALTER TABLE "ProductVariant" ADD CONSTRAINT "ProductVariant_mediaId_fkey" FOREIGN KEY ("mediaId") REFERENCES "Media"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Customer" ADD CONSTRAINT "Customer_specialId_fkey" FOREIGN KEY ("specialId") REFERENCES "Special"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Customer" ADD CONSTRAINT "Customer_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Customer" ADD CONSTRAINT "Customer_updatedByUserId_fkey" FOREIGN KEY ("updatedByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Special" ADD CONSTRAINT "Special_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Special" ADD CONSTRAINT "Special_updatedByUserId_fkey" FOREIGN KEY ("updatedByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Voucher" ADD CONSTRAINT "Voucher_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Voucher" ADD CONSTRAINT "Voucher_updatedByUserId_fkey" FOREIGN KEY ("updatedByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Voucher" ADD CONSTRAINT "Voucher_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "VoucherRecord" ADD CONSTRAINT "VoucherRecord_voucherId_fkey" FOREIGN KEY ("voucherId") REFERENCES "Voucher"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "VoucherRecord" ADD CONSTRAINT "VoucherRecord_productVariantId_fkey" FOREIGN KEY ("productVariantId") REFERENCES "ProductVariant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EcommerceCategory" ADD CONSTRAINT "EcommerceCategory_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EcommerceCategory" ADD CONSTRAINT "EcommerceCategory_updatedByUserId_fkey" FOREIGN KEY ("updatedByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EcommerceCategory" ADD CONSTRAINT "EcommerceCategory_productCategoryId_fkey" FOREIGN KEY ("productCategoryId") REFERENCES "ProductCategory"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EcommerceCategory" ADD CONSTRAINT "EcommerceCategory_mediaId_fkey" FOREIGN KEY ("mediaId") REFERENCES "Media"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ProductFittingToProductSizing" ADD CONSTRAINT "_ProductFittingToProductSizing_A_fkey" FOREIGN KEY ("A") REFERENCES "ProductFitting"("id") ON DELETE CASCADE ON UPDATE CASCADE;

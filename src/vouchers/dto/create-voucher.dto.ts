@@ -22,7 +22,12 @@ export class CreateVoucherDto {
   voucherCode: string;
 
   @IsOptional()
-  @Max(2)
+  @IsInt()
+  @IsEntityExists('customer')
+  customerId: number;
+
+  @IsOptional()
+  @Max(99)
   @IsInt()
   discount: number;
 
@@ -67,7 +72,7 @@ export class CreateVoucherDto {
 
 export class voucherRecordDto {
   @IsOptional()
-  @Max(2)
+  @Max(99)
   @IsInt()
   discount: number;
 
@@ -77,12 +82,10 @@ export class voucherRecordDto {
 
   @IsNotEmpty()
   @IsInt()
+  cost: number;
+
+  @IsNotEmpty()
+  @IsInt()
   @IsEntityExists('productVariant')
   productVariantId: number;
-
-  @IsOptional()
-  createdByUserId: number;
-
-  @IsOptional()
-  updatedByUserId: number;
 }

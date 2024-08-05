@@ -9,6 +9,8 @@ import { PrismaService } from 'src/prisma';
 import { UpdateProductVariantDto } from './dto/update-product-variant.dto';
 import { deleteFile } from 'src/shared/utils/deleteOldImageFile';
 import { RemoveManyProductVariantDto } from './dto/removeMany-product-variant.dto';
+import { ProductSizingEntity } from 'src/product-sizings/entity/product-sizing.entity';
+import { createEntityProps } from 'src/shared/utils/createEntityProps';
 
 @Injectable()
 export class ProductVariantsService {
@@ -18,6 +20,7 @@ export class ProductVariantsService {
   ) {}
   whereCheckingNullClause: Prisma.ProductVariantWhereInput = {
     isArchived: null,
+    statusStock: null,
   };
 
   async create(createProductVariantDto: CreateProductVariantDto) {
@@ -112,10 +115,22 @@ export class ProductVariantsService {
       if (imageFileUrl && oldImageFileUrl) {
         deleteFile(oldImageFileUrl);
       }
+      const { media, productSizing, ...updatedVariant } =
+        await this.prisma.productVariant.findUnique({
+          where: { id },
+          include: { productSizing: true, media: true },
+        });
 
       return {
         status: true,
         message: 'Updated Successfully!',
+        data: new ProductVariantEntity({
+          ...updatedVariant,
+          media: new MediaEntity(media),
+          productSizing: new ProductSizingEntity(
+            createEntityProps(productSizing),
+          ),
+        }),
       };
     } catch (error) {
       console.error(error);

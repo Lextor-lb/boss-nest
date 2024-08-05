@@ -81,8 +81,8 @@ export class EcommerceProductsService {
   }
 
   private buildTypeCondition(type: string) {
-    if (type === 'man') return { gender: Gender.MAN };
-    if (type === 'lady') return { gender: Gender.LADY };
+    if (type === 'man') return { gender: Gender.MEN };
+    if (type === 'lady') return { gender: Gender.WOMEN };
     if (type === 'unisex') return { gender: Gender.UNISEX };
     if (Number.isInteger(Number(type)))
       return { productCategoryId: Number(type) };

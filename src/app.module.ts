@@ -31,6 +31,8 @@ import { EcommerceCategoriesModule } from './ecommerce-categories/ecommerce-cate
 import { EcommerceProductsModule } from './ecommerce-products/ecommerce-products.module';
 import { CouponModule } from './coupon/coupon.module';
 import { SliderModule } from './slider/slider.module';
+import { OrderModule } from './order/order.module';
+import { FirebaseModule } from './firebase/firebase.module';
 
 @Module({
   imports: [
@@ -67,6 +69,8 @@ import { SliderModule } from './slider/slider.module';
     EcommerceProductsModule,
     CouponModule,
     SliderModule,
+    OrderModule,
+    FirebaseModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],

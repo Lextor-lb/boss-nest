@@ -43,20 +43,22 @@ Example json ---
     "voucher_code": "hhygyfs",               // unique
     "customerId": 1,                         // nullable
     "type": "ONLINE",                        // ONLINE, OFFLINE
-    "payment_method" : "CARD" ,              // CARD, WALLET, CASH
+    "paymentMethod" : "CARD" ,              // CARD, WALLET, CASH
     "discount": 10,                          // nullable
     "tax": 5,                                // nullable
-    "sub_total": 2000 ,
+    "subTotal": 2000 ,
     "total": 3000 ,
     "remark": "short note!"                  //nullable
     "voucherRecords": [
             {
                 "productVariantId" : 1,
                 "salePrice": 2000
+                "cost": 2000
                 "discount" : 10              // nullable
             },
              {
                 "productVariantId" : 2,
+                "cost": 2000
                 "salePrice": 2000
                 "discount" : 10              // nullable
             }

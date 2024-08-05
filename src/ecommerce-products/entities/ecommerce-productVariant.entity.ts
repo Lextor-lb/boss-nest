@@ -12,7 +12,7 @@ export class EcommerceProductVariantEntity {
 
   @Expose({ name: 'mediaUrl' })
   image(): string {
-    const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+    const BASE_URL = process.env.BASE_URL;
     return `${BASE_URL}${this.mediaUrl}`;
   }
 

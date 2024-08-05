@@ -9,6 +9,8 @@ import { UsersModule } from 'src/users/users.module';
 import { JwtStrategy } from './jwt.strategy';
 import { EcommerceJwtStrategy } from './ecommerce-jwt.strategy';
 import { EcommerceJwtAuthGuard } from './ecommerce-jwt-auth.guard';
+import { ConfigModule } from '@nestjs/config';
+import { FirebaseService } from 'src/firebase/firebase/firebase.service';
 
 export const jwtSecret = 'zjP9h6ZI5LoSKCRj';
 
@@ -21,6 +23,7 @@ export const jwtSecret = 'zjP9h6ZI5LoSKCRj';
       signOptions: { expiresIn: '7d' }, // e.g. 7d, 24h
     }),
     UsersModule,
+    ConfigModule
   ],
   controllers: [AuthController],
   providers: [
@@ -28,6 +31,7 @@ export const jwtSecret = 'zjP9h6ZI5LoSKCRj';
     EcommerceJwtAuthGuard,
     AuthService,
     JwtStrategy,
+    FirebaseService
   ],
 })
 export class AuthModule {}

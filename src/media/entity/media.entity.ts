@@ -11,7 +11,7 @@ export class MediaEntity implements Media {
 
   @Expose({ name: 'url' })
   image(): string {
-    const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+    const BASE_URL = process.env.BASE_URL;
     return `${BASE_URL}${this.url}`;
   }
 
