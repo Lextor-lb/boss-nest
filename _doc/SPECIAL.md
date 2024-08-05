@@ -23,20 +23,21 @@
 1. [Slider](SLIDER.md)
 1. [Coupon](COUPON.md)
 1. [Customer](CUSTOMER.md)
+1. [Special](SPECIAL.md)
 
-## Customer
+## Special
 
 
-### Customer Index (GET)
-
-```
-customers
-```
-
-### Customer Index All (GET)
+### Special Index (GET)
 
 ```
-customers/all
+specials
+```
+
+### Special Index All (GET)
+
+```
+specials/all
 ```
 | Arguments        | Type    | Action  | Description                  |
 | :--------------- | :------ | :------ | :--------------------------- |
@@ -44,50 +45,44 @@ customers/all
 | `orderDirection` | `param` | orderBy | **eg:orderDirection = desc** |
 | `search`         | `param` | search  | **name**                     |
 
-### Customer Show (GET)
+### Special Show (GET)
 
 ```
-customers/:id
+specials/:id
 ```
 
 ### Customer Create (POST)
 
 ```
-customers
+specials
 ```
 
 | Arguments  | Type     | Description                      |
 | :--------- | :------- | :------------------------------- |
-| `name`    | `string` | **Required** / **eg: "Monsoon Discount"** |
-| `phoneNumber`    | `string` | **Required** / **eg:"094824743"** |
-| `ageRange`    | `number` | **Required** / **eg:YOUNG/MIDDLE/OLD** |
-| `address`    | `string` | **Required** / **Bahan** |
-| `specialId`    | `number` | **Required** / **2** |
+| `name`    | `string` | **Required** / **eg: "VIP"** |
+| `promotionRate`    | `number` | **Required** / **eg:"10"** |
 
-### Customer Update (PUT)
+### Special Update (PUT)
 
 ```
-customers/:id
+specials/:id
 ```
 
 | Arguments  | Type     | Description                      |
 | :--------- | :------- | :------------------------------- |
-| `name`    | `string` | **Required** / **eg: "Monsoon Discount"** |
-| `phoneNumber`    | `string` | **Required** / **eg:"094824743"** |
-| `ageRange`    | `number` | **Required** / **eg:YOUNG/MIDDLE/OLD** |
-| `address`    | `string` | **Required** / **Bahan** |
-| `specialId`    | `number` | **Required** / **2** |
+| `name`    | `string` | **Required** / **eg: "VIP"** |
+| `promotionRate`    | `number` | **Required** / **eg:"10"** |
 
-### Customer Delete (DELETE)
+### Special Delete (DELETE)
 
 ```
-customers/:id
+specials/:id
 ```
 
-### Customer Delete Many (DELETE)
+### Special Delete Many (DELETE)
 
 ```
-customers
+specials
 ```
 
 | Arguments | Type    | Description                            |

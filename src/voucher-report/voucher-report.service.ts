@@ -49,6 +49,7 @@ export class VoucherReportService {
       voucherCode: voucher.voucherCode,
       qty: voucher.quantity,
       total: voucher.total,
+      payment: voucher.paymentMethod,
       createdAt: voucher.createdAt
     }))
 
@@ -169,6 +170,7 @@ export class VoucherReportService {
       voucherCode: voucher.voucherCode,
       tax: voucher.tax,
       qty: voucher.quantity,
+      payment: voucher.paymentMethod,
       total: voucher.total,
       createdAt: voucher.createdAt,
       date: new Date(voucher.createdAt).toLocaleTimeString(),
