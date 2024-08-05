@@ -29,6 +29,8 @@ import { SizingReportModule } from './sizing-report/sizing-report.module';
 import { FittingReportModule } from './fitting-report/fitting-report.module';
 import { EcommerceCategoriesModule } from './ecommerce-categories/ecommerce-categories.module';
 import { EcommerceProductsModule } from './ecommerce-products/ecommerce-products.module';
+import { CouponModule } from './coupon/coupon.module';
+import { SliderModule } from './slider/slider.module';
 import { OrderModule } from './order/order.module';
 import { FirebaseModule } from './firebase/firebase.module';
 
@@ -65,6 +67,8 @@ import { FirebaseModule } from './firebase/firebase.module';
     FittingReportModule,
     EcommerceCategoriesModule,
     EcommerceProductsModule,
+    CouponModule,
+    SliderModule,
     OrderModule,
     FirebaseModule,
   ],

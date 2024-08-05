@@ -27,6 +27,7 @@ export class BrandReportService {
     private readonly brandService: ProductBrandsService,
   ) {}
 
+  async generateReport(start:string,end:string,options: SearchOption): Promise<BrandReportPagination> {
   async generateReport(
     start: string,
     end: string,

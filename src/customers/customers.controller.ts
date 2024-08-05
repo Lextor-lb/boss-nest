@@ -21,6 +21,7 @@ import {
   MessageWithCustomer,
   FetchedCustomer,
   JwtAuthGuard,
+  RemoveManyCustomerDto,
 } from 'src';
 
 @Controller('customers')
@@ -111,6 +112,20 @@ export class CustomersController {
       status: true,
       message: 'Deleted Successfully!',
       data: new CustomerEntity(result),
+    };
+  }
+
+  @Delete()
+  async removeMany(
+    @Body() removeManyCustomerDto: RemoveManyCustomerDto,
+  ) {
+    const result = await this.customersService.removeMany(
+      removeManyCustomerDto,
+    );
+    return {
+      status: true,
+      message: 'Deleted Successfully!',
+      data: result,
     };
   }
 }

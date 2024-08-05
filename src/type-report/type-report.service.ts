@@ -25,7 +25,7 @@ export class TypeReportService {
     private readonly prisma: PrismaService,
     private readonly typeService: ProductTypesService,
   ) {}
-
+  
   async generateReport(
     start: string,
     end: string,

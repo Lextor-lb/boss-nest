@@ -1,6 +1,7 @@
 import { Optional } from '@nestjs/common';
 import { Media } from '@prisma/client';
 import { Exclude, Expose, Transform } from 'class-transformer';
+import { IsOptional } from 'class-validator';
 
 export class MediaEntity implements Media {
   id: number;
@@ -25,6 +26,9 @@ export class MediaEntity implements Media {
   // productVariantId: number | null;
   @Exclude()
   isArchived: Date | null;
+
+  @IsOptional()
+  imageType: 'desktop' | 'mobile';
 
   constructor(data: Partial<MediaEntity>) {
     Object.assign(this, data);
