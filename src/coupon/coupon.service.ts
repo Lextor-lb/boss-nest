@@ -7,6 +7,7 @@ import { CouponEntity } from './entities';
 import { createEntityProps } from 'src/shared/utils/createEntityProps';
 import { PaginatedCoupon } from 'src/shared/types/coupon';
 import { SearchOption } from 'src/shared/types';
+import { RemoveManyCouponDto } from './dto';
 
 @Injectable()
 export class CouponService {
@@ -104,5 +105,24 @@ export class CouponService {
     });
 
     return new CouponEntity(deletedCoupon);
+  }
+
+  async removeMany(removeManyCouponDto: RemoveManyCouponDto) {
+    const { ids } = removeManyCouponDto;
+
+    const { count } = await this.prisma.coupon.updateMany({
+      where: {
+        id: { in: ids },
+      },
+      data: {
+        isArchived: new Date(),
+      },
+    });
+
+    return {
+      status: true,
+      message: `Coupons with ids count of ${count} have been deleted successfully.`,
+      archivedIds: ids,
+    };
   }
 }

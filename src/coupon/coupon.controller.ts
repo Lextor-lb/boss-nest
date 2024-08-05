@@ -6,6 +6,7 @@ import { FetchedCoupon, MessageWithCoupon, PaginatedCoupon } from 'src/shared/ty
 import { SearchOption } from 'src/shared/types';
 import { CouponEntity } from './entities';
 import { JwtAuthGuard } from 'src/auth';
+import { RemoveManyCouponDto } from './dto';
 
 @Controller('coupon')
 @UseGuards(JwtAuthGuard)
@@ -85,6 +86,20 @@ export class CouponController {
       status: true,
       message: 'Deleted Successfully',
       data: null
+    };
+  }
+
+  @Delete()
+  async removeMany(
+    @Body() removeManyCouponDto: RemoveManyCouponDto,
+  ) {
+    const result = await this.couponService.removeMany(
+      removeManyCouponDto,
+    );
+    return {
+      status: true,
+      message: 'Deleted Successfully!',
+      data: result,
     };
   }
 }

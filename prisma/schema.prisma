@@ -55,8 +55,8 @@ model User {
   CreatedEcommerceCoupons Coupon[] @relation("CreatedEcommerceCoupons")
   UpdatedEcommerceCoupons Coupon[] @relation("UpdatedEcommerceCoupons")
 
-  CreatedEcommerceSlides Slider[] @relation("CreatedEcommerceSlides")
-  UpdatedEcommerceSlides Slider[] @relation("UpdatedEcommerceSlides")
+  // CreatedEcommerceSlides Slider[] @relation("CreatedEcommerceSlides")
+  // UpdatedEcommerceSlides Slider[] @relation("UpdatedEcommerceSlides")
 }
 
 model EcommerceUser {
@@ -451,9 +451,9 @@ model Slider {
   isArchived   DateTime?
 
   // One to Many
-  createdByUser       User?     @relation("CreatedEcommerceSlides", fields: [createdByUserId], references: [id])
+  // createdByUser       User?     @relation("CreatedEcommerceSlides", fields: [createdByUserId], references: [id])
   createdByUserId     Int?
-  updatedByUser       User?     @relation("UpdatedEcommerceSlides", fields: [updatedByUserId], references: [id])
+  // updatedByUser       User?     @relation("UpdatedEcommerceSlides", fields: [updatedByUserId], references: [id])
   updatedByUserId     Int?
 }
 
