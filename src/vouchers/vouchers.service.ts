@@ -62,6 +62,7 @@ export class VouchersService {
           select: {
             name: true,
             gender: true,
+            productCode: true,
             salePrice: true,
             productBrand: { select: { name: true } },
             productType: { select: { name: true } },
