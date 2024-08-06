@@ -38,6 +38,7 @@ export class ProductVariantsService {
 
           const productVariant = await transactionClient.productVariant.create({
             data: { ...variantData, mediaId: uploadedMedia.id },
+            include: {productSizing: true}
           });
 
           return { ...productVariant, media: uploadedMedia };
@@ -45,6 +46,7 @@ export class ProductVariantsService {
       );
       return new ProductVariantEntity({
         ...productVariant,
+        productSizing: new ProductSizingEntity(createEntityProps(productVariant.productSizing)),
         media: new MediaEntity(productVariant.media),
       });
     } catch (error) {
@@ -69,6 +71,9 @@ export class ProductVariantsService {
 
       const productVariant = await transactionClient.productVariant.create({
         data: { ...variantData, mediaId: uploadedMedia.id },
+        include: {
+          productSizing: true
+        }
       });
 
       return productVariant;
