@@ -18,6 +18,7 @@ export class CustomerEntity {
 
   special: SpecialEntity;
   isArchived: Date | null;
+  totalVouchers: number;
 
   @Exclude()
   createdAt: Date;

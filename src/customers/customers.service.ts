@@ -22,7 +22,7 @@ export class CustomersService {
 
   async create(createCustomerDto: CreateCustomerDto): Promise<CustomerEntity> {
     const customer = await this.prisma.customer.create({
-      data: createCustomerDto as Prisma.CustomerCreateInput,
+      data: createCustomerDto,
       include: { special: true }, // Include special
     });
     return new CustomerEntity(createEntityProps(customer));
