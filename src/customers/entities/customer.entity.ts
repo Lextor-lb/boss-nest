@@ -1,3 +1,4 @@
+import { Gender } from '@prisma/client';
 import { Exclude } from 'class-transformer';
 import { SpecialEntity } from 'src/specials';
 
@@ -5,6 +6,7 @@ export class CustomerEntity {
   id: number;
   name: string;
   phoneNumber: string;
+  gender: Gender;
   address: string;
   remark: string;
 

@@ -291,6 +291,7 @@ model Customer {
   id          Int       @id @default(autoincrement())
   name        String
   phoneNumber String    @unique
+  gender      Gender
   address     String?
   remark      String?
   isArchived  DateTime?

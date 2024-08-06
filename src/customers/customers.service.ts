@@ -1,6 +1,6 @@
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import {
@@ -22,7 +22,7 @@ export class CustomersService {
 
   async create(createCustomerDto: CreateCustomerDto): Promise<CustomerEntity> {
     const customer = await this.prisma.customer.create({
-      data: createCustomerDto,
+      data: createCustomerDto as Prisma.CustomerCreateInput,
       include: { special: true }, // Include special
     });
     return new CustomerEntity(createEntityProps(customer));

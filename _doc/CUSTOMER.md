@@ -62,6 +62,8 @@ customers
 | `phoneNumber`    | `string` | **Required** / **eg:"094824743"** |
 | `ageRange`    | `number` | **Required** / **eg:YOUNG/MIDDLE/OLD** |
 | `address`    | `string` | **Required** / **Bahan** |
+| `gender`    | `enum`    | **Nullable** / **Only ( MEN, WOMEN, UNISEX )** |
+| `remark`    | `string` | **Required** / **A thit yout yin pyaw par oo** |
 | `specialId`    | `number` | **Required** / **2** |
 
 ### Customer Update (PUT)
