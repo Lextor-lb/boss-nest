@@ -284,6 +284,7 @@ model ProductVariant {
   //One to Many inverse
   voucherRecords VoucherRecord[] @relation("voucherRecordproductVariants")
   orderRecords   OrderRecord[]   @relation("OrderRecordproductVariants")
+  wishlistRecords WishListRecord[] @relation("wishListRecordProductVaiants")
 }
 
 model Customer {
@@ -387,6 +388,7 @@ model EcommerceUser {
   updatedAt  DateTime  @updatedAt
   isArchived DateTime?
   orders     Order[]   @relation("ecommerceUserOrder")
+  wishLists  WishList[] @relation("ecommerceUserWishList")
 }
 
 model EcommerceCategory {
@@ -487,6 +489,32 @@ model OrderRecord {
 
   order          Order          @relation("orderRecordOrders", fields: [orderId], references: [id])
   productVariant ProductVariant @relation("OrderRecordproductVariants", fields: [productVariantId], references: [id])
+}
+
+model WishList {
+  id               Int            @id @default(autoincrement())
+  wishlistId       String         @unique
+  ecommerceUserId  Int
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime?      @updatedAt
+  isArchived       DateTime?
+
+  ecommerceUser    EcommerceUser  @relation("ecommerceUserWishList", fields: [ecommerceUserId], references: [id])
+  wishlistRecords  WishListRecord[] @relation("wishListRecords")
+}
+
+model WishListRecord {
+  id               Int            @id @default(autoincrement())
+  productVariantId Int
+  salePrice        Int
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  wishlistId       Int
+
+  isArchived       DateTime?
+
+  wishlist         WishList       @relation("wishListRecords", fields: [wishlistId], references: [id])
+  productVariant   ProductVariant @relation("wishListRecordProductVaiants", fields: [productVariantId], references: [id])
 }
 
 enum Gender {

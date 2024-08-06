@@ -33,6 +33,7 @@ import { CouponModule } from './coupon/coupon.module';
 import { SliderModule } from './slider/slider.module';
 import { OrderModule } from './order/order.module';
 import { FirebaseModule } from './firebase/firebase.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { FirebaseModule } from './firebase/firebase.module';
     SliderModule,
     OrderModule,
     FirebaseModule,
+    WishlistModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],
