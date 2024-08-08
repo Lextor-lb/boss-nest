@@ -11,21 +11,21 @@ import { differenceInDays, format, parse } from 'date-fns';
 
 @Injectable()
 export class VoucherReportService {
-
   constructor(
     private readonly prisma: PrismaService,
-    private readonly vouchersService: VouchersService
-  ){}
+    private readonly vouchersService: VouchersService,
+  ) {}
 
-  async generateReport(options: SearchOption): Promise<VoucherReportPagination> {
-    
+  async generateReport(
+    options: SearchOption,
+  ): Promise<VoucherReportPagination> {
     // Start Timer
     const start = new Date();
-    start.setHours(0,0,0,0);
+    start.setHours(0, 0, 0, 0);
 
     // End of Hour
     const end = new Date();
-    end.setHours(23,59,59,999);
+    end.setHours(23, 59, 59, 999);
 
     console.log(`Generating report for date range: ${start} - ${end}`);
 
@@ -34,72 +34,82 @@ export class VoucherReportService {
       where: {
         createdAt: {
           gte: start,
-          lte: end
-        }
+          lte: end,
+        },
       },
       include: {
-        voucherRecords: true
-      }
-    })
+        voucherRecords: true,
+      },
+    });
 
     console.log(`Vouchers found: ${vouchers.length}`, vouchers);
 
-    const voucherReports = vouchers.map(voucher => new VoucherReportEntity({
-      id: voucher.id,
-      voucherCode: voucher.voucherCode,
-      qty: voucher.quantity,
-      total: voucher.total,
-      payment: voucher.paymentMethod,
-      createdAt: voucher.createdAt
-    }))
+    const voucherReports = vouchers.map(
+      (voucher) =>
+        new VoucherReportEntity({
+          id: voucher.id,
+          voucherCode: voucher.voucherCode,
+          qty: voucher.quantity,
+          total: voucher.total,
+          payment: voucher.paymentMethod,
+          createdAt: voucher.createdAt,
+        }),
+    );
 
     //Pagination Details
     const page = options.page || 1;
     const limit = options.limit || 10;
     const total = vouchers.length;
-    const totalPages = Math.ceil(total/limit);
+    const totalPages = Math.ceil(total / limit);
 
- // Sort the reports based on orderDirection
- const orderDirection = options.orderDirection || 'asc';
- const sortedReports = voucherReports.sort((a, b) => {
-   if (orderDirection === 'asc') {
-     return a.createdAt.getTime() - b.createdAt.getTime();
-   } else {
-     return b.createdAt.getTime() - a.createdAt.getTime();
-   }
- });
+    // Sort the reports based on orderDirection
+    const orderDirection = options.orderDirection || 'asc';
+    const sortedReports = voucherReports.sort((a, b) => {
+      if (orderDirection === 'asc') {
+        return a.createdAt.getTime() - b.createdAt.getTime();
+      } else {
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      }
+    });
 
-    const paginatedVouchers = sortedReports.slice((page - 1) * limit, page * limit);
+    const paginatedVouchers = sortedReports.slice(
+      (page - 1) * limit,
+      page * limit,
+    );
 
-    return { 
-    data: paginatedVouchers,
-    total,
-    page,
-    limit,
-    totalPages,
-    orderDirection
-  };
+    return {
+      data: paginatedVouchers,
+      total,
+      page,
+      limit,
+      totalPages,
+      orderDirection,
+    };
     // return this.vouchersService.
 
-    // const [allVouchers, allVoucherRecords,paginatedVouchers] = 
+    // const [allVouchers, allVoucherRecords,paginatedVouchers] =
     //   await Promise.all([
     //      this.vouchersService.barcode()
     //   ])
   }
 
-  async customReport(start: string,end: string,options: SearchOption): Promise<VoucherReportPagination> {
-
+  async customReport(
+    start: string,
+    end: string,
+    options: SearchOption,
+  ): Promise<VoucherReportPagination> {
     const startDate = parse(start, 'dd-MM-yyyy', new Date());
     const endDate = parse(end, 'dd-MM-yyyy', new Date());
 
     const daysDiff = differenceInDays(endDate, startDate);
-    let formatFunc: (date:Date) => string;
+    let formatFunc: (date: Date) => string;
 
-    if(daysDiff <= 30) {
-      formatFunc = (date: Date) => format(date,'dd/MM/yyyy');
-    }else if(daysDiff <+ 60) {
-      formatFunc = (date: Date) => `Week ${Math.ceil(date.getDate()/7)}/${date.getFullYear()}`;
-    }else{
+    if (daysDiff <= 30) {
+      formatFunc = (date: Date) => format(date, 'dd/MM/yyyy');
+    } else if (daysDiff < +60) {
+      formatFunc = (date: Date) =>
+        `Week ${Math.ceil(date.getDate() / 7)}/${date.getFullYear()}`;
+    } else {
       formatFunc = (date: Date) => format(date, 'MM/yyyy');
     }
 
@@ -112,37 +122,40 @@ export class VoucherReportService {
       where: {
         createdAt: {
           gte: isoStartDate,
-          lt: isoEndDate
-        }
+          lt: isoEndDate,
+        },
       },
       include: {
-        voucherRecords: true
-      }
+        voucherRecords: true,
+      },
     });
 
     console.log(`Vouchers found: ${vouchers.length}`, vouchers);
 
-    const chartDataMap = new Map<string, {totalAmount:number, voucherCount: number}>();
+    const chartDataMap = new Map<
+      string,
+      { totalAmount: number; voucherCount: number }
+    >();
 
-    vouchers.forEach(voucher => {
+    vouchers.forEach((voucher) => {
       const period = formatFunc(new Date(voucher.createdAt));
       const totalAmount = voucher.total;
       const voucherCount = voucher.voucherRecords.length;
 
-      if(!chartDataMap.has(period)){
-        chartDataMap.set(period, {totalAmount: 0, voucherCount: 0});
+      if (!chartDataMap.has(period)) {
+        chartDataMap.set(period, { totalAmount: 0, voucherCount: 0 });
       }
 
       const data = chartDataMap.get(period);
       data.totalAmount += totalAmount;
-      data.voucherCount += voucherCount
-    })
+      data.voucherCount += voucherCount;
+    });
 
     // Prepare chart data
     const chartData = Array.from(chartDataMap, ([period, data]) => ({
       period,
       totalAmount: data.totalAmount,
-      voucherCount: data.voucherCount
+      voucherCount: data.voucherCount,
     }));
 
     // Pagination Details
@@ -162,20 +175,19 @@ export class VoucherReportService {
     });
 
     // Paginate the sorted results
-    const paginatedVouchers = sortedReports.slice(
-      (page - 1) * limit, 
-      page * limit
-    ).map((voucher) => ({
-      id: voucher.id,
-      voucherCode: voucher.voucherCode,
-      tax: voucher.tax,
-      qty: voucher.quantity,
-      payment: voucher.paymentMethod,
-      total: voucher.total,
-      createdAt: voucher.createdAt,
-      date: new Date(voucher.createdAt).toLocaleTimeString(),
-      time: new Date(voucher.createdAt).toLocaleDateString()
-    }));
+    const paginatedVouchers = sortedReports
+      .slice((page - 1) * limit, page * limit)
+      .map((voucher) => ({
+        id: voucher.id,
+        voucherCode: voucher.voucherCode,
+        tax: voucher.tax,
+        qty: voucher.quantity,
+        payment: voucher.paymentMethod,
+        total: voucher.total,
+        createdAt: voucher.createdAt,
+        date: new Date(voucher.createdAt).toLocaleTimeString(),
+        time: new Date(voucher.createdAt).toLocaleDateString(),
+      }));
 
     return {
       chartData,

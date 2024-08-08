@@ -111,13 +111,13 @@ export class VouchersService {
           voucherData,
           voucherRecords,
         );
-  
+
         await this.createVoucherRecords(
           transactionClient,
           voucher.id,
           voucherRecords,
         );
-  
+
         const createdVoucher = await transactionClient.voucher.findUnique({
           where: { id: voucher.id },
           include: {
@@ -143,20 +143,22 @@ export class VouchersService {
             },
           },
         });
-  
+
         if (!createdVoucher) {
           throw new Error('Failed to fetch created voucher');
         }
-  
+
         const { voucherRecords: vr, customer, ...restVoucher } = createdVoucher;
         const promotionRate = customer?.special?.promotionRate ?? null;
-  
+
         // Create CustomerEntity with the full customer object
         const customerEntity = new CustomerEntity({
-          customer,
-          special: promotionRate ? new SpecialEntity({ promotionRate }) : undefined
+          ...customer,
+          special: promotionRate
+            ? new SpecialEntity({ promotionRate })
+            : undefined,
         });
-  
+
         const voucherEntity = new VoucherEntity({
           ...restVoucher,
           customer: customerEntity,
@@ -165,7 +167,7 @@ export class VouchersService {
             : undefined,
           voucherRecords: vr.map((vRecord) => new VoucherRecordEntity(vRecord)),
         });
-  
+
         return {
           status: true,
           message: 'Created Successfully!',
@@ -177,8 +179,7 @@ export class VouchersService {
       }
     });
   }
-  
-  
+
   private async createVoucher(
     transactionClient: PrismaClient,
     voucherData: Omit<CreateVoucherDto, 'voucherRecords'>,
@@ -301,21 +302,22 @@ export class VouchersService {
         },
       },
     });
-  
+
     const { voucherRecords, customer, ...restVoucher } = voucher;
     const promotionRate = customer?.special?.promotionRate ?? null;
-  
+
     return new VoucherEntity({
       ...restVoucher,
       customer: customer
         ? new CustomerEntity({
-            customer,
-            special: promotionRate ? new SpecialEntity({ promotionRate }) : undefined,
+            ...customer,
+            special: promotionRate
+              ? new SpecialEntity({ promotionRate })
+              : undefined,
           })
         : undefined,
       special: promotionRate ? new SpecialEntity({ promotionRate }) : undefined,
       voucherRecords: voucherRecords.map((vr) => new VoucherRecordEntity(vr)),
     });
   }
-  
 }

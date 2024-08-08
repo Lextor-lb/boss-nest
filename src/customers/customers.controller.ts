@@ -30,18 +30,20 @@ export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
   @Get('analysis')
-  async analysis(){
+  async analysis() {
     const result = await this.customersService.analysis();
 
     return {
       status: true,
       message: 'Fetched Successfully',
-      data: result
-    }
+      data: result,
+    };
   }
 
   @Post()
   async create(@Body() createCustomerDto: CreateCustomerDto, @Req() req) {
+    createCustomerDto.createdByUserId = req.user.id;
+    createCustomerDto.updatedByUserId = req.user.id;
     return this.customersService.create(createCustomerDto);
   }
 
@@ -51,7 +53,7 @@ export class CustomersController {
     return {
       status: true,
       message: 'Fetched Successfully!',
-      data: customers.map((customer) => new CustomerEntity({customer})),
+      data: customers.map((customer) => new CustomerEntity(customer)),
     };
   }
 
@@ -70,7 +72,7 @@ export class CustomersController {
       const customers = await this.customersService.findAll(searchOptions);
 
       return {
-        data: customers.data.map((customer) => new CustomerEntity({ customer })),
+        data: customers,
         page: customers.page,
         limit: customers.limit,
         total: customers.total,
@@ -88,7 +90,8 @@ export class CustomersController {
     if (!customer) {
       throw new NotFoundException(`Customer with id ${id} not found`);
     }
-    return new CustomerEntity({ customer });
+
+    return new CustomerEntity(customer);
   }
 
   @Patch(':id')
@@ -105,7 +108,7 @@ export class CustomersController {
     return {
       status: true,
       message: 'Updated Successfully!',
-      data: new CustomerEntity({ customer: updatedCustomer }),
+      data: new CustomerEntity(updatedCustomer),
     };
   }
 
@@ -117,14 +120,12 @@ export class CustomersController {
     return {
       status: true,
       message: 'Deleted Successfully!',
-      data: new CustomerEntity({ customer: result }),
+      data: new CustomerEntity(result),
     };
   }
 
   @Delete()
-  async removeMany(
-    @Body() removeManyCustomerDto: RemoveManyCustomerDto,
-  ) {
+  async removeMany(@Body() removeManyCustomerDto: RemoveManyCustomerDto) {
     const result = await this.customersService.removeMany(
       removeManyCustomerDto,
     );

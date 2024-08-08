@@ -1,17 +1,17 @@
-import { AgeRange, Customer, CustomerGender, Gender, Voucher } from '@prisma/client';
-import { Exclude } from 'class-transformer';
+import { AgeRange, Customer, CustomerGender, Voucher } from '@prisma/client';
+import { Exclude, Expose } from 'class-transformer';
 import { SpecialEntity } from 'src/specials/entities/special.entity';
 
-interface CustomerEntityProps {
-  name?: string;
-  phoneNumber?: string;
-  customer: Customer;
-  special?: SpecialEntity;
-  totalVoucher?: number;
-  vouchers?: Voucher[];
-}
+// interface CustomerEntityProps {
+//   name?: string;
+//   phoneNumber?: string;
+//   customer: CustomerEntity;
+//   special?: SpecialEntity;
+//   totalVoucher?: number;
+//   vouchers?: Voucher[];
+// }
 
-export class CustomerEntity {
+export class CustomerEntity implements Customer {
   id: number;
   name: string;
   phoneNumber: string;
@@ -21,7 +21,17 @@ export class CustomerEntity {
   address: string;
   remark: string;
   specialId: number;
+  @Expose()
+  get totalVoucher(): number {
+    return this.vouchers ? this.vouchers.length : 0;
+  }
 
+  @Expose()
+  get totalPrice(): number {
+    return this.vouchers
+      ? this.vouchers.reduce((sum, voucher) => sum + voucher.total, 0)
+      : 0;
+  }
   @Exclude()
   createdByUserId: number;
 
@@ -31,7 +41,6 @@ export class CustomerEntity {
   special: SpecialEntity;
   isArchived: Date | null;
   vouchers?: Voucher[];
-  totalVoucher?: number;
 
   @Exclude()
   createdAt: Date;
@@ -39,23 +48,9 @@ export class CustomerEntity {
   @Exclude()
   updatedAt: Date;
 
-  constructor({ customer, special, totalVoucher, vouchers }: CustomerEntityProps) {
-    this.id = customer.id;
-    this.name = customer.name;
-    this.phoneNumber = customer.phoneNumber;
-    this.gender = customer.gender;
-    this.ageRange = customer.ageRange;
-    this.dateOfBirth = customer.dateOfBirth;
-    this.address = customer.address;
-    this.remark = customer.remark;
-    this.createdByUserId = customer.createdByUserId;
-    this.updatedByUserId = customer.updatedByUserId;
-    this.createdAt = customer.createdAt;
-    this.updatedAt = customer.updatedAt;
-    this.special = special;
-    this.specialId = customer.specialId;
-    this.isArchived = customer.isArchived;
-    this.totalVoucher = totalVoucher;
-    this.vouchers = vouchers;
+  constructor(partial: Partial<CustomerEntity> = {}) {
+    Object.assign(this, partial);
+    // this.initializeEntities(partial);
   }
+  // private initializeEntities(partial: Partial<CustomerEntity>): void {}
 }
