@@ -79,6 +79,7 @@ export class SliderEntity {
     ];
 
     mediaKeys.forEach(key => {
+
       if (slider[key.desktopImage]) {
         this[key.desktopImage] = slider[key.desktopImage];
       }
@@ -86,6 +87,8 @@ export class SliderEntity {
       if (slider[key.mobileImage]) {
         this[key.mobileImage] = slider[key.mobileImage];
       }
+
+      
     });
   }
 }
