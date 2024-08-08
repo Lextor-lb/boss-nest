@@ -30,7 +30,7 @@
 ### Slider Index (GET)
 
 ```
-slider
+slider/all
 ```
 
 ### Slider Show (GET)
