@@ -93,7 +93,7 @@ export class SliderService {
     )
   }
 
-  async findOne(id:number) {
+  async findOne(id:number): Promise<SliderEntity>  {
     const slider = await this.prisma.slider.findUnique({
       where: {id},
       include: {
@@ -112,108 +112,111 @@ export class SliderService {
       throw new NotFoundException(`Slide with ID ${id} not found`);
     }
 
-    return slider;
+    return new SliderEntity(slider);
   }
 
-  update(id: number, updateSliderDto: UpdateSliderDto, files: Express.Multer.File[], userId: number) {
+  update(id: number, updateSliderDto: UpdateSliderDto, files: Express.Multer.File[], userId: number): Promise<SliderEntity> {
     console.log('Update method called');
     console.log('Received ID:', id);
     console.log('Received DTO:', updateSliderDto);
     console.log('Received files:', files);
     console.log('Received user ID:', userId);
-
+  
     return new Promise((resolve, reject) => {
-        let slider;
-        this.prisma.slider.findUnique({
-            where: { id },
-            include: {
-                place1Desktop: true,
-                place1Mobile: true,
-                place2Desktop: true,
-                place2Mobile: true,
-                place3Desktop: true,
-                place3Mobile: true,
-                place4Desktop: true,
-                place4Mobile: true,
-            },
-        })
+      let slider;
+      this.prisma.slider.findUnique({
+        where: { id },
+        include: {
+          place1Desktop: true,
+          place1Mobile: true,
+          place2Desktop: true,
+          place2Mobile: true,
+          place3Desktop: true,
+          place3Mobile: true,
+          place4Desktop: true,
+          place4Mobile: true,
+        },
+      })
         .then(fetchedSlider => {
-            slider = fetchedSlider;
-            console.log('Fetched slider: ', slider);
-
-            if (!slider) {
-                console.log(`Slider with ID ${id} not found`);
-                return reject(new NotFoundException(`Slider with ID ${id} not found`));
-            }
-
-            const updatedMedia = {};
-            const mediaFields = [
-                'place1Desktop', 'place1Mobile',
-                'place2Desktop', 'place2Mobile',
-                'place3Desktop', 'place3Mobile',
-                'place4Desktop', 'place4Mobile'
-            ];
-
-            const updatePromises = mediaFields.map(field => {
-                const file = files.find(f => f.fieldname === field);
-                if (file) {
-                    return resizeImage(file.path)
-                        .then(() => this.prisma.media.update({
-                            where: { id: slider[field]?.id },
-                            data: { url: `/uploads/${file.filename}` }
-                        }))
-                        .then(updatedMediaRecord => {
-                            updatedMedia[field] = { connect: { id: updatedMediaRecord.id } };
-                        })
-                        .catch(error => {
-                            console.error(`Error updating media for field ${field} with file ${file.fieldname}: `, error);
-                        });
-                }
-            });
-
-            return Promise.all(updatePromises)
-                .then(() => {
-                    const updateData = {
-                        ...updateSliderDto as Prisma.SliderUpdateInput,
-                        ...updatedMedia,
-                        updatedAt: new Date(),
-                        updatedByUserId: userId
-                    };
-
-                    for (const key in updateData) {
-                        if (updateData[key] === undefined) {
-                            delete updateData[key];
-                        }
-                    }
-
-                    return this.prisma.slider.update({
-                        where: { id },
-                        data: updateData,
-                        include: {
-                            place1Desktop: true,
-                            place1Mobile: true,
-                            place2Desktop: true,
-                            place2Mobile: true,
-                            place3Desktop: true,
-                            place3Mobile: true,
-                            place4Desktop: true,
-                            place4Mobile: true,
-                        },
-                    });
-                })
-                .then(updatedSlider => {
-                    resolve(updatedSlider);
+          slider = fetchedSlider;
+          console.log('Fetched slider: ', slider);
+  
+          if (!slider) {
+            console.log(`Slider with ID ${id} not found`);
+            return reject(new NotFoundException(`Slider with ID ${id} not found`));
+          }
+  
+          const updatedMedia = {};
+          const mediaFields = [
+            'place1Desktop', 'place1Mobile',
+            'place2Desktop', 'place2Mobile',
+            'place3Desktop', 'place3Mobile',
+            'place4Desktop', 'place4Mobile'
+          ];
+  
+          const updatePromises = mediaFields.map(field => {
+            const file = files.find(f => f.fieldname === field);
+            if (file) {
+              return resizeImage(file.path)
+                .then(() => this.prisma.media.update({
+                  where: { id: slider[field]?.id },
+                  data: { url: `/uploads/${file.filename}` }
+                }))
+                .then(updatedMediaRecord => {
+                  updatedMedia[field] = { connect: { id: updatedMediaRecord.id } };
                 })
                 .catch(error => {
-                    console.error('Error updating slider: ', error);
-                    reject(error);
+                  console.error(`Error updating media for field ${field} with file ${file.fieldname}: `, error);
                 });
+            }
+          });
+  
+          return Promise.all(updatePromises)
+            .then(() => {
+              const updateData = {
+                ...updateSliderDto as Prisma.SliderUpdateInput,
+                ...updatedMedia,
+                updatedAt: new Date(),
+                updatedByUserId: userId
+              };
+  
+              // Remove undefined fields from updateData
+              for (const key in updateData) {
+                if (updateData[key] === undefined) {
+                  delete updateData[key];
+                }
+              }
+  
+              return this.prisma.slider.update({
+                where: { id },
+                data: updateData,
+                include: {
+                  place1Desktop: true,
+                  place1Mobile: true,
+                  place2Desktop: true,
+                  place2Mobile: true,
+                  place3Desktop: true,
+                  place3Mobile: true,
+                  place4Desktop: true,
+                  place4Mobile: true,
+                },
+              });
+            })
+            .then(updatedSlider => {
+              console.log('Updated slider: ', updatedSlider);
+              resolve(new SliderEntity(updatedSlider)); // Transform the result into SliderEntity
+            })
+            .catch(error => {
+              console.error('Error updating slider: ', error);
+              reject(error);
+            });
         })
         .catch(error => {
-            console.error(`Error fetching slider with ID ${id}:`, error);
-            reject(error);
+          console.error(`Error fetching slider with ID ${id}:`, error);
+          reject(error);
         });
     });
-}
+  }
+  
 
 }
