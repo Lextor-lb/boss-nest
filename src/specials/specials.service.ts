@@ -38,6 +38,7 @@ export class SpecialsService {
     const [total, specials] = await this.prisma.$transaction([
       this.prisma.special.count({
         where: {
+          ...this.whereCheckingNullClause,
           name: {
             contains: search,
             mode: 'insensitive',

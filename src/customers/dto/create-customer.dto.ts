@@ -1,4 +1,4 @@
-import { AgeRange, Gender } from '@prisma/client';
+import { AgeRange, CustomerGender, Gender } from '@prisma/client';
 import {
   IsEnum,
   IsInt,
@@ -20,16 +20,20 @@ export class CreateCustomerDto {
   ageRange: AgeRange;
 
   @IsNotEmpty()
-  @IsEnum(Gender)
-  gender: Gender;
+  @IsEnum(CustomerGender)
+  gender: CustomerGender;
 
   @IsOptional()
   @IsString()
   address: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsInt()
-  specialId: number;
+  specialId?: number;
+
+  @IsOptional()
+  @IsString()
+  remark: string;
 
   @IsOptional()
   createdByUserId: number;

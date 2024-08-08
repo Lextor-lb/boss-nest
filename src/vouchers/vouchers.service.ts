@@ -111,48 +111,61 @@ export class VouchersService {
           voucherData,
           voucherRecords,
         );
-
+  
         await this.createVoucherRecords(
           transactionClient,
           voucher.id,
           voucherRecords,
         );
-
+  
         const createdVoucher = await transactionClient.voucher.findUnique({
           where: { id: voucher.id },
           include: {
             voucherRecords: true,
             customer: {
               select: {
+                id: true,
                 name: true,
+                special: true,
                 phoneNumber: true,
-                special: { select: { promotionRate: true } },
+                gender: true,
+                address: true,
+                remark: true,
+                isArchived: true,
+                ageRange: true,
+                dateOfBirth: true,
+                specialId: true,
+                createdByUserId: true,
+                updatedByUserId: true,
+                createdAt: true,
+                updatedAt: true,
               },
             },
           },
         });
-        // return createdVoucher;
+  
         if (!createdVoucher) {
           throw new Error('Failed to fetch created voucher');
         }
-
-        // Transform the fetched voucher data into a VoucherEntity
+  
         const { voucherRecords: vr, customer, ...restVoucher } = createdVoucher;
-        const name = customer?.name ?? null;
-        const phone = customer?.phoneNumber ?? null;
         const promotionRate = customer?.special?.promotionRate ?? null;
-
+  
+        // Create CustomerEntity with the full customer object
+        const customerEntity = new CustomerEntity({
+          customer,
+          special: promotionRate ? new SpecialEntity({ promotionRate }) : undefined
+        });
+  
         const voucherEntity = new VoucherEntity({
           ...restVoucher,
-          customer: name
-            ? new CustomerEntity({ name, phoneNumber: phone })
-            : undefined,
+          customer: customerEntity,
           special: promotionRate
             ? new SpecialEntity({ promotionRate })
             : undefined,
           voucherRecords: vr.map((vRecord) => new VoucherRecordEntity(vRecord)),
         });
-
+  
         return {
           status: true,
           message: 'Created Successfully!',
@@ -160,12 +173,12 @@ export class VouchersService {
         };
       } catch (error) {
         console.error(error);
-
         throw new Error('Failed to create Voucher');
       }
     });
   }
-
+  
+  
   private async createVoucher(
     transactionClient: PrismaClient,
     voucherData: Omit<CreateVoucherDto, 'voucherRecords'>,
@@ -269,26 +282,40 @@ export class VouchersService {
         voucherRecords: true,
         customer: {
           select: {
+            id: true,
             name: true,
             phoneNumber: true,
+            gender: true,
+            address: true,
+            remark: true,
+            isArchived: true,
+            ageRange: true,
+            dateOfBirth: true,
+            specialId: true,
+            createdByUserId: true,
+            updatedByUserId: true,
+            createdAt: true,
+            updatedAt: true,
             special: { select: { promotionRate: true } },
           },
         },
       },
     });
-
+  
     const { voucherRecords, customer, ...restVoucher } = voucher;
-    const name = customer?.name ?? null;
-    const phone = customer?.phoneNumber ?? null;
     const promotionRate = customer?.special?.promotionRate ?? null;
-
+  
     return new VoucherEntity({
       ...restVoucher,
-      customer: name
-        ? new CustomerEntity({ name, phoneNumber: phone })
+      customer: customer
+        ? new CustomerEntity({
+            customer,
+            special: promotionRate ? new SpecialEntity({ promotionRate }) : undefined,
+          })
         : undefined,
       special: promotionRate ? new SpecialEntity({ promotionRate }) : undefined,
       voucherRecords: voucherRecords.map((vr) => new VoucherRecordEntity(vr)),
     });
   }
+  
 }

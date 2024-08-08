@@ -1,14 +1,26 @@
-import { Gender } from '@prisma/client';
+import { AgeRange, Customer, CustomerGender, Gender, Voucher } from '@prisma/client';
 import { Exclude } from 'class-transformer';
-import { SpecialEntity } from 'src/specials';
+import { SpecialEntity } from 'src/specials/entities/special.entity';
+
+interface CustomerEntityProps {
+  name?: string;
+  phoneNumber?: string;
+  customer: Customer;
+  special?: SpecialEntity;
+  totalVoucher?: number;
+  vouchers?: Voucher[];
+}
 
 export class CustomerEntity {
   id: number;
   name: string;
   phoneNumber: string;
-  gender: Gender;
+  gender: CustomerGender;
+  ageRange: AgeRange;
+  dateOfBirth: Date | null;
   address: string;
   remark: string;
+  specialId: number;
 
   @Exclude()
   createdByUserId: number;
@@ -18,6 +30,8 @@ export class CustomerEntity {
 
   special: SpecialEntity;
   isArchived: Date | null;
+  vouchers?: Voucher[];
+  totalVoucher?: number;
 
   @Exclude()
   createdAt: Date;
@@ -25,13 +39,23 @@ export class CustomerEntity {
   @Exclude()
   updatedAt: Date;
 
-  constructor(data: Partial<CustomerEntity>) {
-    Object.assign(this, data);
-    if (data.special) {
-      this.special = data.special ?? null;
-    }
-    // if (data.special) {
-    //   this.special = new SpecialEntity(data.special);
-    // }
+  constructor({ customer, special, totalVoucher, vouchers }: CustomerEntityProps) {
+    this.id = customer.id;
+    this.name = customer.name;
+    this.phoneNumber = customer.phoneNumber;
+    this.gender = customer.gender;
+    this.ageRange = customer.ageRange;
+    this.dateOfBirth = customer.dateOfBirth;
+    this.address = customer.address;
+    this.remark = customer.remark;
+    this.createdByUserId = customer.createdByUserId;
+    this.updatedByUserId = customer.updatedByUserId;
+    this.createdAt = customer.createdAt;
+    this.updatedAt = customer.updatedAt;
+    this.special = special;
+    this.specialId = customer.specialId;
+    this.isArchived = customer.isArchived;
+    this.totalVoucher = totalVoucher;
+    this.vouchers = vouchers;
   }
 }
