@@ -51,40 +51,40 @@ export class SliderController {
   }
 
   @Get('all')
-  async indexAll(): Promise<any> {
+  async indexAll(): Promise<Record<string, any>>{
     const sliders = await this.sliderService.indexAll();
+    
+    const imageUrl = "https://amt.santar.store/uploads";
 
-    const formattedData = sliders.map(slider => {
-      const entity = new SliderEntity(slider);
-      return [
-        {
-          desktopImage: entity.place1Desktop,
-          mobileImage: entity.place1Mobile,
-          sorting: 1,
-        },
-        {
-          desktopImage: entity.place2Desktop,
-          mobileImage: entity.place2Mobile,
-          sorting: 2,
-        },
-        {
-          desktopImage: entity.place3Desktop,
-          mobileImage: entity.place3Mobile,
-          sorting: 3,
-        },
-        {
-          desktopImage: entity.place4Desktop,
-          mobileImage: entity.place4Mobile,
-          sorting: 4,
-        },
-      ];
-    });
+    const formattedSliders = [
+      {
+        desktopImage: imageUrl + sliders[0].place1Desktop.url,
+        mobileImage: imageUrl + sliders[0].place1Desktop.url,
+        sorting:1,
+      },
+      {
+        desktopImage: imageUrl + sliders[0].place2Desktop.url,
+        mobileImage: imageUrl + sliders[0].place2Desktop.url,
+        sorting:2,
+      },
+      {
+        desktopImage: imageUrl + sliders[0].place3Desktop.url,
+        mobileImage: imageUrl + sliders[0].place3Desktop.url,
+        sorting:3,
+      },
+      {
+        desktopImage: imageUrl + sliders[0].place4Desktop.url,
+        mobileImage: imageUrl + sliders[0].place4Desktop.url,
+        sorting:4,
+      }
+    ]
 
+    
     return {
       status: true,
       message: 'Fetched Successfully!',
-      data: formattedData,
-    };
+      data: formattedSliders,
+    }
   }
 
   @Get(':id')
