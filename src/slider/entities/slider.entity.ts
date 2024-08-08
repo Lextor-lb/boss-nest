@@ -6,35 +6,35 @@ export class SliderEntity {
   id: number;
 
   @Expose()
-  @Transform(({ obj, key }) => obj[key] ? new MediaEntity(obj[key]).image() : null)
+  @Transform(({ value }) => value ? value.url : null)
   place1Desktop: string;
 
   @Expose()
-  @Transform(({ obj, key }) => obj[key] ? new MediaEntity(obj[key]).image() : null)
+  @Transform(({ value }) => value ? value.url : null)
   place1Mobile: string;
 
   @Expose()
-  @Transform(({ obj, key }) => obj[key] ? new MediaEntity(obj[key]).image() : null)
+  @Transform(({ value }) => value ? value.url : null)
   place2Desktop: string;
 
   @Expose()
-  @Transform(({ obj, key }) => obj[key] ? new MediaEntity(obj[key]).image() : null)
+  @Transform(({ value }) => value ? value.url : null)
   place2Mobile: string;
 
   @Expose()
-  @Transform(({ obj, key }) => obj[key] ? new MediaEntity(obj[key]).image() : null)
+  @Transform(({ value }) => value ? value.url : null)
   place3Desktop: string;
 
   @Expose()
-  @Transform(({ obj, key }) => obj[key] ? new MediaEntity(obj[key]).image() : null)
+  @Transform(({ value }) => value ? value.url : null)
   place3Mobile: string;
 
   @Expose()
-  @Transform(({ obj, key }) => obj[key] ? new MediaEntity(obj[key]).image() : null)
+  @Transform(({ value }) => value ? value.url : null)
   place4Desktop: string;
 
   @Expose()
-  @Transform(({ obj, key }) => obj[key] ? new MediaEntity(obj[key]).image() : null)
+  @Transform(({ value }) => value ? value.url : null)
   place4Mobile: string;
 
   @Exclude()
@@ -79,7 +79,6 @@ export class SliderEntity {
     ];
 
     mediaKeys.forEach(key => {
-
       if (slider[key.desktopImage]) {
         this[key.desktopImage] = slider[key.desktopImage];
       }
@@ -87,9 +86,6 @@ export class SliderEntity {
       if (slider[key.mobileImage]) {
         this[key.mobileImage] = slider[key.mobileImage];
       }
-
-      
     });
   }
 }
-
