@@ -125,29 +125,44 @@ export class VouchersService {
             voucherRecords: true,
             customer: {
               select: {
+                id: true,
                 name: true,
+                special: true,
                 phoneNumber: true,
-                special: { select: { promotionRate: true } },
+                gender: true,
+                address: true,
+                remark: true,
+                isArchived: true,
+                ageRange: true,
+                dateOfBirth: true,
+                specialId: true,
+                createdByUserId: true,
+                updatedByUserId: true,
+                createdAt: true,
+                updatedAt: true,
               },
             },
           },
         });
-        // return createdVoucher;
+
         if (!createdVoucher) {
           throw new Error('Failed to fetch created voucher');
         }
 
-        // Transform the fetched voucher data into a VoucherEntity
         const { voucherRecords: vr, customer, ...restVoucher } = createdVoucher;
-        const name = customer?.name ?? null;
-        const phone = customer?.phoneNumber ?? null;
         const promotionRate = customer?.special?.promotionRate ?? null;
+
+        // Create CustomerEntity with the full customer object
+        const customerEntity = new CustomerEntity({
+          ...customer,
+          special: promotionRate
+            ? new SpecialEntity({ promotionRate })
+            : undefined,
+        });
 
         const voucherEntity = new VoucherEntity({
           ...restVoucher,
-          customer: name
-            ? new CustomerEntity({ name, phoneNumber: phone })
-            : undefined,
+          customer: customerEntity,
           special: promotionRate
             ? new SpecialEntity({ promotionRate })
             : undefined,
@@ -161,7 +176,6 @@ export class VouchersService {
         };
       } catch (error) {
         console.error(error);
-
         throw new Error('Failed to create Voucher');
       }
     });
@@ -270,8 +284,20 @@ export class VouchersService {
         voucherRecords: true,
         customer: {
           select: {
+            id: true,
             name: true,
             phoneNumber: true,
+            gender: true,
+            address: true,
+            remark: true,
+            isArchived: true,
+            ageRange: true,
+            dateOfBirth: true,
+            specialId: true,
+            createdByUserId: true,
+            updatedByUserId: true,
+            createdAt: true,
+            updatedAt: true,
             special: { select: { promotionRate: true } },
           },
         },
@@ -279,14 +305,17 @@ export class VouchersService {
     });
 
     const { voucherRecords, customer, ...restVoucher } = voucher;
-    const name = customer?.name ?? null;
-    const phone = customer?.phoneNumber ?? null;
     const promotionRate = customer?.special?.promotionRate ?? null;
 
     return new VoucherEntity({
       ...restVoucher,
-      customer: name
-        ? new CustomerEntity({ name, phoneNumber: phone })
+      customer: customer
+        ? new CustomerEntity({
+            ...customer,
+            special: promotionRate
+              ? new SpecialEntity({ promotionRate })
+              : undefined,
+          })
         : undefined,
       special: promotionRate ? new SpecialEntity({ promotionRate }) : undefined,
       voucherRecords: voucherRecords.map((vr) => new VoucherRecordEntity(vr)),

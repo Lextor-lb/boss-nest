@@ -44,6 +44,12 @@ customers/all
 | `orderDirection` | `param` | orderBy | **eg:orderDirection = desc** |
 | `search`         | `param` | search  | **name**                     |
 
+
+### Customer Analysis (GET)
+```
+customers/analysis
+```
+
 ### Customer Show (GET)
 
 ```

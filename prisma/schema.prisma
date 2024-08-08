@@ -291,7 +291,7 @@ model Customer {
   id          Int       @id @default(autoincrement())
   name        String
   phoneNumber String    @unique
-  gender      Gender
+  gender      CustomerGender
   address     String?
   remark      String?
   isArchived  DateTime?
@@ -522,6 +522,11 @@ enum Gender {
   MEN
   WOMEN
   UNISEX
+}
+
+enum CustomerGender {
+  Male
+  Female
 }
 
 enum PaymentMethod {
