@@ -86,7 +86,7 @@ export class CustomersService {
 
     return new CustomerEntity({
       ...customer,
-      special: special ? new SpecialEntity(special) : null,
+      special: special ? new SpecialEntity(special) : null
     });
   }
 
