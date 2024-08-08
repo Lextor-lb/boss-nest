@@ -59,34 +59,38 @@ export class SliderEntity {
   constructor(slider: any,data: Partial<SliderEntity> = {}) {
     Object.assign(this, data);
 
-    this.photosForMobile = {
-      img1: slider.place1Mobile ? new MediaEntity(slider.place1Mobile).image() : null,
-      img2: slider.place2Mobile ? new MediaEntity(slider.place2Mobile).image() : null,
-      img3: slider.place3Mobile ? new MediaEntity(slider.place3Mobile).image() : null,
-      img4: slider.place4Mobile ? new MediaEntity(slider.place4Mobile).image() : null,
-    };
-
-    this.photosForDesktop = {
-      img1: slider.place1Desktop ? new MediaEntity(slider.place1Desktop).image() : null,
-      img2: slider.place2Desktop ? new MediaEntity(slider.place2Desktop).image() : null,
-      img3: slider.place3Desktop ? new MediaEntity(slider.place3Desktop).image() : null,
-      img4: slider.place4Desktop ? new MediaEntity(slider.place4Desktop).image() : null,
-    };
 
     const mediaKeys = [
-      'place1Desktop',
-      'place1Mobile',
-      'place2Desktop',
-      'place2Mobile',
-      'place3Desktop',
-      'place3Mobile',
-      'place4Desktop',
-      'place4Mobile',
+      {
+        desktopImage:  'place1Desktop',
+        mobileImage : 'place1Mobile',
+        sort : 1,
+      },
+      {
+        desktopImage:'place2Desktop',
+        mobileImage: 'place2Mobile',
+        sort:2
+      },
+      {
+        desktopImage : 'place3Desktop',
+        mobileImage: 'place3Mobile',
+        sort: 3,
+      },
+      {
+        desktopImage: 'place4Desktop',
+        mobileImage: 'place4Mobile',
+        sort: 4
+      }
+
     ];
 
     mediaKeys.forEach(key => {
-      if (slider[key]) {
-        this[key] = new MediaEntity(slider[key]);
+      if (slider[key.desktopImage]) {
+        this[key.desktopImage] = new MediaEntity(slider[key.desktopImage]);
+      }
+
+      if (slider[key.mobileImage]) {
+        this[key.mobileImage] = new MediaEntity(slider[key.mobileImage]);
       }
     });
   }
