@@ -21,9 +21,15 @@ export class CustomerEntity implements Customer {
   address: string;
   remark: string;
   specialId: number;
+  private _totalVoucher: number;
+
   @Expose()
   get totalVoucher(): number {
-    return this.vouchers ? this.vouchers.length : 0;
+    return this.vouchers ? this.vouchers.length : this._totalVoucher;
+  }
+
+  set totalVoucher(value: number) {
+    this._totalVoucher = value;
   }
 
   @Expose()
