@@ -4,6 +4,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { EcommerceProductDetailEntity } from './entities/ecommerce-productDetail.entity';
 import { MediaEntity } from 'src/media/entity/media.entity';
 import { EcommerceProductVariantEntity } from './entities/ecommerce-productVariant.entity';
+import { ProductCategoryEntity } from 'src/product-categories';
+import { EcommerceProductEntity } from './entities/ecommerce-product.entity';
+import { createEntityProps } from 'src/shared/utils/createEntityProps';
 
 @Injectable()
 export class EcommerceProductsService {
@@ -52,14 +55,29 @@ export class EcommerceProductsService {
 
     const products = await this.prisma.product.findMany({
       where: whereClause,
-      select: this.getProductSelectClause(),
+      select: {
+        id: true,
+        name: true,
+        gender: true,
+        productCode: true,
+        discountPrice: true,
+        salePrice: true,
+        medias: true,
+      },
       skip,
       take: limit,
       orderBy: { [orderBy]: orderDirection },
     });
-
     return {
-      data: products,
+      data: products.map(
+        (p) =>
+          new EcommerceProductEntity({
+            ...p,
+            medias: p.medias.map(
+              (m) => new MediaEntity({ id: m.id, url: m.url }),
+            ),
+          }),
+      ),
       total,
       page,
       limit,
@@ -81,8 +99,8 @@ export class EcommerceProductsService {
   }
 
   private buildTypeCondition(type: string) {
-    if (type === 'man') return { gender: Gender.MEN };
-    if (type === 'lady') return { gender: Gender.WOMEN };
+    if (type === 'men') return { gender: Gender.MEN };
+    if (type === 'women') return { gender: Gender.WOMEN };
     if (type === 'unisex') return { gender: Gender.UNISEX };
     if (Number.isInteger(Number(type)))
       return { productCategoryId: Number(type) };
@@ -94,6 +112,7 @@ export class EcommerceProductsService {
       id: true,
       name: true,
       gender: true,
+      discountPrice: true,
       salePrice: true,
       productBrand: true,
       productType: true,
@@ -104,7 +123,7 @@ export class EcommerceProductsService {
     const {
       productBrand: { name: brandName },
       productType: { name: typeName },
-      productCategory: { name: categoryName },
+      productCategory: { name: categoryName, id: productCategoryId },
       productFitting: { name: fittingName },
       medias,
       productVariants,
@@ -120,7 +139,7 @@ export class EcommerceProductsService {
         discountPrice: true,
         productBrand: { select: { name: true } },
         productType: { select: { name: true } },
-        productCategory: { select: { name: true } },
+        productCategory: { select: { id: true, name: true } },
         productFitting: { select: { name: true } },
         medias: { select: { url: true } },
         productVariants: {
@@ -144,7 +163,10 @@ export class EcommerceProductsService {
       ...productData,
       productBrand: brandName,
       productType: typeName,
-      productCategory: categoryName,
+      productCategory: new ProductCategoryEntity({
+        id: productCategoryId,
+        name: categoryName,
+      }),
       productFitting: fittingName,
       mediaUrls: medias.map((m) => new MediaEntity({ url: m.url })),
       productVariants: productVariants.map((productVariant) => {

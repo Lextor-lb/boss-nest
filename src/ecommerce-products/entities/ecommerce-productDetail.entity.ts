@@ -1,10 +1,10 @@
 export class EcommerceProduct {}
 import { Gender } from '@prisma/client';
 import { Expose } from 'class-transformer';
-import { ProductVariantEntity } from 'src/product-variants/entity/product-variant.entity';
 import { createEntityArray } from 'src/shared/utils/createEntity';
 import { EcommerceProductVariantEntity } from './ecommerce-productVariant.entity';
 import { MediaEntity } from 'src/media/entity/media.entity';
+import { ProductCategoryEntity } from 'src/product-categories';
 
 export class EcommerceProductDetailEntity {
   id: number;
@@ -15,7 +15,7 @@ export class EcommerceProductDetailEntity {
   discountPrice: number;
   productType: string;
   productBrand: string;
-  productCategory: string;
+  productCategory: ProductCategoryEntity;
   productFitting: string;
   mediaUrls: MediaEntity[];
   productVariants: EcommerceProductVariantEntity[];
