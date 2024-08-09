@@ -9,11 +9,11 @@ import { FetchedSlider, MessageWithSlider } from 'src/shared/types/slider';
 import { SliderEntity } from './entities/slider.entity';
 
 @Controller('slider')
-@UseGuards(JwtAuthGuard)
 export class SliderController {
   constructor(private readonly sliderService: SliderService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(AnyFilesInterceptor(multerOptions))
   async create(
     @Body() createSliderDto: CreateSliderDto,
@@ -94,6 +94,7 @@ export class SliderController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(AnyFilesInterceptor(multerOptions))
   async update(
     @Param('id',ParseIntPipe) id: number,
