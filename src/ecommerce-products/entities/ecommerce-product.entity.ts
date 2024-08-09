@@ -10,6 +10,7 @@ export class EcommerceProductEntity {
   id: number;
   name: string;
   gender: Gender;
+  productBrand: string;
   productCode: string;
   salePrice: number;
   discountPrice: number;

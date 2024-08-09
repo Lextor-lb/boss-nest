@@ -6,7 +6,6 @@ import { MediaEntity } from 'src/media/entity/media.entity';
 import { EcommerceProductVariantEntity } from './entities/ecommerce-productVariant.entity';
 import { ProductCategoryEntity } from 'src/product-categories';
 import { EcommerceProductEntity } from './entities/ecommerce-product.entity';
-import { createEntityProps } from 'src/shared/utils/createEntityProps';
 
 @Injectable()
 export class EcommerceProductsService {
@@ -63,6 +62,7 @@ export class EcommerceProductsService {
         discountPrice: true,
         salePrice: true,
         medias: true,
+        productBrand: true,
       },
       skip,
       take: limit,
@@ -73,6 +73,7 @@ export class EcommerceProductsService {
         (p) =>
           new EcommerceProductEntity({
             ...p,
+            productBrand: p.productBrand.name,
             medias: p.medias.map(
               (m) => new MediaEntity({ id: m.id, url: m.url }),
             ),
