@@ -55,7 +55,7 @@ export class SliderController {
   async indexAll(): Promise<Record<string, any>>{
     const sliders = await this.sliderService.indexAll();
     
-    const imageUrl = "https://amt.santar.store/";
+    const imageUrl = "https://amt.santar.store";
 
     const formattedSliders = [
       {
