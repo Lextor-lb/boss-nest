@@ -8,6 +8,7 @@ import { multerOptions, resizeImage } from 'src/media';
 import { FetchedSlider, MessageWithSlider } from 'src/shared/types/slider';
 import { SliderEntity } from './entities/slider.entity';
 
+
 @Controller('slider')
 export class SliderController {
   constructor(private readonly sliderService: SliderService) {}
