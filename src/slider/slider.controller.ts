@@ -14,7 +14,7 @@ export class SliderController {
   constructor(private readonly sliderService: SliderService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseInterceptors(AnyFilesInterceptor(multerOptions))
   async create(
     @Body() createSliderDto: CreateSliderDto,
