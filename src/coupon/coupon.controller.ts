@@ -9,10 +9,10 @@ import { JwtAuthGuard } from 'src/auth';
 import { RemoveManyCouponDto } from './dto';
 
 @Controller('coupon')
-@UseGuards(JwtAuthGuard)
 export class CouponController {
   constructor(private readonly couponService: CouponService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createCouponDto: CreateCouponDto) {
     return this.couponService.create(createCouponDto);
@@ -60,6 +60,7 @@ export class CouponController {
     return new CouponEntity(coupon);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(@Param('id') id: number,
   @Req() req,
@@ -77,6 +78,7 @@ export class CouponController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number
   ): Promise<MessageWithCoupon> {
@@ -88,7 +90,8 @@ export class CouponController {
       data: null
     };
   }
-
+  
+  @UseGuards(JwtAuthGuard)
   @Delete()
   async removeMany(
     @Body() removeManyCouponDto: RemoveManyCouponDto,
