@@ -416,7 +416,7 @@ model EcommerceCategory {
 model Coupon {
   id           Int      @id @default(autoincrement())
   name         String
-  couponId     String
+  couponId     String   @unique
   discount     Int
   expiredDate  DateTime?
   createdAt    DateTime  @default(now())

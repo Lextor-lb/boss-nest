@@ -54,9 +54,9 @@ export class CouponController {
     }
   }
 
-  @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const coupon = await this.couponService.findOne(id);
+  @Get(':couponId')
+  async findOne(@Param('couponId') couponId: string) {
+    const coupon = await this.couponService.findOne(couponId);
     return new CouponEntity(coupon);
   }
 
@@ -90,7 +90,7 @@ export class CouponController {
       data: null
     };
   }
-  
+
   @UseGuards(JwtAuthGuard)
   @Delete()
   async removeMany(

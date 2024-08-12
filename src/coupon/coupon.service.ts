@@ -73,20 +73,22 @@ export class CouponService {
     };
   }
 
-  async findOne(id: number) {
+  async findOne(couponId: string) {
     const coupon = await this.prisma.coupon.findUnique({
-      where: {id}
+      where: {couponId}
     })
 
     if(!coupon){
-      throw new NotFoundException(`Coupon with Id ${id} not found`);
+      throw new NotFoundException(`Coupon with Id ${couponId} not found`);
     }
 
     return coupon;
   }
 
   async update(id: number, updateCouponDto: UpdateCouponDto) {
-    const coupon = await this.findOne(id);
+    const coupon = await this.prisma.coupon.findUnique({
+      where: {id}
+    })
 
     return this.prisma.coupon.update({
       where: { id },
