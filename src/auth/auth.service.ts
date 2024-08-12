@@ -50,12 +50,13 @@ export class AuthService {
   }
   // throw new NotFoundException(`No user found for email: ${email}`);
 
-  async ecommerceLogin(idToken : string, name: string) {
+  async ecommerceLogin(idToken : string) {
     try {
 
       const decodedToken = await this.firebaseService.verifyIdToken(idToken);
 
       const userEmail : string = decodedToken.email;
+      const name : string = decodedToken.name;
 
       let user = await this.prisma.ecommerceUser.findUnique({
         where: { email: userEmail },
@@ -68,6 +69,7 @@ export class AuthService {
       }
 
       const token = uuidv4();
+
       const refreshToken = this.jwtService.sign(
         { id: user.id, name: user.name, email: user.email, tokenId: token },
         { expiresIn: '9999 years' },
