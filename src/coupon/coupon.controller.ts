@@ -61,13 +61,13 @@ export class CouponController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
-  async update(@Param('id') id: number,
+  @Patch(':couponId')
+  async update(@Param('couponId') couponId: string,
   @Req() req,
   @Body() updateCouponDto: UpdateCouponDto) {
     updateCouponDto.updatedByUserId = req.user.id;
     const updatedCoupon = await this.couponService.update(
-      id,
+      couponId,
       updateCouponDto
     )
 

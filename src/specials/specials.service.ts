@@ -47,6 +47,7 @@ export class SpecialsService {
       }),
       this.prisma.special.findMany({
         where: {
+          ...this.whereCheckingNullClause,
           name: {
             contains: search,
             mode: 'insensitive',

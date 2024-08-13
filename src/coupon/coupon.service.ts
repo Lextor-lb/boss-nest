@@ -41,6 +41,7 @@ export class CouponService {
     const [total, coupons] = await this.prisma.$transaction([
       this.prisma.coupon.count({
         where: {
+          ...this.whereCheckingNullClause,
           name: {
             contains: search,
             mode: 'insensitive'
@@ -49,6 +50,7 @@ export class CouponService {
       }),
       this.prisma.coupon.findMany({
         where: {
+          ...this.whereCheckingNullClause,
           name: {
             contains: search,
             mode: 'insensitive'
@@ -85,13 +87,11 @@ export class CouponService {
     return coupon;
   }
 
-  async update(id: number, updateCouponDto: UpdateCouponDto) {
-    const coupon = await this.prisma.coupon.findUnique({
-      where: {id}
-    })
+  async update(couponId: string, updateCouponDto: UpdateCouponDto) {
+    const coupon = await this.findOne(couponId);
 
     return this.prisma.coupon.update({
-      where: { id },
+      where: { couponId },
       data: updateCouponDto,
     });
   }
