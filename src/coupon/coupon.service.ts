@@ -36,44 +36,46 @@ export class CouponService {
   }
 
   async findAll(searchOptions: SearchOption): Promise<PaginatedCoupon> {
-    const {page, limit, search, orderBy, orderDirection} = searchOptions;
+    const { page, limit, search, orderBy, orderDirection } = searchOptions;
 
-    const [total, coupons] = await this.prisma.$transaction([
+    const [total, rawCoupons] = await this.prisma.$transaction([
       this.prisma.coupon.count({
         where: {
           ...this.whereCheckingNullClause,
           name: {
             contains: search,
-            mode: 'insensitive'
-          }
-        }
+            mode: 'insensitive',
+          },
+        },
       }),
       this.prisma.coupon.findMany({
         where: {
           ...this.whereCheckingNullClause,
           name: {
             contains: search,
-            mode: 'insensitive'
-          }
+            mode: 'insensitive',
+          },
         },
         skip: (page - 1) * limit,
         take: limit,
         orderBy: {
-          [orderBy]: orderDirection
-        }
+          [orderBy]: orderDirection,
+        },
       }),
     ]);
 
-    const totalPages = Math.ceil(total/limit);
+    const coupons = rawCoupons.map(coupon => new CouponEntity(coupon)); // Map raw data to CouponEntity
+
+    const totalPages = Math.ceil(total / limit);
 
     return {
       data: coupons,
       page,
       limit,
       total,
-      totalPages
+      totalPages,
     };
-  }
+}
 
   async findOne(couponId: string) {
     const coupon = await this.prisma.coupon.findUnique({
