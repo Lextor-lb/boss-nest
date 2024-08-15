@@ -4,7 +4,7 @@ import { CreateSliderDto } from './dto/create-slider.dto';
 import { UpdateSliderDto } from './dto/update-slider.dto';
 import { Slider } from './entities/slider.entity';
 
-@Controller('sliders')
+@Controller('api/v1/sliders')
 export class SlidersController {
   constructor(private readonly slidersService: SlidersService) { }
 
@@ -15,11 +15,11 @@ export class SlidersController {
     @Req() req,
   ) {
 
-    if (files && files.length > 0) {
+    if (files && files.length > 0) 
+    {
       createSliderDto.mobileImage = files[0]?.path; // Save file path or URL
       createSliderDto.desktopImage = files[1]?.path; // Save file path or URL
     }
-
 
     const newSlider = await this.slidersService.create(createSliderDto);
     return newSlider;
