@@ -22,7 +22,7 @@ orders
 
 ```
 {
-    "orderId": "3f",
+    "orderCode": "3f",
     "subTotal": 1000,
     "total": 1500,
 	"discount": 0		//nullable
@@ -63,6 +63,7 @@ order will be deleted
 ```
 if 
 {
+    "voucherCode:   "fjhfgw",
 	"orderStatus": "CONFIRM"
 }
 voucher will be created

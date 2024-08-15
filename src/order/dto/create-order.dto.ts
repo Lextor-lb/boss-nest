@@ -14,7 +14,7 @@ export class CreateOrderDto {
   @IsNotEmpty()
   @IsString()
   @IsUniqueOrderId()
-  orderId: string;
+  orderCode: string;
 
   // @IsInt()
   @IsOptional()

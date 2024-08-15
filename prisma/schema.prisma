@@ -134,11 +134,11 @@ model ProductBrand {
 }
 
 model Media {
-  id        Int      @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   url       String
   imageType ImageType?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   // One to Many
   product   Product? @relation("ProductMedias", fields: [productId], references: [id])
@@ -151,7 +151,7 @@ model Media {
 
   isArchived DateTime?
 
-   // Relations
+  // Relations
   SliderPlace1Desktop Slider? @relation("Place1Desktop")
   SliderPlace1Mobile  Slider? @relation("Place1Mobile")
   SliderPlace2Desktop Slider? @relation("Place2Desktop")
@@ -282,15 +282,15 @@ model ProductVariant {
   mediaId Int?   @unique
 
   //One to Many inverse
-  voucherRecords VoucherRecord[] @relation("voucherRecordproductVariants")
-  orderRecords   OrderRecord[]   @relation("OrderRecordproductVariants")
+  voucherRecords  VoucherRecord[]  @relation("voucherRecordproductVariants")
+  orderRecords    OrderRecord[]    @relation("OrderRecordproductVariants")
   wishlistRecords WishListRecord[] @relation("wishListRecordProductVaiants")
 }
 
 model Customer {
-  id          Int       @id @default(autoincrement())
+  id          Int            @id @default(autoincrement())
   name        String
-  phoneNumber String    @unique
+  phoneNumber String         @unique
   gender      CustomerGender
   address     String?
   remark      String?
@@ -382,14 +382,20 @@ model VoucherRecord {
 }
 
 model EcommerceUser {
-  id         Int       @id @default(autoincrement())
-  name       String
-  email      String    @unique
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  isArchived DateTime?
-  orders     Order[]   @relation("ecommerceUserOrder")
-  wishLists  WishList[] @relation("ecommerceUserWishList")
+  id            Int        @id @default(autoincrement())
+  name          String
+  phone         String?
+  email         String     @unique
+  city          String?
+  township      String?
+  street        String?
+  company       String?
+  addressDetail String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  isArchived    DateTime?
+  orders        Order[]    @relation("ecommerceUserOrder")
+  wishLists     WishList[] @relation("ecommerceUserWishList")
 }
 
 model EcommerceCategory {
@@ -414,14 +420,14 @@ model EcommerceCategory {
 }
 
 model Coupon {
-  id           Int      @id @default(autoincrement())
-  name         String
-  couponId     String   @unique
-  discount     Int
-  expiredDate  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  isArchived   DateTime?
+  id          Int       @id @default(autoincrement())
+  name        String
+  couponId    String    @unique
+  discount    Int
+  expiredDate DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isArchived  DateTime?
 
   // One to Many
   createdByUser   User? @relation("CreatedEcommerceCoupons", fields: [createdByUserId], references: [id])
@@ -431,41 +437,41 @@ model Coupon {
 }
 
 model Slider {
-  id               Int      @id @default(autoincrement())
-  place1Desktop    Media    @relation("Place1Desktop", fields: [place1DesktopId], references: [id])
-  place1DesktopId  Int      @unique
-  place1Mobile     Media    @relation("Place1Mobile", fields: [place1MobileId], references: [id])
-  place1MobileId   Int      @unique
+  id              Int   @id @default(autoincrement())
+  place1Desktop   Media @relation("Place1Desktop", fields: [place1DesktopId], references: [id])
+  place1DesktopId Int   @unique
+  place1Mobile    Media @relation("Place1Mobile", fields: [place1MobileId], references: [id])
+  place1MobileId  Int   @unique
 
-  place2Desktop    Media    @relation("Place2Desktop", fields: [place2DesktopId], references: [id])
-  place2DesktopId  Int      @unique
-  place2Mobile     Media    @relation("Place2Mobile", fields: [place2MobileId], references: [id])
-  place2MobileId   Int      @unique
+  place2Desktop   Media @relation("Place2Desktop", fields: [place2DesktopId], references: [id])
+  place2DesktopId Int   @unique
+  place2Mobile    Media @relation("Place2Mobile", fields: [place2MobileId], references: [id])
+  place2MobileId  Int   @unique
 
-  place3Desktop    Media    @relation("Place3Desktop", fields: [place3DesktopId], references: [id])
-  place3DesktopId  Int      @unique
-  place3Mobile     Media    @relation("Place3Mobile", fields: [place3MobileId], references: [id])
-  place3MobileId   Int      @unique
+  place3Desktop   Media @relation("Place3Desktop", fields: [place3DesktopId], references: [id])
+  place3DesktopId Int   @unique
+  place3Mobile    Media @relation("Place3Mobile", fields: [place3MobileId], references: [id])
+  place3MobileId  Int   @unique
 
-  place4Desktop    Media    @relation("Place4Desktop", fields: [place4DesktopId], references: [id])
-  place4DesktopId  Int      @unique
-  place4Mobile     Media    @relation("Place4Mobile", fields: [place4MobileId], references: [id])
-  place4MobileId   Int      @unique
+  place4Desktop   Media @relation("Place4Desktop", fields: [place4DesktopId], references: [id])
+  place4DesktopId Int   @unique
+  place4Mobile    Media @relation("Place4Mobile", fields: [place4MobileId], references: [id])
+  place4MobileId  Int   @unique
 
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  isArchived   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isArchived DateTime?
 
   // One to Many
   // createdByUser       User?     @relation("CreatedEcommerceSlides", fields: [createdByUserId], references: [id])
-  createdByUserId     Int?
+  createdByUserId Int?
   // updatedByUser       User?     @relation("UpdatedEcommerceSlides", fields: [updatedByUserId], references: [id])
-  updatedByUserId     Int?
+  updatedByUserId Int?
 }
 
 model Order {
   id              Int           @id @default(autoincrement())
-  orderId         String        @unique
+  orderCode         String        @unique
   orderStatus     OrderStatus   @default(ORDERED)
   ecommerceUserId Int
   discount        Int           @default(0) // Fixed typo here
@@ -493,29 +499,29 @@ model OrderRecord {
 }
 
 model WishList {
-  id               Int            @id @default(autoincrement())
-  wishlistId       String         @unique
-  ecommerceUserId  Int
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime?      @updatedAt
-  isArchived       DateTime?
+  id              Int       @id @default(autoincrement())
+  wishlistId      String    @unique
+  ecommerceUserId Int
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @updatedAt
+  isArchived      DateTime?
 
-  ecommerceUser    EcommerceUser  @relation("ecommerceUserWishList", fields: [ecommerceUserId], references: [id])
-  wishlistRecords  WishListRecord[] @relation("wishListRecords")
+  ecommerceUser   EcommerceUser    @relation("ecommerceUserWishList", fields: [ecommerceUserId], references: [id])
+  wishlistRecords WishListRecord[] @relation("wishListRecords")
 }
 
 model WishListRecord {
-  id               Int            @id @default(autoincrement())
+  id               Int      @id @default(autoincrement())
   productVariantId Int
   salePrice        Int
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
   wishlistId       Int
 
-  isArchived       DateTime?
+  isArchived DateTime?
 
-  wishlist         WishList       @relation("wishListRecords", fields: [wishlistId], references: [id])
-  productVariant   ProductVariant @relation("wishListRecordProductVaiants", fields: [productVariantId], references: [id])
+  wishlist       WishList       @relation("wishListRecords", fields: [wishlistId], references: [id])
+  productVariant ProductVariant @relation("wishListRecordProductVaiants", fields: [productVariantId], references: [id])
 }
 
 enum Gender {
