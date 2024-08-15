@@ -54,9 +54,6 @@ model User {
 
   CreatedEcommerceCoupons Coupon[] @relation("CreatedEcommerceCoupons")
   UpdatedEcommerceCoupons Coupon[] @relation("UpdatedEcommerceCoupons")
-
-  // CreatedEcommerceSlides Slider[] @relation("CreatedEcommerceSlides")
-  // UpdatedEcommerceSlides Slider[] @relation("UpdatedEcommerceSlides")
 }
 
 model ProductSizing {
@@ -150,16 +147,6 @@ model Media {
   EcommerceCategory EcommerceCategory?
 
   isArchived DateTime?
-
-  // Relations
-  SliderPlace1Desktop Slider? @relation("Place1Desktop")
-  SliderPlace1Mobile  Slider? @relation("Place1Mobile")
-  SliderPlace2Desktop Slider? @relation("Place2Desktop")
-  SliderPlace2Mobile  Slider? @relation("Place2Mobile")
-  SliderPlace3Desktop Slider? @relation("Place3Desktop")
-  SliderPlace3Mobile  Slider? @relation("Place3Mobile")
-  SliderPlace4Desktop Slider? @relation("Place4Desktop")
-  SliderPlace4Mobile  Slider? @relation("Place4Mobile")
 }
 
 model ProductType {
@@ -438,25 +425,12 @@ model Coupon {
 
 model Slider {
   id              Int   @id @default(autoincrement())
-  place1Desktop   Media @relation("Place1Desktop", fields: [place1DesktopId], references: [id])
-  place1DesktopId Int   @unique
-  place1Mobile    Media @relation("Place1Mobile", fields: [place1MobileId], references: [id])
-  place1MobileId  Int   @unique
 
-  place2Desktop   Media @relation("Place2Desktop", fields: [place2DesktopId], references: [id])
-  place2DesktopId Int   @unique
-  place2Mobile    Media @relation("Place2Mobile", fields: [place2MobileId], references: [id])
-  place2MobileId  Int   @unique
+  mobileImage String
 
-  place3Desktop   Media @relation("Place3Desktop", fields: [place3DesktopId], references: [id])
-  place3DesktopId Int   @unique
-  place3Mobile    Media @relation("Place3Mobile", fields: [place3MobileId], references: [id])
-  place3MobileId  Int   @unique
+  desktopImage String
 
-  place4Desktop   Media @relation("Place4Desktop", fields: [place4DesktopId], references: [id])
-  place4DesktopId Int   @unique
-  place4Mobile    Media @relation("Place4Mobile", fields: [place4MobileId], references: [id])
-  place4MobileId  Int   @unique
+  sorting Int
 
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
