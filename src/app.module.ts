@@ -34,6 +34,7 @@ import { SliderModule } from './slider/slider.module';
 import { OrderModule } from './order/order.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { EcommerceUsersModule } from './ecommerce-users/ecommerce-users.module';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
     OrderModule,
     FirebaseModule,
     WishlistModule,
+    EcommerceUsersModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],

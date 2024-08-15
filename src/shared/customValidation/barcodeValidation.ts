@@ -40,9 +40,9 @@ class IsUniqueBarcodeConstraint implements ValidatorConstraintInterface {
 
 @ValidatorConstraint({ async: true })
 class IsUniqueOrderIdConstraint implements ValidatorConstraintInterface {
-  async validate(orderId: string, args: ValidationArguments) {
+  async validate(orderCode: string, args: ValidationArguments) {
     const order = await prisma.order.findUnique({
-      where: { orderId },
+      where: { orderCode },
     });
     return !order; // Return true if no order with the same orderId is found
   }

@@ -4,7 +4,7 @@ import { formatDate } from 'src/shared/utils/formatDate';
 
 export class OrderEntity implements Order {
   id: number;
-  orderId: string;
+  orderCode: string;
   orderStatus: OrderStatus;
   @Exclude()
   ecommerceUserId: number;

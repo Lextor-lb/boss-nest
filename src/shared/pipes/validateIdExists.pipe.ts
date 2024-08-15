@@ -1,5 +1,5 @@
 import { PipeTransform, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -13,6 +13,7 @@ const modelMap = {
   Product: prisma.product,
   Voucher: prisma.voucher,
   Order: prisma.order,
+  EcommerceUser: prisma.ecommerceUser,
 };
 
 @Injectable()

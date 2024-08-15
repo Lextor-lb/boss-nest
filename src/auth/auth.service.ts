@@ -18,7 +18,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private firebaseService:FirebaseService
+    private firebaseService: FirebaseService,
   ) {}
 
   async login(email: string, password: string): Promise<AuthEntity> {
@@ -50,13 +50,12 @@ export class AuthService {
   }
   // throw new NotFoundException(`No user found for email: ${email}`);
 
-  async ecommerceLogin(idToken : string) {
+  async ecommerceLogin(idToken: string) {
     try {
-
       const decodedToken = await this.firebaseService.verifyIdToken(idToken);
 
-      const userEmail : string = decodedToken.email;
-      const name : string = decodedToken.name;
+      const userEmail: string = decodedToken.email;
+      const name: string = decodedToken.name;
 
       let user = await this.prisma.ecommerceUser.findUnique({
         where: { email: userEmail },
@@ -64,7 +63,7 @@ export class AuthService {
 
       if (!user) {
         user = await this.prisma.ecommerceUser.create({
-          data: { name, email : userEmail },
+          data: { name, email: userEmail },
         });
       }
 
@@ -88,7 +87,6 @@ export class AuthService {
         }), // Include email in the payload
         refreshToken: refreshToken,
       };
-
     } catch (error) {
       throw new UnauthorizedException();
     }

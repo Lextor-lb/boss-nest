@@ -24,16 +24,15 @@ export class StockReportService {
 
     const stockStats = this.calculateStockStats(allProducts);
     const stockPercentages = this.calculateStockPercentages(stockStats);
-    const { totalBrands, totalProducts } = this.getTotalCounts(
-      allProducts,
-      allProductBrands,
-    );
+    const { totalBrands, totalProducts, totalProductPrice } =
+      this.getTotalCounts(allProducts, allProductBrands);
     const { totalPrice, bestSellerBrands } =
       await this.calculateTotalPriceAndBestSellers();
 
     const analysisData = {
       totalBrands,
       totalProducts,
+      totalProductPrice,
       ...stockStats,
       ...stockPercentages,
       totalPrice,
@@ -98,10 +97,16 @@ export class StockReportService {
   private getTotalCounts(
     allProducts: any[],
     allProductBrands: any[],
-  ): { totalBrands: number; totalProducts: number } {
+  ): { totalBrands: number; totalProducts: number; totalProductPrice: number } {
+    const totalPrice = allProducts.reduce(
+      (sum, product) => sum + product.salePrice,
+      0,
+    );
+
     return {
       totalBrands: allProductBrands.length,
       totalProducts: allProducts.length,
+      totalProductPrice: totalPrice,
     };
   }
 
@@ -151,11 +156,23 @@ export class StockReportService {
 
     const quantity = voucherRecords.length;
     const totalSalePrice = voucherRecords.reduce((sum, record) => {
+      let productData;
+
       if (typeof record.product === 'string') {
-        const productData = JSON.parse(record.product);
-        return sum + (productData.salePrice || 0);
+        try {
+          productData = JSON.parse(record.product);
+        } catch (error) {
+          console.error('Failed to parse product JSON:', error);
+          return sum;
+        }
+      } else if (
+        typeof record.product === 'object' &&
+        record.product !== null
+      ) {
+        productData = record.product;
       }
-      return sum;
+
+      return sum + (productData?.salePrice || 0);
     }, 0);
 
     return {
