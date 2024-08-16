@@ -16,53 +16,53 @@ export class CustomersService {
     isArchived: null,
   };
 
-  async analysis() {
-    const customers = await this.prisma.customer.findMany({
-      where: this.whereCheckingNullClause,
-    });
+  // async analysis() {
+  //   const customers = await this.prisma.customer.findMany({
+  //     where: this.whereCheckingNullClause,
+  //   });
 
-    // total customers
-    const total = customers.length;
+  //   // total customers
+  //   const total = customers.length;
 
-    const ageRangeCounts = {
-      YOUNG: 0,
-      MIDDLE: 0,
-      OLD: 0,
-    };
+  //   const ageRangeCounts = {
+  //     YOUNG: 0,
+  //     MIDDLE: 0,
+  //     OLD: 0,
+  //   };
 
-    const genderRangeCounts = {
-      Male: 0,
-      Female: 0,
-    };
+  //   const genderRangeCounts = {
+  //     Male: 0,
+  //     Female: 0,
+  //   };
 
-    customers.forEach((customer) => {
-      if (customer.ageRange in ageRangeCounts) {
-        ageRangeCounts[customer.ageRange]++;
-      }
-      if (customer.gender in genderRangeCounts) {
-        genderRangeCounts[customer.gender]++;
-      }
-    });
+  //   customers.forEach((customer) => {
+  //     if (customer.ageRange in ageRangeCounts) {
+  //       ageRangeCounts[customer.ageRange]++;
+  //     }
+  //     if (customer.gender in genderRangeCounts) {
+  //       genderRangeCounts[customer.gender]++;
+  //     }
+  //   });
 
-    // Calculate each percentage of AgeRange
-    const ageRangePercentages = {
-      YOUNG: (ageRangeCounts.YOUNG / total) * 100,
-      MIDDLE: (ageRangeCounts.MIDDLE / total) * 100,
-      OLD: (ageRangeCounts.OLD / total) * 100,
-    };
+  //   // Calculate each percentage of AgeRange
+  //   const ageRangePercentages = {
+  //     YOUNG: (ageRangeCounts.YOUNG / total) * 100,
+  //     MIDDLE: (ageRangeCounts.MIDDLE / total) * 100,
+  //     OLD: (ageRangeCounts.OLD / total) * 100,
+  //   };
 
-    // Calculate percentages for each gender
-    const genderPercentages = {
-      MALE: (genderRangeCounts.Male / total) * 100,
-      FEMALE: (genderRangeCounts.Female / total) * 100,
-    };
+  //   // Calculate percentages for each gender
+  //   const genderPercentages = {
+  //     MALE: (genderRangeCounts.Male / total) * 100,
+  //     FEMALE: (genderRangeCounts.Female / total) * 100,
+  //   };
 
-    return {
-      totalCustomers: total,
-      agePercents: ageRangePercentages,
-      genderPercents: genderPercentages,
-    };
-  }
+  //   return {
+  //     totalCustomers: total,
+  //     agePercents: ageRangePercentages,
+  //     genderPercents: genderPercentages,
+  //   };
+  // }
 
   async create(createCustomerDto: CreateCustomerDto): Promise<CustomerEntity> {
     const { specialId, createdByUserId, updatedByUserId, ...rest } =
@@ -91,24 +91,83 @@ export class CustomersService {
   }
 
   // CustomerEntity[]
-  async indexAll(): Promise<any> {
+  async indexAll(searchOptions: SearchOption): Promise<any> {
     const customers = await this.prisma.customer.findMany({
       where: this.whereCheckingNullClause,
-      include: { special: true, Voucher: true },
+      include: 
+      { 
+        special: true, 
+        Voucher: true 
+      },
     });
-    return customers.map((customer) => {
+  
+    // Map over customers to add `specialTitle` and `totalVoucher`
+    const modifiedCustomers = customers.map((customer) => {
       const special = customer.special
         ? new SpecialEntity(customer.special)
         : null;
+
+      const specialTitle = special ? special.name : null;
       const totalVoucher = customer.Voucher.length;
+  
       return new CustomerEntity({
         ...customer,
         special,
+        specialTitle,
         totalVoucher,
-        vouchers: undefined,
+        vouchers: customer.Voucher
+        // vouchers: undefined, // Assuming vouchers are not needed in the final output
       });
     });
+  
+    // Perform the analysis
+    const total = customers.length;
+  
+    const ageRangeCounts = {
+      YOUNG: 0,
+      MIDDLE: 0,
+      OLD: 0,
+    };
+  
+    const genderRangeCounts = {
+      Male: 0,
+      Female: 0,
+    };
+  
+    customers.forEach((customer) => {
+      if (customer.ageRange in ageRangeCounts) {
+        ageRangeCounts[customer.ageRange]++;
+      }
+      if (customer.gender in genderRangeCounts) {
+        genderRangeCounts[customer.gender]++;
+      }
+    });
+  
+    // Calculate each percentage of AgeRange
+    const ageRangePercentages = {
+      YOUNG: (ageRangeCounts.YOUNG / total) * 100,
+      MIDDLE: (ageRangeCounts.MIDDLE / total) * 100,
+      OLD: (ageRangeCounts.OLD / total) * 100,
+    };
+  
+    // Calculate percentages for each gender
+    const genderPercentages = {
+      MALE: (genderRangeCounts.Male / total) * 100,
+      FEMALE: (genderRangeCounts.Female / total) * 100,
+    };
+  
+    const analysis = {
+      totalCustomers: total,
+      agePercents: ageRangePercentages,
+      genderPercents: genderPercentages,
+    };
+  
+    return {
+      customers: modifiedCustomers,
+      analysis,
+    };
   }
+  
 
   // CustomerPagination
 
@@ -122,7 +181,7 @@ export class CustomersService {
     )
       ? orderDirection.toLowerCase()
       : 'asc';
-
+  
     try {
       const total = await this.prisma.customer.count({
         where: {
@@ -133,9 +192,9 @@ export class CustomersService {
           },
         },
       });
-
+  
       const skip = (page - 1) * limit;
-
+  
       const customers = await this.prisma.customer.findMany({
         where: {
           ...this.whereCheckingNullClause,
@@ -149,22 +208,49 @@ export class CustomersService {
         orderBy: {
           [orderByField]: orderDirectionValue,
         },
-        // include: {
-        //   special: true,
-        //   Voucher: true, // Ensure vouchers are included
-        // },
+        include: {
+          special: true,
+          Voucher: true, // Ensure vouchers are included
+        },
       });
+  
+      // Map over customers to add `specialTitle` and `totalVoucher`
+      const modifiedCustomers = customers.map((customer) => {
+        const specialTitle = customer.special ? customer.special.name : null;
+        const totalVoucher = customer.Voucher.length;
 
+        // Calculate totalPrice by summing up the total of each voucher
+        const totalPrice = customer.Voucher.reduce(
+          (sum, voucher) => sum + voucher.total,
+          0
+       );
+  
+        return {
+          ...customer,
+          totalPrice,
+          Voucher: undefined,
+          specialTitle,
+          totalVoucher,
+        };
+      });
+  
       const totalPages = Math.ceil(total / limit);
-
-      // console.log('Customers found:', customers);
-
-      return customers;
+  
+      return {
+        status: true,
+        message: 'Fetched Successfully!',
+        data: modifiedCustomers,
+        total,
+        totalPages,
+        page,
+        limit,
+      };
     } catch (error) {
       console.error('Error in findAll method:', error);
       throw new Error('Internal server error');
     }
   }
+  
 
   async findOne(id: number): Promise<any> {
     const customer = await this.prisma.customer.findUnique({

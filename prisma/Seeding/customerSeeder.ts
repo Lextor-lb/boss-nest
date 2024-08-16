@@ -7,6 +7,7 @@ export default async function seedCustomer() {
     {
       name: 'Your Customer',
       phoneNumber: '93785383',
+      email: 'customer1@gmail.com',
       address: 'Yangon',
       gender: CustomerGender.Male,
       specialId: 2,
@@ -23,6 +24,7 @@ export default async function seedCustomer() {
       name: 'Your Customer 3',
       phoneNumber: '937853884',
       address: 'Mandalay',
+      email: 'customer3@gmail.com',
       gender: CustomerGender.Male,
       specialId: 3,
     },
@@ -45,6 +47,7 @@ export default async function seedCustomer() {
       name: 'Your Customer 6',
       phoneNumber: '937853887',
       address: 'Mawlamyine',
+      email: 'customer6@gmail.com',
       gender: CustomerGender.Male,
       remark: 'VIP Customer',
       specialId: 3,

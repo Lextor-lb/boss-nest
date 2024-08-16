@@ -13,3 +13,18 @@ export interface FetchedCustomer extends ResponseMessage {
 export interface MessageWithCustomer extends ResponseMessage {
   data: CustomerEntity;
 }
+
+export interface FetchedCustomerWithAnalysis extends FetchedCustomer {
+  analysis: {
+    totalCustomers: number;
+    agePercents: {
+      YOUNG: number;
+      MIDDLE: number;
+      OLD: number;
+    };
+    genderPercents: {
+      MALE: number;
+      FEMALE: number;
+    };
+  };
+}
