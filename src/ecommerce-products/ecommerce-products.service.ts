@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Gender, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EcommerceProductDetailEntity } from './entities/ecommerce-productDetail.entity';
@@ -14,6 +14,7 @@ export class EcommerceProductsService {
     isArchived: null,
     isEcommerce: true,
   };
+
   async findAllProducts(options, type: string) {
     const {
       page,
@@ -47,6 +48,12 @@ export class EcommerceProductsService {
       }),
       ...(min !== null &&
         max !== null && { salePrice: { gte: min, lte: max } }),
+      productVariants: {
+        some: {
+          isArchived: null, // Or false if you use a boolean
+          statusStock: null,
+        },
+      },
     };
 
     const total = await this.prisma.product.count({ where: whereClause });
@@ -121,15 +128,7 @@ export class EcommerceProductsService {
   }
 
   async findOne(id: number) {
-    const {
-      productBrand: { name: brandName },
-      productType: { name: typeName },
-      productCategory: { name: categoryName, id: productCategoryId },
-      productFitting: { name: fittingName },
-      medias,
-      productVariants,
-      ...productData
-    } = await this.prisma.product.findUnique({
+    const product = await this.prisma.product.findUnique({
       where: { id },
       select: {
         id: true,
@@ -159,6 +158,20 @@ export class EcommerceProductsService {
         },
       },
     });
+
+    if (!product || product.productVariants.length === 0) {
+      return new NotFoundException();
+    }
+
+    const {
+      productBrand: { name: brandName },
+      productType: { name: typeName },
+      productCategory: { name: categoryName, id: productCategoryId },
+      productFitting: { name: fittingName },
+      medias,
+      productVariants,
+      ...productData
+    } = product;
 
     return new EcommerceProductDetailEntity({
       ...productData,

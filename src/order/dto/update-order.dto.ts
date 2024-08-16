@@ -9,8 +9,6 @@ export class UpdateOrderDto {
   @IsUniqueVoucherCode()
   voucherCode: string;
   @IsOptional()
-  discount: number;
-  @IsOptional()
   createdByUserId: number;
 
   @IsOptional()

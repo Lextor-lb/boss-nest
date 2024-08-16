@@ -11,6 +11,7 @@ import {
 import { SearchOption } from 'src/shared/types/searchOption';
 import { OrderEntity } from './entities/order.entity';
 import { OrderDetailEntity } from './entities/orderDetail.entity';
+import { MediaEntity } from 'src/media';
 
 @Injectable()
 export class OrderService {
@@ -23,8 +24,8 @@ export class OrderService {
   };
 
   async create({ orderRecords, ...orderData }: CreateOrderDto) {
-    return this.prisma.$transaction(async (transactionClient: PrismaClient) => {
-      try {
+    const order = await this.prisma.$transaction(
+      async (transactionClient: PrismaClient) => {
         // Create the order
         const order = await transactionClient.order.create({
           data: {
@@ -62,11 +63,18 @@ export class OrderService {
           );
         }
 
-        return { status: true, message: 'Order Created Successfully!' };
-      } catch (error) {
-        throw new Error('Failed to create Order: ' + error.message);
-      }
-    });
+        // Return the created order
+        return order;
+      },
+    );
+
+    // Fetch the created order with detailed information
+    const detailedOrder = await this.findOne(order.id);
+    return {
+      status: true,
+      message: 'Order Created Successfully!',
+      data: detailedOrder,
+    };
   }
 
   private async updateProductVariantStatus(
@@ -79,7 +87,7 @@ export class OrderService {
     });
   }
 
-  async findAll(options: SearchOption, ecommerceUserId: number): Promise<any> {
+  async findAll(options: SearchOption): Promise<any> {
     const {
       page,
       limit,
@@ -90,7 +98,6 @@ export class OrderService {
     const total = await this.prisma.order.count({
       where: {
         ...this.whereCheckingNullClause,
-        ecommerceUserId,
       },
     });
 
@@ -100,7 +107,6 @@ export class OrderService {
     const orders = await this.prisma.order.findMany({
       where: {
         ...this.whereCheckingNullClause,
-        ecommerceUserId,
       },
       include: { ecommerceUser: { select: { name: true, email: true } } },
       skip,
@@ -126,12 +132,13 @@ export class OrderService {
     };
   }
 
-  async findOne(id: number, ecommerceUserId: number): Promise<any> {
+  async findOne(id: number): Promise<any> {
     const { orderRecords, ...order } = await this.prisma.order.findUnique({
-      where: { id, AND: this.whereCheckingNullClause, ecommerceUserId },
+      where: { id, AND: this.whereCheckingNullClause },
       select: {
         id: true,
         orderCode: true,
+        total: true,
         createdAt: true,
         ecommerceUser: {
           select: {
@@ -152,6 +159,7 @@ export class OrderService {
               select: {
                 id: true,
                 colorCode: true,
+                media: { select: { url: true } },
                 product: {
                   select: {
                     name: true,
@@ -170,21 +178,26 @@ export class OrderService {
       },
     });
 
-    return new OrderDetailEntity({
-      ...order,
-      orderRecords: orderRecords.map((or) => ({
-        id: or.productVariant.id,
-        productName: or.productVariant.product.name,
-        productCode: or.productVariant.product.productCode,
-        colorCode: or.productVariant.colorCode,
-        gender: or.productVariant.product.gender,
-        typeName: or.productVariant.product.productType.name,
-        categoryName: or.productVariant.product.productCategory.name,
-        fittingName: or.productVariant.product.productFitting.name,
-        sizingName: or.productVariant.productSizing.name,
-        price: or.salePrice,
-      })),
-    });
+    try {
+      return new OrderDetailEntity({
+        ...order,
+        orderRecords: orderRecords.map((or) => ({
+          id: or.productVariant.id,
+          productName: or.productVariant.product.name,
+          image: new MediaEntity({ url: or.productVariant.media.url }),
+          productCode: or.productVariant.product.productCode,
+          colorCode: or.productVariant.colorCode,
+          gender: or.productVariant.product.gender,
+          typeName: or.productVariant.product.productType.name,
+          categoryName: or.productVariant.product.productCategory.name,
+          fittingName: or.productVariant.product.productFitting.name,
+          sizingName: or.productVariant.productSizing.name,
+          price: or.salePrice,
+        })),
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async update(id: number, updateOrderDto: UpdateOrderDto) {
@@ -194,6 +207,7 @@ export class OrderService {
       select: {
         subTotal: true,
         total: true,
+        discount: true,
         orderRecords: { select: { productVariantId: true, salePrice: true } },
       },
     });
@@ -243,7 +257,7 @@ export class OrderService {
         voucherCode: updateOrderDto.voucherCode,
         type: 'ONLINE',
         paymentMethod: 'CASH',
-        discount: updateOrderDto.discount ?? 0,
+        discount: order.discount ?? 0,
         subTotal: order.subTotal,
         total: order.total,
         tax: 0,
@@ -269,5 +283,78 @@ export class OrderService {
       data: { orderStatus: updateOrderDto.orderStatus },
     });
     return { status: true, message: 'Updated Successfully!' };
+  }
+
+  async findAllEcommerce(ecommerceUserId: number): Promise<any[]> {
+    const orders = await this.prisma.order.findMany({
+      where: {
+        ...this.whereCheckingNullClause,
+        ecommerceUserId,
+      },
+      select: {
+        id: true,
+        orderCode: true,
+        orderStatus: true,
+        total: true,
+        createdAt: true,
+        ecommerceUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            city: true,
+            township: true,
+            street: true,
+            addressDetail: true,
+          },
+        },
+        orderRecords: {
+          select: {
+            salePrice: true,
+            productVariant: {
+              select: {
+                id: true,
+                colorCode: true,
+                media: { select: { url: true } },
+                product: {
+                  select: {
+                    name: true,
+                    gender: true,
+                    productCode: true,
+                    productType: { select: { name: true } },
+                    productCategory: { select: { name: true } },
+                    productFitting: { select: { name: true } },
+                  },
+                },
+                productSizing: { select: { name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Map through each order and return it in the desired format
+    return orders.map((order) => {
+      const { orderRecords, ...orderData } = order;
+
+      return new OrderDetailEntity({
+        ...orderData,
+        orderRecords: orderRecords.map((or) => ({
+          id: or.productVariant.id,
+          productName: or.productVariant.product.name,
+          image: new MediaEntity({ url: or.productVariant.media.url }),
+          productCode: or.productVariant.product.productCode,
+          colorCode: or.productVariant.colorCode,
+          gender: or.productVariant.product.gender,
+          typeName: or.productVariant.product.productType.name,
+          categoryName: or.productVariant.product.productCategory.name,
+          fittingName: or.productVariant.product.productFitting.name,
+          sizingName: or.productVariant.productSizing.name,
+          price: or.salePrice,
+        })),
+      });
+    });
   }
 }
