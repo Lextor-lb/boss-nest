@@ -4,7 +4,7 @@ import { formatDate, formatTime } from 'src/shared/utils/formatDate';
 
 export class OrderDetailEntity implements Order {
   id: number;
-  orderId: string;
+  orderCode: string;
   orderStatus: OrderStatus;
   @Exclude()
   ecommerceUserId: number;
@@ -19,12 +19,11 @@ export class OrderDetailEntity implements Order {
   updatedAt: Date;
   @Exclude()
   isArchived: Date | null;
-  customerName: string;
-  customerEmail: string;
 
   orderRecords: {
     id: number;
     productName: string;
+    productCode: string;
     gender: string;
     colorCode: string;
     typeName: string;
@@ -51,8 +50,5 @@ export class OrderDetailEntity implements Order {
 
   constructor(partial: Partial<OrderDetailEntity> = {}) {
     Object.assign(this, partial);
-    this.initializeEntities(partial);
   }
-
-  private initializeEntities(partial: Partial<OrderDetailEntity>): void {}
 }

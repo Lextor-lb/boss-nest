@@ -131,8 +131,20 @@ export class OrderService {
       where: { id, AND: this.whereCheckingNullClause, ecommerceUserId },
       select: {
         id: true,
-        orderId: true,
+        orderCode: true,
         createdAt: true,
+        ecommerceUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            city: true,
+            township: true,
+            street: true,
+            addressDetail: true,
+          },
+        },
         orderRecords: {
           select: {
             salePrice: true,
@@ -144,6 +156,7 @@ export class OrderService {
                   select: {
                     name: true,
                     gender: true,
+                    productCode: true,
                     productType: { select: { name: true } },
                     productCategory: { select: { name: true } },
                     productFitting: { select: { name: true } },
@@ -156,11 +169,13 @@ export class OrderService {
         },
       },
     });
+
     return new OrderDetailEntity({
       ...order,
       orderRecords: orderRecords.map((or) => ({
         id: or.productVariant.id,
         productName: or.productVariant.product.name,
+        productCode: or.productVariant.product.productCode,
         colorCode: or.productVariant.colorCode,
         gender: or.productVariant.product.gender,
         typeName: or.productVariant.product.productType.name,
@@ -188,12 +203,6 @@ export class OrderService {
     }
 
     if (updateOrderDto.orderStatus === 'CANCEL') {
-      // Archive the order
-      await this.prisma.order.update({
-        where: { id },
-        data: { isArchived: new Date() },
-      });
-
       // Fetch all related OrderRecords for the order
       const orderRecords = await this.prisma.orderRecord.findMany({
         where: { orderId: id },
@@ -209,6 +218,11 @@ export class OrderService {
           }),
         ),
       );
+
+      await this.prisma.order.update({
+        where: { id },
+        data: { orderStatus: OrderStatus.CANCEL },
+      });
 
       return { status: true, message: 'Updated Successfully!' };
     }
