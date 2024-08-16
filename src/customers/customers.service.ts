@@ -92,80 +92,121 @@ export class CustomersService {
 
   // CustomerEntity[]
   async indexAll(searchOptions: SearchOption): Promise<any> {
-    const customers = await this.prisma.customer.findMany({
-      where: this.whereCheckingNullClause,
-      include: 
-      { 
-        special: true, 
-        Voucher: true 
-      },
-    });
+    const { page, limit, search, orderBy, orderDirection } = searchOptions;
+    const orderByField = ['id', 'name', 'createdAt'].includes(orderBy)
+      ? orderBy
+      : 'id';
+    const orderDirectionValue = ['asc', 'desc'].includes(
+      orderDirection.toLowerCase(),
+    )
+      ? orderDirection.toLowerCase()
+      : 'asc';
   
-    // Map over customers to add `specialTitle` and `totalVoucher`
-    const modifiedCustomers = customers.map((customer) => {
-      const special = customer.special
-        ? new SpecialEntity(customer.special)
-        : null;
-
-      const specialTitle = special ? special.name : null;
-      const totalVoucher = customer.Voucher.length;
-  
-      return new CustomerEntity({
-        ...customer,
-        special,
-        specialTitle,
-        totalVoucher,
-        vouchers: customer.Voucher
-        // vouchers: undefined, // Assuming vouchers are not needed in the final output
+    try {
+      // Count total customers based on search criteria
+      const total = await this.prisma.customer.count({
+        where: {
+          ...this.whereCheckingNullClause,
+          name: {
+            contains: search || '',
+            mode: 'insensitive',
+          },
+        },
       });
-    });
   
-    // Perform the analysis
-    const total = customers.length;
+      // Calculate skip value for pagination
+      const skip = (page - 1) * limit;
   
-    const ageRangeCounts = {
-      YOUNG: 0,
-      MIDDLE: 0,
-      OLD: 0,
-    };
+      // Fetch customers with pagination, search, and sorting
+      const customers = await this.prisma.customer.findMany({
+        where: {
+          ...this.whereCheckingNullClause,
+          name: {
+            contains: search || '',
+            mode: 'insensitive',
+          },
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          [orderByField]: orderDirectionValue,
+        },
+        include: {
+          special: true,
+          Voucher: true,
+        },
+      });
   
-    const genderRangeCounts = {
-      Male: 0,
-      Female: 0,
-    };
+      // Map over customers to add specialTitle, totalVoucher, and voucher transformations
+      const modifiedCustomers = customers.map((customer) => {
+        const special = customer.special
+          ? new SpecialEntity(customer.special)
+          : null;
   
-    customers.forEach((customer) => {
-      if (customer.ageRange in ageRangeCounts) {
-        ageRangeCounts[customer.ageRange]++;
-      }
-      if (customer.gender in genderRangeCounts) {
-        genderRangeCounts[customer.gender]++;
-      }
-    });
+        const specialTitle = special ? special.name : null;
+        const totalVoucher = customer.Voucher.length;
   
-    // Calculate each percentage of AgeRange
-    const ageRangePercentages = {
-      YOUNG: (ageRangeCounts.YOUNG / total) * 100,
-      MIDDLE: (ageRangeCounts.MIDDLE / total) * 100,
-      OLD: (ageRangeCounts.OLD / total) * 100,
-    };
+        return new CustomerEntity({
+          ...customer,
+          special,
+          specialTitle,
+          totalVoucher,
+          vouchers: customer.Voucher,
+        });
+      });
   
-    // Calculate percentages for each gender
-    const genderPercentages = {
-      MALE: (genderRangeCounts.Male / total) * 100,
-      FEMALE: (genderRangeCounts.Female / total) * 100,
-    };
+      // Perform the analysis
+      const ageRangeCounts = {
+        YOUNG: 0,
+        MIDDLE: 0,
+        OLD: 0,
+      };
   
-    const analysis = {
-      totalCustomers: total,
-      agePercents: ageRangePercentages,
-      genderPercents: genderPercentages,
-    };
+      const genderRangeCounts = {
+        Male: 0,
+        Female: 0,
+      };
   
-    return {
-      customers: modifiedCustomers,
-      analysis,
-    };
+      customers.forEach((customer) => {
+        if (customer.ageRange in ageRangeCounts) {
+          ageRangeCounts[customer.ageRange]++;
+        }
+        if (customer.gender in genderRangeCounts) {
+          genderRangeCounts[customer.gender]++;
+        }
+      });
+  
+      const ageRangePercentages = {
+        YOUNG: Math.round((ageRangeCounts.YOUNG / total) * 100),
+        MIDDLE: Math.round((ageRangeCounts.MIDDLE / total) * 100),
+        OLD: Math.round((ageRangeCounts.OLD / total) * 100),
+      };
+  
+      const genderPercentages = {
+        MALE: Math.round((genderRangeCounts.Male / total) * 100),
+        FEMALE: Math.round((genderRangeCounts.Female / total) * 100),
+      };
+  
+      const analysis = {
+        totalCustomers: total,
+        agePercents: ageRangePercentages,
+        genderPercents: genderPercentages,
+      };
+  
+      const totalPages = Math.ceil(total / limit);
+  
+      return {
+        customers: modifiedCustomers,
+        analysis,
+        total,
+        totalPages,
+        page,
+        limit,
+      };
+    } catch (error) {
+      console.error('Error in indexAll method:', error);
+      throw new Error('Internal server error');
+    }
   }
   
 
