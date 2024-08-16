@@ -138,6 +138,7 @@ export class OrderService {
       select: {
         id: true,
         orderCode: true,
+        orderStatus: true,
         total: true,
         createdAt: true,
         ecommerceUser: {
