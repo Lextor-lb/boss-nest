@@ -9,7 +9,7 @@
 
 ### Get All Sliders
 
-**URL**: `/slider`  
+**URL**: `api/v1/slider`  
 **Method**: `GET`  
 **Description**: Fetches all sliders.
 
@@ -47,7 +47,7 @@
 
 ### Create a New Slider
 
-**URL**: `/slider`  
+**URL**: `api/v1/slider`  
 **Method**: `POST`  
 **Description**: Creates a new slider with uploaded images and sorting order.
 
@@ -74,7 +74,7 @@ curl -X POST "https://amt.santar.store/api/v1/slider" \
 
 ### Delete a Slider by ID
 
-**URL**: `/slider/:id`  
+**URL**: `api/v1/slider/:id`  
 **Method**: `DELETE`  
 **Description**: Deletes a slider by its ID.
 
