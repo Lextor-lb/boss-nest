@@ -277,7 +277,8 @@ model ProductVariant {
 model Customer {
   id          Int            @id @default(autoincrement())
   name        String
-  phoneNumber String         @unique
+  phoneNumber String    @unique
+  email       String?
   gender      CustomerGender
   address     String?
   remark      String?

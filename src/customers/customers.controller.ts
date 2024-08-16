@@ -22,6 +22,7 @@ import {
   FetchedCustomer,
   JwtAuthGuard,
   RemoveManyCustomerDto,
+  FetchedCustomerWithAnalysis,
 } from 'src';
 
 @Controller('customers')
@@ -29,16 +30,16 @@ import {
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
-  @Get('analysis')
-  async analysis() {
-    const result = await this.customersService.analysis();
+  // @Get('analysis')
+  // async analysis() {
+  //   const result = await this.customersService.analysis();
 
-    return {
-      status: true,
-      message: 'Fetched Successfully',
-      data: result,
-    };
-  }
+  //   return {
+  //     status: true,
+  //     message: 'Fetched Successfully',
+  //     data: result,
+  //   };
+  // }
 
   @Post()
   async create(@Body() createCustomerDto: CreateCustomerDto, @Req() req) {
@@ -48,14 +49,26 @@ export class CustomersController {
   }
 
   @Get('all')
-  async indexAll(): Promise<FetchedCustomer> {
-    const customers = await this.customersService.indexAll();
-    return {
-      status: true,
-      message: 'Fetched Successfully!',
-      data: customers.map((customer) => new CustomerEntity(customer)),
-    };
-  }
+async indexAll(@Req() req): Promise<FetchedCustomerWithAnalysis> {
+  const { page, limit, search, orderBy, orderDirection } = req.query;
+  const searchOptions: SearchOption = {
+    page: parseInt(page, 10) || 1,
+    limit: limit ? parseInt(limit, 10) : 10,
+    search: search || '',
+    orderBy: orderBy || 'id',
+    orderDirection: orderDirection || 'ASC',
+  };
+
+  const { customers, analysis } = await this.customersService.indexAll(searchOptions);
+
+  return {
+    status: true,
+    message: 'Fetched Successfully!',
+    data: customers,
+    analysis, // Include the analysis results in the response
+  };
+}
+
 
   @Get()
   async findAll(@Req() req): Promise<CustomerPagination> {

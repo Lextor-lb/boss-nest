@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { IsUniquePhoneNumber } from 'src/shared/customValidation/barcodeValidation';
 
 export class CreateCustomerDto {
   @IsNotEmpty()
@@ -13,7 +14,12 @@ export class CreateCustomerDto {
   name: string;
 
   @IsNotEmpty()
+  @IsString()
+  @IsUniquePhoneNumber()
   phoneNumber: string;
+
+  @IsOptional()
+  email: string;
 
   @IsNotEmpty()
   @IsEnum(AgeRange)

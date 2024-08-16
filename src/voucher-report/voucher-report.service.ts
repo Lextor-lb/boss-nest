@@ -42,7 +42,7 @@ export class VoucherReportService {
       },
     });
 
-    console.log(`Vouchers found: ${vouchers.length}`, vouchers);
+    // console.log(`Vouchers found: ${vouchers.length}`, vouchers);
 
     const voucherReports = vouchers.map(
       (voucher) =>
