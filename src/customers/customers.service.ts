@@ -177,14 +177,14 @@ export class CustomersService {
       });
   
       const ageRangePercentages = {
-        YOUNG: Math.round((ageRangeCounts.YOUNG / total) * 100),
-        MIDDLE: Math.round((ageRangeCounts.MIDDLE / total) * 100),
-        OLD: Math.round((ageRangeCounts.OLD / total) * 100),
+        YOUNG: Math.ceil((ageRangeCounts.YOUNG / total) * 100),
+        MIDDLE: Math.ceil((ageRangeCounts.MIDDLE / total) * 100),
+        OLD: Math.ceil((ageRangeCounts.OLD / total) * 100),
       };
   
       const genderPercentages = {
-        MALE: Math.round((genderRangeCounts.Male / total) * 100),
-        FEMALE: Math.round((genderRangeCounts.Female / total) * 100),
+        MALE: Math.ceil((genderRangeCounts.Male / total) * 100),
+        FEMALE: Math.ceil((genderRangeCounts.Female / total) * 100),
       };
   
       const analysis = {
