@@ -7,6 +7,11 @@
 ```
 orders
 ```
+### order Index For Ecommerce (GET)
+
+```
+orders/ecommerce
+```
 
 ### order Show (GET)
 
@@ -58,7 +63,6 @@ if
 {
 	"orderStatus": "CANCEL"
 }
-order will be deleted
 ```
 ```
 if 

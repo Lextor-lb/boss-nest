@@ -47,16 +47,20 @@ export class OrderController {
       orderDirection: orderDirection || 'desc',
     };
 
-    const ecommerceUserId = req.user.id;
-    return await this.orderService.findAll(searchOptions, ecommerceUserId);
+    return await this.orderService.findAll(searchOptions);
   }
+
+  @UseGuards(EcommerceJwtAuthGuard)
+  @Get('ecommerce')
+  findAllEcommerce(@Req() req) {
+    return this.orderService.findAllEcommerce(req.user.id);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   @UsePipes(new ValidateIdExistsPipe('Order'))
-  findOne(@Param('id') id: string, @Req() req) {
-    const ecommerceUserId = req.user.id;
-
-    return this.orderService.findOne(+id, ecommerceUserId);
+  findOne(@Param('id') id: string) {
+    return this.orderService.findOne(+id);
   }
 
   @UseGuards(JwtAuthGuard)

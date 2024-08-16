@@ -1,6 +1,7 @@
 import { Exclude, Expose } from 'class-transformer';
-import { Order, OrderRecord, OrderStatus } from '@prisma/client';
+import { Order, OrderStatus } from '@prisma/client';
 import { formatDate, formatTime } from 'src/shared/utils/formatDate';
+import { MediaEntity } from 'src/media';
 
 export class OrderDetailEntity implements Order {
   id: number;
@@ -23,6 +24,7 @@ export class OrderDetailEntity implements Order {
   orderRecords: {
     id: number;
     productName: string;
+    image: MediaEntity;
     productCode: string;
     gender: string;
     colorCode: string;
