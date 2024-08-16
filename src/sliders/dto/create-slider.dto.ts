@@ -1,14 +1,10 @@
-import { IsNumber, IsPositive, IsUrl } from "class-validator";
+import { IsNumber, IsPositive, IsArray, IsString } from 'class-validator';
 
 export class CreateSliderDto {
-    @IsUrl()
+  
     mobileImage: string;
-  
-    @IsUrl()
+   
     desktopImage: string;
-  
-    @IsNumber()
-    @IsPositive()
-    sorting: number;
-  
+
+    sorting: string;
 }
