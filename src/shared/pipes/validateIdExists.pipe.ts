@@ -15,6 +15,7 @@ const modelMap = {
   Order: prisma.order,
   EcommerceUser: prisma.ecommerceUser,
   Address: prisma.address,
+  WishList: prisma.wishList
 };
 
 @Injectable()

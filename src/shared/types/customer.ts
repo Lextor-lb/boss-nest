@@ -27,4 +27,8 @@ export interface FetchedCustomerWithAnalysis extends FetchedCustomer {
       FEMALE: number;
     };
   };
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
 }
