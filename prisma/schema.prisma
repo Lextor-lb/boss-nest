@@ -12,6 +12,7 @@ datasource db {
 
 model User {
   id        Int      @id @default(autoincrement())
+  role      UserRole
   name      String?
   email     String   @unique
   password  String
@@ -559,4 +560,9 @@ enum OrderStatus {
   CONFIRM
   DELIVERY
   COMPLETE
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
 }
