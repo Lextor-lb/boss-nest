@@ -1,16 +1,16 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateProductSizingDto {
   @IsNotEmpty()
   @IsString()
+  @ApiProperty()
   name: string;
 
   @IsOptional()
-  //   @IsNumber()
   createdByUserId: number;
 
   @IsOptional()
-  //   @IsNumber()
   updatedByUserId: number;
 
   @IsOptional()

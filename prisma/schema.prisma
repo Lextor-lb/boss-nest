@@ -10,29 +10,50 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Article {
-  id          Int      @id @default(autoincrement())
-  title       String   @unique
-  description String?
-  body        String
-  published   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  author      User?    @relation(fields: [authorId], references: [id])
-  authorId    Int?
-}
-
 model User {
-  id        Int       @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String?
-  email     String    @unique
+  email     String   @unique
   password  String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  articles  Article[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  // One to Many Inverse
   createdProductSizings ProductSizing[] @relation("CreatedProductSizings")
   updatedProductSizings ProductSizing[] @relation("UpdatedProductSizings")
+
+  createdProductFittings ProductFitting[] @relation("CreatedProductFittings")
+  updatedProductFittings ProductFitting[] @relation("UpdatedProductFittings")
+
+  createdProductTypes ProductType[] @relation("CreatedProductTypes")
+  updatedProductTypes ProductType[] @relation("UpdatedProductTypes")
+
+  createdProductBrands ProductBrand[] @relation("CreatedProductBrands")
+  updatedProductBrands ProductBrand[] @relation("UpdatedProductBrands")
+
+  createdProductCategories ProductCategory[] @relation("CreatedProductCategories")
+  updatedProductCategories ProductCategory[] @relation("UpdatedProductCategories")
+
+  createdProducts Product[] @relation("CreatedProducts")
+  updatedProducts Product[] @relation("UpdatedProducts")
+
+  createdProductVariants ProductVariant[] @relation("CreatedProductVariants")
+  updatedProductVariants ProductVariant[] @relation("UpdatedProductVariants")
+
+  createdCustomers Customer[] @relation("CreatedCustomers")
+  updatedCustomers Customer[] @relation("UpdatedCustomers")
+
+  createdSpecials Special[] @relation("CreatedSpecials")
+  updatedSpecials Special[] @relation("UpdatedSpecials")
+
+  createdVouchers Voucher[] @relation("CreatedVouchers")
+  updatedVouchers Voucher[] @relation("UpdatedVouchers")
+
+  CreatedEcommerceCategories EcommerceCategory[] @relation("CreatedEcommerceCategories")
+  UpdatedEcommerceCategories EcommerceCategory[] @relation("UpdatedEcommerceCategories")
+
+  CreatedEcommerceCoupons Coupon[] @relation("CreatedEcommerceCoupons")
+  UpdatedEcommerceCoupons Coupon[] @relation("UpdatedEcommerceCoupons")
 }
 
 model ProductSizing {
@@ -41,9 +62,488 @@ model ProductSizing {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  //  One to Many
   createdByUser   User?     @relation("CreatedProductSizings", fields: [createdByUserId], references: [id])
   createdByUserId Int?
   updatedByUser   User?     @relation("UpdatedProductSizings", fields: [updatedByUserId], references: [id])
   updatedByUserId Int?
   isArchived      DateTime?
+
+  // Many to Many
+  productFittings             ProductFitting[]
+  ProductFittingProductSizing ProductFittingProductSizing[]
+
+  // One to One Inverse
+  productVariants ProductVariant[] @relation("ProductSizingVariants")
+}
+
+model ProductFitting {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // One to Many
+  createdByUser   User?     @relation("CreatedProductFittings", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User?     @relation("UpdatedProductFittings", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+  isArchived      DateTime?
+
+  // Many to Many
+  productSizings              ProductSizing[]
+  ProductFittingProductSizing ProductFittingProductSizing[]
+
+  productCategories             ProductCategory[]
+  ProductCategoryProductFitting ProductCategoryProductFitting[]
+
+  // One to Many Inverse
+  products Product[] @relation("ProductFittingProducts")
+}
+
+model ProductFittingProductSizing {
+  id               Int            @id @default(autoincrement())
+  productSizing    ProductSizing  @relation(fields: [productSizingId], references: [id])
+  productSizingId  Int
+  productFitting   ProductFitting @relation(fields: [productFittingId], references: [id])
+  productFittingId Int
+}
+
+model ProductBrand {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // One to One
+  media   Media? @relation(fields: [mediaId], references: [id])
+  mediaId Int?   @unique
+
+  // One to Many
+  createdByUser   User? @relation("CreatedProductBrands", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedProductBrands", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  // One to Many Inverse
+  products   Product[] @relation("ProductBrandProducts")
+  isArchived DateTime?
+}
+
+model Media {
+  id        Int        @id @default(autoincrement())
+  url       String
+  imageType ImageType?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // One to Many
+  product   Product? @relation("ProductMedias", fields: [productId], references: [id])
+  productId Int?
+
+  // One to One Inverse
+  ProductBrand      ProductBrand?
+  productVariant    ProductVariant?
+  EcommerceCategory EcommerceCategory?
+
+  isArchived DateTime?
+}
+
+model ProductType {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // One to Many
+  createdByUser   User? @relation("CreatedProductTypes", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedProductTypes", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  // One to Many Inverse
+  productCategories ProductCategory[] @relation("ProductTypeCategories")
+
+  products Product[] @relation("ProductTypeProducts")
+
+  isArchived DateTime?
+}
+
+model ProductCategory {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // One to Many
+  createdByUser   User? @relation("CreatedProductCategories", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedProductCategories", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  productType   ProductType @relation("ProductTypeCategories", fields: [productTypeId], references: [id])
+  productTypeId Int
+
+  // Many to Many
+  productFittings               ProductFitting[]
+  ProductCategoryProductFitting ProductCategoryProductFitting[]
+
+  // One to Many Inverse
+  products            Product[]           @relation("ProductCategoryProducts")
+  EcommerceCategories EcommerceCategory[] @relation("ProductCategoryEcommerceCategories")
+
+  isArchived DateTime?
+}
+
+model ProductCategoryProductFitting {
+  id                Int             @id @default(autoincrement())
+  productCategory   ProductCategory @relation(fields: [productCategoryId], references: [id])
+  productCategoryId Int
+  productFitting    ProductFitting  @relation(fields: [productFittingId], references: [id])
+  productFittingId  Int
+}
+
+model Product {
+  id            Int      @id @default(autoincrement())
+  name          String
+  productCode   String
+  description   String?
+  isEcommerce   Boolean
+  isPos         Boolean
+  gender        Gender
+  stockPrice    Int
+  salePrice     Int
+  discountPrice Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // One to Many
+  createdByUser   User? @relation("CreatedProducts", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedProducts", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  productBrand   ProductBrand @relation("ProductBrandProducts", fields: [productBrandId], references: [id])
+  productBrandId Int
+
+  productType   ProductType @relation("ProductTypeProducts", fields: [productTypeId], references: [id])
+  productTypeId Int
+
+  productCategory   ProductCategory @relation("ProductCategoryProducts", fields: [productCategoryId], references: [id])
+  productCategoryId Int
+
+  productFitting   ProductFitting @relation("ProductFittingProducts", fields: [productFittingId], references: [id])
+  productFittingId Int
+
+  // One to Many Inverse
+  medias          Media[]          @relation("ProductMedias")
+  productVariants ProductVariant[] @relation("ProductProductVariants")
+  wishlistRecords WishListRecord[] @relation("wishListRecordProducts")
+
+  isArchived DateTime?
+}
+
+model ProductVariant {
+  id          Int          @id @default(autoincrement())
+  shopCode    String
+  colorCode   String
+  barcode     String       @unique
+  statusStock StatusStock?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // One to Many
+  createdByUser   User? @relation("CreatedProductVariants", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedProductVariants", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  isArchived DateTime?
+
+  product   Product @relation("ProductProductVariants", fields: [productId], references: [id])
+  productId Int
+
+  productSizing   ProductSizing? @relation("ProductSizingVariants", fields: [productSizingId], references: [id])
+  productSizingId Int
+
+  media   Media? @relation(fields: [mediaId], references: [id])
+  mediaId Int?   @unique
+
+  //One to Many inverse
+  voucherRecords  VoucherRecord[]  @relation("voucherRecordproductVariants")
+  orderRecords    OrderRecord[]    @relation("OrderRecordproductVariants")
+  wishlistRecords WishListRecord[] @relation("wishListRecordProductVaiants")
+}
+
+model Customer {
+  id          Int            @id @default(autoincrement())
+  name        String
+  phoneNumber String    @unique
+  email       String?
+  gender      CustomerGender
+  address     String?
+  remark      String?
+  isArchived  DateTime?
+  ageRange    AgeRange
+  dateOfBirth DateTime?
+
+  // Many to One 
+  special   Special @relation("customerSpecials", fields: [specialId], references: [id])
+  specialId Int
+
+  // One to Many
+  createdByUser   User? @relation("CreatedCustomers", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedCustomers", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //One to Many inverse
+  Voucher Voucher[] @relation("customerVouchers")
+}
+
+model Special {
+  id            Int       @id @default(autoincrement())
+  name          String
+  promotionRate Int
+  isArchived    DateTime?
+
+  // One to Many
+  createdByUser   User? @relation("CreatedSpecials", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedSpecials", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  // One to Many Inverse
+  customers Customer[] @relation("customerSpecials")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Voucher {
+  id            Int           @id @default(autoincrement())
+  voucherCode   String        @unique
+  discount      Int           @default(0)
+  tax           Int           @default(0)
+  paymentMethod PaymentMethod
+  type          Type
+  quantity      Int
+  subTotal      Int
+  total         Int
+  remark        String?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isArchived DateTime?
+
+  // One to Many
+  createdByUser   User? @relation("CreatedVouchers", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedVouchers", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  customer   Customer? @relation("customerVouchers", fields: [customerId], references: [id])
+  customerId Int?
+
+  //One to Many inverse
+  voucherRecords VoucherRecord[] @relation("voucherRecordVouchers")
+}
+
+model VoucherRecord {
+  id       Int   @id @default(autoincrement())
+  discount Int   @default(0)
+  cost     Int
+  product  Json?
+
+  //One to Many
+  voucher   Voucher @relation("voucherRecordVouchers", fields: [voucherId], references: [id])
+  voucherId Int
+
+  productVariant   ProductVariant @relation("voucherRecordproductVariants", fields: [productVariantId], references: [id])
+  productVariantId Int
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isArchived DateTime?
+}
+
+model EcommerceUser {
+  id            Int        @id @default(autoincrement())
+  name          String
+  phone         String?
+  email         String     @unique
+  city          String?
+  township      String?
+  street        String?
+  company       String?
+  addressDetail String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  isArchived    DateTime?
+  orders        Order[]    @relation("ecommerceUserOrder")
+  // wishLists     WishList[] @relation("ecommerceUserWishList")
+}
+
+model EcommerceCategory {
+  id         Int       @id @default(autoincrement())
+  name       String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isArchived DateTime?
+
+  // One to Many
+  createdByUser   User? @relation("CreatedEcommerceCategories", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedEcommerceCategories", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+
+  productCategory   ProductCategory @relation("ProductCategoryEcommerceCategories", fields: [productCategoryId], references: [id])
+  productCategoryId Int
+
+  // One to one
+  media   Media? @relation(fields: [mediaId], references: [id])
+  mediaId Int?   @unique
+}
+
+model Coupon {
+  id          Int       @id @default(autoincrement())
+  name        String
+  couponId    String    @unique
+  discount    Int
+  expiredDate DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isArchived  DateTime?
+
+  // One to Many
+  createdByUser   User? @relation("CreatedEcommerceCoupons", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  updatedByUser   User? @relation("UpdatedEcommerceCoupons", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+}
+
+model Slider {
+  id              Int   @id @default(autoincrement())
+
+  mobileImage String
+
+  desktopImage String
+
+  sorting Int
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isArchived DateTime?
+
+  // One to Many
+  // createdByUser       User?     @relation("CreatedEcommerceSlides", fields: [createdByUserId], references: [id])
+  createdByUserId Int?
+  // updatedByUser       User?     @relation("UpdatedEcommerceSlides", fields: [updatedByUserId], references: [id])
+  updatedByUserId Int?
+}
+
+model Order {
+  id              Int           @id @default(autoincrement())
+  orderCode         String        @unique
+  orderStatus     OrderStatus   @default(ORDERED)
+  ecommerceUserId Int
+  discount        Int           @default(0) // Fixed typo here
+  subTotal        Int
+  total           Int // Fixed typo here
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  isArchived      DateTime?
+  ecommerceUser   EcommerceUser @relation("ecommerceUserOrder", fields: [ecommerceUserId], references: [id])
+  orderRecords    OrderRecord[] @relation("orderRecordOrders")
+}
+
+model OrderRecord {
+  id               Int      @id @default(autoincrement())
+  productVariantId Int
+  salePrice        Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  orderId          Int
+
+  isArchived DateTime?
+
+  order          Order          @relation("orderRecordOrders", fields: [orderId], references: [id])
+  productVariant ProductVariant @relation("OrderRecordproductVariants", fields: [productVariantId], references: [id])
+}
+
+model WishList {
+  id              Int       @id @default(autoincrement())
+  wishlistId      String    @unique
+  // ecommerceUserId Int
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @updatedAt
+  isArchived      DateTime?
+
+  // ecommerceUser   EcommerceUser    @relation("ecommerceUserWishList", fields: [ecommerceUserId], references: [id])
+  wishlistRecords WishListRecord[] @relation("wishListRecords")
+}
+
+model WishListRecord {
+  id               Int      @id @default(autoincrement())
+  productVariantId Int
+  productId          Int
+  salePrice        Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  wishlistId       Int
+
+  isArchived DateTime?
+
+  wishlist       WishList       @relation("wishListRecords", fields: [wishlistId], references: [id])
+  productVariant ProductVariant @relation("wishListRecordProductVaiants", fields: [productVariantId], references: [id])
+  product Product @relation("wishListRecordProducts", fields: [productId], references: [id])
+}
+
+enum Gender {
+  MEN
+  WOMEN
+  UNISEX
+}
+
+enum CustomerGender {
+  Male
+  Female
+}
+
+enum PaymentMethod {
+  CASH
+  WALLET
+  CARD
+}
+
+enum StatusStock {
+  SOLDOUT
+  ORDERED
+}
+
+enum Type {
+  ONLINE
+  OFFLINE
+}
+
+enum AgeRange {
+  YOUNG
+  MIDDLE
+  OLD
+}
+
+enum ImageType {
+  desktop
+  mobile
+}
+
+enum OrderStatus {
+  ORDERED
+  CANCEL
+  CONFIRM
+  DELIVERY
+  COMPLETE
 }

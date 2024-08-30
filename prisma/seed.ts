@@ -1,60 +1,30 @@
 import { PrismaClient } from '@prisma/client';
-import * as argon2 from 'argon2';
+import userSeeder from './Seeding/userSeeder';
+import { seedProductSizing } from './Seeding/productSizingSeeder';
+import seedProductType from './Seeding/productTypeSeeder';
+import seedProductBrand from './Seeding/productBrandSeeder';
+import { seedProductCategory } from './Seeding/productCategorySeeder';
+import seedProduct from './Seeding/productSeeder';
+import seedSpecial from './Seeding/specialSeeder';
+import seedCustomer from './Seeding/customerSeeder';
+import seedVouchers from './Seeding/voucherSeeder';
 
 // Initialize the Prisma Client
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create two dummy users
-  const passwordSabin = await argon2.hash('password-sabin');
-  const passwordAlex = await argon2.hash('password-alex');
-
-  const user1 = await prisma.user.upsert({
-    where: { email: 'sabin@adams.com' },
-    update: {
-      password: passwordSabin,
-    },
-    create: {
-      email: 'sabin@adams.com',
-      name: 'Sabin Adams',
-      password: passwordSabin,
-    },
-  });
-
-  const user2 = await prisma.user.upsert({
-    where: { email: 'alex@ruheni.com' },
-    update: {
-      password: passwordAlex,
-    },
-    create: {
-      email: 'alex@ruheni.com',
-      name: 'Alex Ruheni',
-      password: passwordAlex,
-    },
-  });
-
-  // Create three dummy posts
-  // ... (Add your post creation logic here)
-  const productSizing1 = await prisma.productSizing.create({
-    data: {
-      name: 'YourProductSizingName1',
-      createdByUserId: user1.id,
-      updatedByUserId: user2.id,
-    },
-  });
-
-  const productSizing2 = await prisma.productSizing.create({
-    data: {
-      name: 'YourProductSizingName2',
-      createdByUserId: user2.id,
-      updatedByUserId: user1.id,
-    },
-  });
-
-  console.log({ user1, user2, productSizing1, productSizing2 });
+  await userSeeder();
+  await seedProductSizing();
+  await seedProductType();
+  await seedProductBrand();
+  await seedProductCategory();
+  await seedProduct();
+  await seedSpecial();
+  await seedCustomer();
+  await seedVouchers();
+  await console.log('Seeding Success!');
 }
 
-// Execute the main function
 main()
   .catch((e) => {
     console.error(e);
