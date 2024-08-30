@@ -59,13 +59,17 @@ async indexAll(@Req() req): Promise<FetchedCustomerWithAnalysis> {
     orderDirection: orderDirection || 'ASC',
   };
 
-  const { customers, analysis } = await this.customersService.indexAll(searchOptions);
+  const { customers, analysis, page: customersPage, limit: customersLimit, total, totalPages } = await this.customersService.indexAll(searchOptions);
 
   return {
     status: true,
     message: 'Fetched Successfully!',
     data: customers,
     analysis, // Include the analysis results in the response
+    page: customersPage,
+    limit: customersLimit,
+    total,
+    totalPages,
   };
 }
 

@@ -198,10 +198,10 @@ export class CustomersService {
       return {
         customers: modifiedCustomers,
         analysis,
-        total,
-        totalPages,
         page,
         limit,
+        total,
+        totalPages,
       };
     } catch (error) {
       console.error('Error in indexAll method:', error);

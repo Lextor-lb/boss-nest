@@ -5,6 +5,7 @@ import { Exclude } from "class-transformer";
 export class wishlistRecordEntity implements WishListRecord{
     id: number;
     productVariantId: number;
+    productId: number;
     salePrice: number;
     createdAt: Date;
     updatedAt: Date;
