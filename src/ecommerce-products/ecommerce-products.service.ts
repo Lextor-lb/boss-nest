@@ -37,7 +37,7 @@ export class EcommerceProductsService {
 
     const whereClause = {
       ...this.whereCheckingNullClause,
-      name: { contains: search },
+      name: { contains: search, mode: Prisma.QueryMode.insensitive },
       ...this.buildTypeCondition(type),
       ...(genderConditions.length > 0 && { gender: { in: genderConditions } }),
       ...(brandConditions.length > 0 && {
@@ -48,12 +48,6 @@ export class EcommerceProductsService {
       }),
       ...(min !== null &&
         max !== null && { salePrice: { gte: min, lte: max } }),
-      productVariants: {
-        some: {
-          isArchived: null, // Or false if you use a boolean
-          statusStock: null,
-        },
-      },
     };
 
     const total = await this.prisma.product.count({ where: whereClause });
@@ -70,13 +64,28 @@ export class EcommerceProductsService {
         salePrice: true,
         medias: true,
         productBrand: true,
+        productVariants: { select: { statusStock: true, isArchived: true } },
       },
       skip,
       take: limit,
       orderBy: { [orderBy]: orderDirection },
     });
+
+    const adjustedProducts = products.map((product) => {
+      const hasOrderedOrSoldOut = product.productVariants.some(
+        (variant) =>
+          variant.statusStock === 'ORDERED' ||
+          variant.statusStock === 'SOLDOUT' ||
+          variant.isArchived !== null,
+      );
+      return {
+        ...product,
+        productVariants: !hasOrderedOrSoldOut, // Setting true or false
+      };
+    });
+
     return {
-      data: products.map(
+      data: adjustedProducts.map(
         (p) =>
           new EcommerceProductEntity({
             ...p,
@@ -159,9 +168,9 @@ export class EcommerceProductsService {
       },
     });
 
-    if (!product || product.productVariants.length === 0) {
-      return new NotFoundException();
-    }
+    // if (!product || product.productVariants.length === 0) {
+    //   return new NotFoundException();
+    // }
 
     const {
       productBrand: { name: brandName },

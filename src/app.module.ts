@@ -35,6 +35,7 @@ import { FirebaseModule } from './firebase/firebase.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { EcommerceUsersModule } from './ecommerce-users/ecommerce-users.module';
 import { SlidersModule } from './sliders/sliders.module';
+import { AddressModule } from './address/address.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { SlidersModule } from './sliders/sliders.module';
     WishlistModule,
     EcommerceUsersModule,
     SlidersModule,
+    AddressModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],

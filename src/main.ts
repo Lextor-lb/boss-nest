@@ -30,7 +30,11 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   const corsOptions: CorsOptions = {
-    origin: ['http://localhost:3000', 'https://bsnext.santar.store'], // Allow only this origin
+    origin: [
+      'http://localhost:3000',
+      'https://bsnext.santar.store',
+      'https://boss-nation.com',
+    ], // Allow only this origin
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   };

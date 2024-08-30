@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -12,24 +16,44 @@ import { SearchOption } from 'src/shared/types/searchOption';
 import { OrderEntity } from './entities/order.entity';
 import { OrderDetailEntity } from './entities/orderDetail.entity';
 import { MediaEntity } from 'src/media';
+import { AddressService } from 'src/address/address.service';
+import { AddressEntity } from 'src/address/entities/address.entity';
 
 @Injectable()
 export class OrderService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly addressService: AddressService,
     private readonly vouchersService: VouchersService,
   ) {}
   whereCheckingNullClause: Prisma.OrderWhereInput = {
     isArchived: null,
   };
 
-  async create({ orderRecords, ...orderData }: CreateOrderDto) {
+  async create({ orderRecords, addressId, ...orderData }: CreateOrderDto) {
     const order = await this.prisma.$transaction(
       async (transactionClient: PrismaClient) => {
+        const address = await this.addressService.findOne(
+          addressId,
+          orderData.ecommerceUserId,
+        );
+        if (!address) {
+          throw new BadRequestException('Address not found');
+        }
+
+        const addressJson = JSON.stringify({
+          city: address.city,
+          township: address.township,
+          street: address.street,
+          company: address.company || null,
+          addressDetail: address.addressDetail,
+        });
+
         // Create the order
         const order = await transactionClient.order.create({
           data: {
             ...orderData,
+            address: addressJson,
           },
         });
 
@@ -140,6 +164,7 @@ export class OrderService {
         orderCode: true,
         orderStatus: true,
         total: true,
+        address: true,
         createdAt: true,
         ecommerceUser: {
           select: {
@@ -147,10 +172,10 @@ export class OrderService {
             name: true,
             email: true,
             phone: true,
-            city: true,
-            township: true,
-            street: true,
-            addressDetail: true,
+            // city: true,
+            // township: true,
+            // street: true,
+            // addressDetail: true,
           },
         },
         orderRecords: {
@@ -250,6 +275,7 @@ export class OrderService {
           salePrice: record.salePrice,
           cost: record.salePrice,
           discount: 0, // Assuming no discount data is provided; adjust as needed
+          discountByValue: 0,
         }),
       );
 
@@ -259,6 +285,7 @@ export class OrderService {
         type: 'ONLINE',
         paymentMethod: 'CASH',
         discount: order.discount ?? 0,
+        discountByValue: 0,
         subTotal: order.subTotal,
         total: order.total,
         tax: 0,
@@ -304,10 +331,10 @@ export class OrderService {
             name: true,
             email: true,
             phone: true,
-            city: true,
-            township: true,
-            street: true,
-            addressDetail: true,
+            // city: true,
+            // township: true,
+            // street: true,
+            // addressDetail: true,
           },
         },
         orderRecords: {
@@ -357,5 +384,32 @@ export class OrderService {
         })),
       });
     });
+  }
+
+  async updateEcommerce(id: number, ecommerceUserId: number) {
+    const order = await this.prisma.order.findUnique({
+      where: {
+        id,
+        ecommerceUserId,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(
+        'Order not found or does not belong to this user.',
+      );
+    }
+
+    if (order.orderStatus !== OrderStatus.ORDERED) {
+      throw new BadRequestException(
+        'Only orders with status "ORDERED" can be canceled.',
+      );
+    }
+
+    await this.prisma.order.update({
+      where: { id },
+      data: { orderStatus: OrderStatus.CANCEL },
+    });
+    return { status: true, message: 'Order Cancel Successfully!' };
   }
 }

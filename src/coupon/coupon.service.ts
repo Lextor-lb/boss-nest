@@ -11,7 +11,7 @@ import { RemoveManyCouponDto } from './dto';
 
 @Injectable()
 export class CouponService {
-  constructor(private prisma: PrismaService){}
+  constructor(private prisma: PrismaService) {}
 
   whereCheckingNullClause: Prisma.CouponWhereInput = {
     isArchived: null,
@@ -19,20 +19,18 @@ export class CouponService {
 
   async create(createCouponDto: CreateCouponDto): Promise<CouponEntity> {
     const coupon = await this.prisma.coupon.create({
-      data: createCouponDto as Prisma.CouponCreateInput
+      data: createCouponDto as Prisma.CouponCreateInput,
     });
 
     return new CouponEntity(createEntityProps(coupon));
   }
 
-  async indexAll(): Promise<CouponEntity[]>{
+  async indexAll(): Promise<CouponEntity[]> {
     const coupons = await this.prisma.coupon.findMany({
-      where: this.whereCheckingNullClause
-    })
+      where: this.whereCheckingNullClause,
+    });
 
-    return coupons.map(
-      (coupon) => new CouponEntity(createEntityProps(coupon))
-    );
+    return coupons.map((coupon) => new CouponEntity(createEntityProps(coupon)));
   }
 
   async findAll(searchOptions: SearchOption): Promise<PaginatedCoupon> {
@@ -64,7 +62,7 @@ export class CouponService {
       }),
     ]);
 
-    const coupons = rawCoupons.map(coupon => new CouponEntity(coupon)); // Map raw data to CouponEntity
+    const coupons = rawCoupons.map((coupon) => new CouponEntity(coupon)); // Map raw data to CouponEntity
 
     const totalPages = Math.ceil(total / limit);
 
@@ -75,14 +73,14 @@ export class CouponService {
       total,
       totalPages,
     };
-}
+  }
 
   async findOne(couponId: string) {
     const coupon = await this.prisma.coupon.findUnique({
-      where: {couponId}
-    })
+      where: { couponId },
+    });
 
-    if(!coupon){
+    if (!coupon) {
       throw new NotFoundException(`Coupon with Id ${couponId} not found`);
     }
 
@@ -104,8 +102,8 @@ export class CouponService {
         id,
       },
       data: {
-        isArchived: new Date()
-      }
+        isArchived: new Date(),
+      },
     });
 
     return new CouponEntity(deletedCoupon);

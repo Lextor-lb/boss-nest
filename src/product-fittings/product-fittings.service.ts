@@ -101,7 +101,8 @@ export class ProductFittingsService {
       where: {
         ...this.whereCheckingNullClause,
         name: {
-          contains: search || '',
+          contains: search,
+          mode: 'insensitive',
         },
       },
       skip,

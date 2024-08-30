@@ -32,6 +32,10 @@ export class CreateVoucherDto {
   discount: number;
 
   @IsOptional()
+  @IsInt()
+  discountByValue: number;
+
+  @IsOptional()
   @Max(2)
   @IsInt()
   tax: number;
@@ -75,6 +79,10 @@ export class voucherRecordDto {
   @Max(99)
   @IsInt()
   discount: number;
+
+  @IsOptional()
+  @IsInt()
+  discountByValue: number;
 
   @IsNotEmpty()
   @IsInt()
