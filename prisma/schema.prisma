@@ -373,16 +373,15 @@ model VoucherRecord {
 }
 
 model EcommerceUser {
-  id    Int     @id @default(autoincrement())
-  name  String
-  phone String?
-  email String  @unique
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  id         Int       @id @default(autoincrement())
+  name       String
+  phone      String?
+  email      String    @unique
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   isArchived DateTime?
-  orders     Order[]    @relation("ecommerceUserOrder")
-  address    Address[]  @relation("ecommerceUserAddress")
-  wishLists  WishList[] @relation("ecommerceUserWishList")
+  orders     Order[]   @relation("ecommerceUserOrder")
+  address    Address[] @relation("ecommerceUserAddress")
 }
 
 model Address {
@@ -488,21 +487,22 @@ model OrderRecord {
 }
 
 model WishList {
-  id              Int       @id @default(autoincrement())
-  wishlistId      String    @unique
+  id         Int       @id @default(autoincrement())
+  wishlistId String    @unique
   // ecommerceUserId Int
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime? @updatedAt
-  isArchived      DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime? @updatedAt
+  isArchived DateTime?
 
   // ecommerceUser   EcommerceUser    @relation("ecommerceUserWishList", fields: [ecommerceUserId], references: [id])
   wishlistRecords WishListRecord[] @relation("wishListRecords")
+  ecommerceUserId Int?
 }
 
 model WishListRecord {
   id               Int      @id @default(autoincrement())
   productVariantId Int
-  productId          Int
+  productId        Int
   salePrice        Int
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -512,7 +512,7 @@ model WishListRecord {
 
   wishlist       WishList       @relation("wishListRecords", fields: [wishlistId], references: [id])
   productVariant ProductVariant @relation("wishListRecordProductVaiants", fields: [productVariantId], references: [id])
-  product Product @relation("wishListRecordProducts", fields: [productId], references: [id])
+  product        Product        @relation("wishListRecordProducts", fields: [productId], references: [id])
 }
 
 enum Gender {
