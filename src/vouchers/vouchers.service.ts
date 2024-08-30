@@ -84,6 +84,7 @@ export class VouchersService {
         name: productName,
         gender,
         salePrice: price,
+        discountPrice,
         productBrand: { name: productBrand },
         productType: { name: productType },
         productCategory: { name: productCategory },
@@ -94,6 +95,7 @@ export class VouchersService {
     return new BarcodeEntity({
       id,
       barcode,
+      discountPrice,
       productName,
       gender,
       productBrand,
