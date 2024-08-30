@@ -48,57 +48,80 @@ export class CustomersController {
     return this.customersService.create(createCustomerDto);
   }
 
-  @Get('all')
-async indexAll(@Req() req): Promise<FetchedCustomerWithAnalysis> {
-  const { page, limit, search, orderBy, orderDirection } = req.query;
-  const searchOptions: SearchOption = {
-    page: parseInt(page, 10) || 1,
-    limit: limit ? parseInt(limit, 10) : 10,
-    search: search || '',
-    orderBy: orderBy || 'id',
-    orderDirection: orderDirection || 'ASC',
-  };
-
-  const { customers, analysis, page: customersPage, limit: customersLimit, total, totalPages } = await this.customersService.indexAll(searchOptions);
-
-  return {
-    status: true,
-    message: 'Fetched Successfully!',
-    data: customers,
-    analysis, // Include the analysis results in the response
-    page: customersPage,
-    limit: customersLimit,
-    total,
-    totalPages,
-  };
-}
-
-
-  @Get()
-  async findAll(@Req() req): Promise<CustomerPagination> {
+  @Get("all")
+  async indexAll(): Promise<CustomerPagination> {
     try {
-      const { page, limit, search, orderBy, orderDirection } = req.query;
-      const searchOptions: SearchOption = {
-        page: parseInt(page, 10) || 1,
-        limit: limit ? parseInt(limit, 10) : 10,
-        search: search || '',
-        orderBy: orderBy || 'id',
-        orderDirection: orderDirection || 'ASC',
-      };
+      const customers = await this.customersService.indexAll();
 
-      const customers = await this.customersService.findAll(searchOptions);
-
-      return {
-        data: customers,
-        page: customers.page,
-        limit: customers.limit,
-        total: customers.total,
-        totalPages: customers.totalPages,
-      };
+      return customers
     } catch (error) {
       console.error('Error in findAll method:', error);
       throw new Error('Internal server error');
     }
+  }
+
+  // @Get('all')
+  // async indexAll(@Req() req): Promise<FetchedCustomerWithAnalysis> {
+  //   const { page, limit, search, orderBy, orderDirection } = req.query;
+  //   const searchOptions: SearchOption = {
+  //     page: parseInt(page, 10) || 1,
+  //     limit: limit ? parseInt(limit, 10) : 10,
+  //     search: search || '',
+  //     orderBy: orderBy || 'id',
+  //     orderDirection: orderDirection || 'ASC',
+  //   };
+
+  //   const {
+  //     customers,
+  //     analysis,
+  //     page: customersPage,
+  //     limit: customersLimit,
+  //     total,
+  //     totalPages,
+  //   } = await this.customersService.indexAll(searchOptions);
+
+  //   return {
+  //     status: true,
+  //     message: 'Fetched Successfully!',
+  //     data: customers,
+  //     analysis, // Include the analysis results in the response
+  //     page: customersPage,
+  //     limit: customersLimit,
+  //     total,
+  //     totalPages,
+  //   };
+  // }
+
+  @Get()
+  async findAll(@Req() req): Promise<FetchedCustomerWithAnalysis> {
+    const { page, limit, search, orderBy, orderDirection } = req.query;
+    const searchOptions: SearchOption = {
+      page: parseInt(page, 10) || 1,
+      limit: limit ? parseInt(limit, 10) : 10,
+      search: search || '',
+      orderBy: orderBy || 'id',
+      orderDirection: orderDirection || 'ASC',
+    };
+
+    const {
+      customers,
+      analysis,
+      page: customersPage,
+      limit: customersLimit,
+      total,
+      totalPages,
+    } = await this.customersService.findAll(searchOptions);
+
+    return {
+      status: true,
+      message: 'Fetched Successfully!',
+      data: customers,
+      analysis, // Include the analysis results in the response
+      page: customersPage,
+      limit: customersLimit,
+      total,
+      totalPages,
+    };
   }
 
   @Get(':id')
