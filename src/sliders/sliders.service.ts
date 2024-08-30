@@ -10,11 +10,13 @@ export class SlidersService {
 
  async create(createSliderDto: CreateSliderDto) {
 
-    // return await this.prisma.slider.create({
-    //   data: createSliderDto,
-    // })
-
-    return "This action is creating new slider";
+    return await this.prisma.slider.create({
+      data: {
+        mobileImage: createSliderDto.mobileImage,
+        desktopImage: createSliderDto.desktopImage,
+        sorting: parseInt(createSliderDto.sorting as any, 10), // Parsing sorting as an integer
+      },
+    });
     
   }
 

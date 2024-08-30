@@ -19,8 +19,3 @@ ecommerce-users/:id
 | `name`          | `string` | **Nullable** |
 | `phone`         | `string` | **Nullable** |
 | `email`         | `string` | **Nullable** |
-| `city`          | `string` | **Nullable** |
-| `township`      | `string` | **Nullable** |
-| `street`        | `string` | **Nullable** |
-| `company`       | `string` | **Nullable** |
-| `addressDetail` | `string` | **Nullable** |

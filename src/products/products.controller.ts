@@ -55,7 +55,9 @@ export class ProductsController {
     }
 
     const imageFiles = files.filter((file) => file.fieldname === 'images');
-    if (imageFiles.length === 0) {
+
+    if (imageFiles.length === 0) 
+    {
       throw new BadRequestException('At least one product image is required');
     }
 

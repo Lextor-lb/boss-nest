@@ -14,6 +14,7 @@ const modelMap = {
   Voucher: prisma.voucher,
   Order: prisma.order,
   EcommerceUser: prisma.ecommerceUser,
+  Address: prisma.address,
   WishList: prisma.wishList
 };
 

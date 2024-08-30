@@ -139,12 +139,6 @@ export class ProductsService {
     const totalPages = Math.ceil(total / limit);
     const totalStock = await this.productVariantsService.countAvailableStock(); // Make sure this is awaited and is a number
     const totalSalePrice = await this.calculateTotalSalePrice();
-    const whereClause = {
-      ...this.whereCheckingNullClause,
-      name: {
-        contains: search,
-      },
-    };
 
     const orderByClause = {
       [orderBy]: orderDirection,
@@ -160,7 +154,13 @@ export class ProductsService {
     };
 
     const products = await this.prisma.product.findMany({
-      where: whereClause,
+      where: {
+        ...this.whereCheckingNullClause,
+        name: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      },
       include: includeClause,
       skip,
       take: limit,

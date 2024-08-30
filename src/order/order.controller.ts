@@ -74,4 +74,10 @@ export class OrderController {
     updateOrderDto.updatedByUserId = req.user.id;
     return this.orderService.update(+id, updateOrderDto);
   }
+
+  @UseGuards(EcommerceJwtAuthGuard)
+  @Patch(':id')
+  updateEcommerce(@Param('id') id: string, @Req() req) {
+    return this.orderService.updateEcommerce(+id, req.user.id);
+  }
 }

@@ -18,6 +18,8 @@ export class PrismaExistsConstraint implements ValidatorConstraintInterface {
 
     const [entity] = args.constraints;
     switch (entity) {
+      case 'address':
+        return await this.isAddressExists(value);
       case 'customer':
         return await this.isCustomerExists(value);
       case 'product':
@@ -42,6 +44,14 @@ export class PrismaExistsConstraint implements ValidatorConstraintInterface {
       default:
         return false;
     }
+  }
+
+  // Address
+  private async isAddressExists(addressId: number) {
+    const type = await prisma.address.findUnique({
+      where: { id: addressId, isArchived: null },
+    });
+    return !!type;
   }
 
   // Customer
@@ -132,6 +142,8 @@ export class PrismaExistsConstraint implements ValidatorConstraintInterface {
   defaultMessage(args: ValidationArguments) {
     const [entity] = args.constraints;
     switch (entity) {
+      case 'address':
+        return `Address  with ID ${args.value} does not exist`;
       case 'customer':
         return `Customer  with ID ${args.value} does not exist`;
       case 'product':
