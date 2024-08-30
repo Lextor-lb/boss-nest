@@ -1,5 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
-import { Order, OrderStatus } from '@prisma/client';
+import { Order, OrderStatus, Prisma } from '@prisma/client';
 import { formatDate, formatTime } from 'src/shared/utils/formatDate';
 import { MediaEntity } from 'src/media';
 
@@ -20,6 +20,8 @@ export class OrderDetailEntity implements Order {
   updatedAt: Date;
   @Exclude()
   isArchived: Date | null;
+  @Exclude()
+  address: Prisma.JsonValue;
 
   orderRecords: {
     id: number;
@@ -44,11 +46,22 @@ export class OrderDetailEntity implements Order {
     return formatTime(this.createdAt);
   }
 
+  @Expose()
+  get customerAddress(): string {
+    return this.addressData;
+  }
+
   @Exclude()
   createdByUserId: number;
 
   @Exclude()
   updatedByUserId: number;
+
+  private get addressData() {
+    return typeof this.address === 'string'
+      ? JSON.parse(this.address)
+      : this.address;
+  }
 
   constructor(partial: Partial<OrderDetailEntity> = {}) {
     Object.assign(this, partial);

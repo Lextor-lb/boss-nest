@@ -99,7 +99,8 @@ export class ProductTypesService {
       where: {
         ...this.whereCheckingNullClause,
         name: {
-          contains: search || '',
+          contains: search,
+          mode: 'insensitive',
         },
       },
       skip,

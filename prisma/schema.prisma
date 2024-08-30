@@ -277,7 +277,7 @@ model ProductVariant {
 model Customer {
   id          Int            @id @default(autoincrement())
   name        String
-  phoneNumber String    @unique
+  phoneNumber String         @unique
   email       String?
   gender      CustomerGender
   address     String?
@@ -323,16 +323,17 @@ model Special {
 }
 
 model Voucher {
-  id            Int           @id @default(autoincrement())
-  voucherCode   String        @unique
-  discount      Int           @default(0)
-  tax           Int           @default(0)
-  paymentMethod PaymentMethod
-  type          Type
-  quantity      Int
-  subTotal      Int
-  total         Int
-  remark        String?
+  id              Int           @id @default(autoincrement())
+  voucherCode     String        @unique
+  discountByValue Int           @default(0)
+  discount        Int           @default(0)
+  tax             Int           @default(0)
+  paymentMethod   PaymentMethod
+  type            Type
+  quantity        Int
+  subTotal        Int
+  total           Int
+  remark          String?
 
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -352,10 +353,11 @@ model Voucher {
 }
 
 model VoucherRecord {
-  id       Int   @id @default(autoincrement())
-  discount Int   @default(0)
-  cost     Int
-  product  Json?
+  id              Int   @id @default(autoincrement())
+  discount        Int   @default(0)
+  discountByValue Int   @default(0)
+  cost            Int
+  product         Json?
 
   //One to Many
   voucher   Voucher @relation("voucherRecordVouchers", fields: [voucherId], references: [id])
@@ -370,20 +372,31 @@ model VoucherRecord {
 }
 
 model EcommerceUser {
-  id            Int        @id @default(autoincrement())
-  name          String
-  phone         String?
-  email         String     @unique
-  city          String?
-  township      String?
-  street        String?
-  company       String?
-  addressDetail String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  isArchived    DateTime?
-  orders        Order[]    @relation("ecommerceUserOrder")
-  wishLists     WishList[] @relation("ecommerceUserWishList")
+  id    Int     @id @default(autoincrement())
+  name  String
+  phone String?
+  email String  @unique
+
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  isArchived DateTime?
+  orders     Order[]    @relation("ecommerceUserOrder")
+  address    Address[]  @relation("ecommerceUserAddress")
+  wishLists  WishList[] @relation("ecommerceUserWishList")
+}
+
+model Address {
+  id              Int           @id @default(autoincrement())
+  ecommerceUserId Int
+  city            String
+  township        String
+  street          String
+  company         String?
+  addressDetail   String
+  isArchived      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  ecommerceUser   EcommerceUser @relation("ecommerceUserAddress", fields: [ecommerceUserId], references: [id])
 }
 
 model EcommerceCategory {
@@ -425,7 +438,7 @@ model Coupon {
 }
 
 model Slider {
-  id              Int   @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   mobileImage String
 
@@ -446,9 +459,10 @@ model Slider {
 
 model Order {
   id              Int           @id @default(autoincrement())
-  orderCode         String        @unique
+  orderCode       String        @unique
   orderStatus     OrderStatus   @default(ORDERED)
   ecommerceUserId Int
+  address         Json
   discount        Int           @default(0) // Fixed typo here
   subTotal        Int
   total           Int // Fixed typo here

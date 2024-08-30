@@ -9,6 +9,7 @@ export class VoucherEntity implements Voucher {
   id: number;
   voucherCode: string;
   discount: number;
+  discountByValue: number;
   tax: number;
   type: Types;
   paymentMethod: PaymentMethod;
