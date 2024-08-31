@@ -36,6 +36,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
 import { EcommerceUsersModule } from './ecommerce-users/ecommerce-users.module';
 import { SlidersModule } from './sliders/sliders.module';
 import { AddressModule } from './address/address.module';
+import { MinioModule } from './minio/minio.module';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { AddressModule } from './address/address.module';
     EcommerceUsersModule,
     SlidersModule,
     AddressModule,
+    MinioModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],

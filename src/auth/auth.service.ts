@@ -23,16 +23,16 @@ export class AuthService {
   async login(email: string, password: string): Promise<AuthEntity> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
+    if (!user) {
+      throw new NotFoundException(`No user found for email: ${email}`);
+    }
+
     const token = uuidv4();
 
     const refreshToken = this.jwtService.sign(
       { id: user.id, name: user.name, email: user.email, tokenId: token },
       { expiresIn: '9999 years' },
     );
-
-    if (!user) {
-      throw new NotFoundException(`No user found for email: ${email}`);
-    }
 
     const isPasswordValid = await argon2.verify(user.password, password);
 
@@ -68,7 +68,13 @@ export class AuthService {
       const token = uuidv4();
 
       const refreshToken = this.jwtService.sign(
-        { id: user.id, name: user.name, email: user.email, tokenId: token },
+        {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          tokenId: token,
+          issuedAt: new Date().toISOString(),
+        },
         { expiresIn: '9999 years' },
       );
 
@@ -82,6 +88,7 @@ export class AuthService {
         accessToken: this.jwtService.sign({
           userId: user.id,
           email: user.email,
+          issuedAt: new Date().toISOString(),
         }), // Include email in the payload
         refreshToken: refreshToken,
       };
