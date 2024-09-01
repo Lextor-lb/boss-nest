@@ -19,7 +19,7 @@ export default async function userSeeder() {
       email: 'sabin@adams.com',
       name: 'Sabin Adams',
       password: passwordSabin,
-      role: UserRole.ADMIN,
+      // role: UserRole.ADMIN,
     },
   });
 
@@ -32,7 +32,7 @@ export default async function userSeeder() {
       email: 'staff@staff.com',
       name: 'Alex Ruheni',
       password: passwordAlex,
-      role: UserRole.STAFF,
+      // role: UserRole.STAFF,
     },
   });
   await console.log('Users have been seeded');
