@@ -7,6 +7,8 @@ export class OrderDetailEntity implements Order {
   id: number;
   orderCode: string;
   orderStatus: OrderStatus;
+  cancelReason: string | null;
+  remark: string | null;
   @Exclude()
   ecommerceUserId: number;
   @Exclude()

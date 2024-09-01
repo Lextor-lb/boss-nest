@@ -378,6 +378,7 @@ model EcommerceUser {
   name       String
   phone      String?
   email      String    @unique
+  role       UserRole  @default(ECOMUSER)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   isArchived DateTime?
@@ -459,6 +460,8 @@ model Slider {
 
 model Order {
   id              Int           @id @default(autoincrement())
+  remark          String?
+  cancelReason    String?
   orderCode       String        @unique
   orderStatus     OrderStatus   @default(ORDERED)
   ecommerceUserId Int
@@ -565,4 +568,5 @@ enum OrderStatus {
 enum UserRole {
   ADMIN
   STAFF
+  ECOMUSER
 }

@@ -1,5 +1,5 @@
 import { Exclude } from 'class-transformer';
-import { EcommerceUser } from '@prisma/client';
+import { EcommerceUser, UserRole } from '@prisma/client';
 
 export class EcommerceUserEntity implements EcommerceUser {
   id: number;
@@ -12,6 +12,9 @@ export class EcommerceUserEntity implements EcommerceUser {
 
   @Exclude()
   createdAt: Date;
+
+  @Exclude()
+  role: UserRole;
 
   @Exclude()
   updatedAt: Date;
