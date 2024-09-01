@@ -25,7 +25,7 @@ import {
 } from 'src';
 import { RolesGuard } from 'src/auth/role-guard';
 import { Roles } from 'src/auth/role';
-import { UserRole } from '@prisma/client';
+//import { UserRole } from '@prisma/client';
 
 @Controller('customers')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -44,7 +44,7 @@ export class CustomersController {
   // }
 
   @Post()
-  @Roles(UserRole.ADMIN)
+  //@Roles(UserRole.ADMIN)
   async create(@Body() createCustomerDto: CreateCustomerDto, @Req() req) {
     createCustomerDto.createdByUserId = req.user.id;
     createCustomerDto.updatedByUserId = req.user.id;
@@ -52,41 +52,8 @@ export class CustomersController {
   }
 
   @Get('all')
-  @Roles(UserRole.ADMIN)
-  async indexAll(@Req() req): Promise<FetchedCustomerWithAnalysis> {
-    const { page, limit, search, orderBy, orderDirection } = req.query;
-    const searchOptions: SearchOption = {
-      page: parseInt(page, 10) || 1,
-      limit: limit ? parseInt(limit, 10) : 10,
-      search: search || '',
-      orderBy: orderBy || 'id',
-      orderDirection: orderDirection || 'ASC',
-    };
-
-    const {
-      customers,
-      analysis,
-      page: customersPage,
-      limit: customersLimit,
-      total,
-      totalPages,
-    } = await this.customersService.indexAll(searchOptions);
-
-    return {
-      status: true,
-      message: 'Fetched Successfully!',
-      data: customers,
-      analysis, // Include the analysis results in the response
-      page: customersPage,
-      limit: customersLimit,
-      total,
-      totalPages,
-    };
-  }
-
-  @Get()
-  @Roles(UserRole.ADMIN)
-  async findAll(@Req() req): Promise<CustomerPagination> {
+  //@Roles(UserRole.ADMIN)
+  async indexAll(): Promise<CustomerPagination> {
     try {
       const customers = await this.customersService.indexAll();
 
@@ -162,7 +129,7 @@ export class CustomersController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN)
+  //@Roles(UserRole.ADMIN)
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const customer = await this.customersService.findOne(id);
     if (!customer) {
@@ -173,7 +140,7 @@ export class CustomersController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN)
+  //@Roles(UserRole.ADMIN)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
@@ -192,7 +159,7 @@ export class CustomersController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  //@Roles(UserRole.ADMIN)
   async remove(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<MessageWithCustomer> {
@@ -205,7 +172,7 @@ export class CustomersController {
   }
 
   @Delete()
-  @Roles(UserRole.ADMIN)
+  //@Roles(UserRole.ADMIN)
   async removeMany(@Body() removeManyCustomerDto: RemoveManyCustomerDto) {
     const result = await this.customersService.removeMany(
       removeManyCustomerDto,
