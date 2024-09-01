@@ -460,6 +460,8 @@ model Slider {
 
 model Order {
   id              Int           @id @default(autoincrement())
+  remark          String?
+  cancelReason    String?
   orderCode       String        @unique
   orderStatus     OrderStatus   @default(ORDERED)
   ecommerceUserId Int

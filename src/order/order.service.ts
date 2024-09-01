@@ -17,7 +17,6 @@ import { OrderEntity } from './entities/order.entity';
 import { OrderDetailEntity } from './entities/orderDetail.entity';
 import { MediaEntity } from 'src/media';
 import { AddressService } from 'src/address/address.service';
-import { AddressEntity } from 'src/address/entities/address.entity';
 
 @Injectable()
 export class OrderService {
@@ -163,6 +162,8 @@ export class OrderService {
         id: true,
         orderCode: true,
         orderStatus: true,
+        cancelReason: true,
+        remark: true,
         total: true,
         address: true,
         createdAt: true,
@@ -172,10 +173,6 @@ export class OrderService {
             name: true,
             email: true,
             phone: true,
-            // city: true,
-            // township: true,
-            // street: true,
-            // addressDetail: true,
           },
         },
         orderRecords: {
@@ -321,9 +318,12 @@ export class OrderService {
       },
       select: {
         id: true,
+        cancelReason: true,
+        remark: true,
         orderCode: true,
         orderStatus: true,
         total: true,
+        address: true,
         createdAt: true,
         ecommerceUser: {
           select: {
@@ -331,10 +331,6 @@ export class OrderService {
             name: true,
             email: true,
             phone: true,
-            // city: true,
-            // township: true,
-            // street: true,
-            // addressDetail: true,
           },
         },
         orderRecords: {

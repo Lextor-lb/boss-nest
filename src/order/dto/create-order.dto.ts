@@ -26,6 +26,11 @@ export class CreateOrderDto {
   ecommerceUserId: number;
 
   @IsOptional()
+  cancelReason: string;
+  @IsOptional()
+  remark: string;
+
+  @IsOptional()
   @IsInt()
   discount: number;
 

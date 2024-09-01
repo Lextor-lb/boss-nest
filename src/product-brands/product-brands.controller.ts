@@ -41,16 +41,16 @@ import { EcommerceJwtAuthGuard } from 'src/auth/ecommerce-jwt-auth.guard';
 import { MinioService } from 'src/minio/minio.service';
 
 @Controller('product-brands')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductBrandsController {
   constructor(
     private readonly productBrandsService: ProductBrandsService,
     private readonly minioService: MinioService,
   ) {}
 
-  @UseGuards(JwtAuthGuard, RolesGuard, EcommerceJwtAuthGuard)
+  // @UseGuards(JwtAuthGuard, RolesGuard, EcommerceJwtAuthGuard)
   @Post()
-  // @Roles(UserRole.ADMIN, UserRole.STAFF)
+  // @UseGuards(JwtAuthGuard, RolesGuard, EcommerceJwtAuthGuard)
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async create(
     @UploadedFile() file: Express.Multer.File,
@@ -81,7 +81,8 @@ export class ProductBrandsController {
   }
 
   @Get('all')
-  @Roles(UserRole.STAFF, UserRole.ADMIN)
+  // @UseGuards(JwtAuthGuard, EcommerceJwtAuthGuard, RolesGuard)
+  // @Roles(UserRole.STAFF, UserRole.ADMIN)
   async indexAll(): Promise<FetchedProductBrand> {
     const productBrands = await this.productBrandsService.indexAll();
     return {

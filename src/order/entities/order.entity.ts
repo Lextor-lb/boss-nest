@@ -4,6 +4,8 @@ import { formatDate } from 'src/shared/utils/formatDate';
 
 export class OrderEntity implements Order {
   id: number;
+  cancelReason: string | null;
+  remark: string | null;
   orderCode: string;
   orderStatus: OrderStatus;
   @Exclude()
@@ -41,7 +43,6 @@ export class OrderEntity implements Order {
       ? JSON.parse(this.address)
       : this.address;
   }
-
 
   constructor(partial: Partial<OrderEntity> = {}) {
     Object.assign(this, partial);

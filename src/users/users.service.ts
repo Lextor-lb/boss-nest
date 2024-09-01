@@ -27,6 +27,13 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
+  findMe(id: number) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      select: { name: true, email: true, role: true },
+    });
+  }
+
   async update(id: number, updateUserDto: UpdateUserDto) {
     if (updateUserDto.password) {
       updateUserDto.password = await argon2.hash(updateUserDto.password);
