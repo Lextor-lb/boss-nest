@@ -21,15 +21,21 @@ export class MinioService {
     bucketName: string,
     file: Express.Multer.File,
   ): Promise<string> {
-    if (!file || !file.buffer) {
-      throw new Error('File buffer is missing');
-    }
 
-    const timestamp = Date.now();
-    const objectName = `${timestamp}_${file.originalname}`;
-
-    await this.minioClient.putObject(bucketName, objectName, file.buffer);
-
-    return `https://${process.env.MINIO_ENDPOINT}/${bucketName}/${objectName}`;
+        try {
+          if (!file || !file.buffer) {
+            throw new Error('File buffer is missing');
+          }
+      
+          const timestamp = Date.now();
+          const objectName = `${timestamp}_${file.originalname}`;
+      
+          await this.minioClient.putObject(bucketName, objectName, file.buffer);
+      
+          console.log(`https://${process.env.MINIO_ENDPOINT}/${bucketName}/${objectName}`);
+          return `https://${process.env.MINIO_ENDPOINT}/${bucketName}/${objectName}`;
+        } catch (error) {
+            console.log(error);
+        }
   }
 }

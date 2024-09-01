@@ -51,7 +51,7 @@ export class ProductBrandsController {
   @Post()
   // @UseGuards(JwtAuthGuard, RolesGuard, EcommerceJwtAuthGuard)
   @Roles(UserRole.ADMIN, UserRole.STAFF)
-  @UseInterceptors(FileInterceptor('image', multerOptions))
+  @UseInterceptors(FileInterceptor('image'))
   async create(
     @UploadedFile() file: Express.Multer.File,
     @Body() createProductBrandDto: CreateProductBrandDto,
