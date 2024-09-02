@@ -79,7 +79,7 @@ curl -X POST "https://amt.santar.store/api/v1/slider" \
 
 ### Description
 
-Updates a specific slider identified by its ID. This endpoint allows you to modify the slider’s mobile image, desktop image, and sorting order. It includes safety checks to prevent null or undefined values from affecting the database.
+Updates a specific slider identified by its ID. This endpoint allows you to modify the slider’s mobile image, desktop image, and sorting order. All fields are optional and can be `null`, ensuring that existing values are not overwritten unless new values are provided.
 
 ### Request Parameters
 
@@ -88,19 +88,20 @@ Updates a specific slider identified by its ID. This endpoint allows you to modi
 
 ### Request Body
 
-The request body should be in JSON format and can include any of the following optional fields:
+The request body should be in `multipart/form-data` format and can include any of the following optional fields:
 
-- **mobileImage** (string, optional, nullable): The URL of the mobile image for the slider.
-- **desktopImage** (string, optional, nullable): The URL of the desktop image for the slider.
-- **sorting** (string, optional, nullable): A string representing the sorting order, which will be parsed as an integer.
+- **mobileImage** (file, optional, nullable): The image file for the mobile version of the slider. If provided, it will replace the existing mobile image.
+- **desktopImage** (file, optional, nullable): The image file for the desktop version of the slider. If provided, it will replace the existing desktop image.
+- **sorting** (string, optional, nullable): A string representing the sorting order, which will be parsed as an integer. If not provided, the existing sorting order will remain unchanged.
 
 #### Example Request Body
 
-```json
-{
-  "mobileImage": "https://example.com/mobile-image.jpg",
-}
+```plaintext
+Content-Type: multipart/form-data
 
+desktopImage: <file>
+mobileImage: <file>
+sorting: "3"
 
 
 ## Endpoints
