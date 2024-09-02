@@ -21,7 +21,11 @@ export class SlidersService {
   }
 
   findAll() {
-    return this.prisma.slider.findMany();
+    return this.prisma.slider.findMany({
+      orderBy: {
+        sorting: 'asc', 
+      },
+    });
   }
 
   findOne(id: number) {
