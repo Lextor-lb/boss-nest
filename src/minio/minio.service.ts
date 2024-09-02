@@ -32,8 +32,9 @@ export class MinioService {
       
           await this.minioClient.putObject(bucketName, objectName, file.buffer);
       
-          console.log(`https://${process.env.MINIO_ENDPOINT}/${bucketName}/${objectName}`);
-          return `https://${process.env.MINIO_ENDPOINT}/${bucketName}/${objectName}`;
+          // console.log(`https://${process.env.MINIO_ENDPOINT}/${bucketName}/${objectName}`);
+          return objectName;
+          
         } catch (error) {
             console.log(error);
         }
