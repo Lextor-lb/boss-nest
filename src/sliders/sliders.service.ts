@@ -34,10 +34,31 @@ export class SlidersService {
     });
   }
 
-  update(id: number, updateSliderDto: UpdateSliderDto) {
-    return `This action updates a #${id} slider`;
+  async update(id: number, updateSliderDto: UpdateSliderDto) {
+    const updateData: Record<string, any> = {};
+  
+    if (updateSliderDto.mobileImage !== undefined && updateSliderDto.mobileImage !== null) {
+      updateData.mobileImage = updateSliderDto.mobileImage;
+    }
+  
+    if (updateSliderDto.desktopImage !== undefined && updateSliderDto.desktopImage !== null) {
+      updateData.desktopImage = updateSliderDto.desktopImage;
+    }
+  
+    if (updateSliderDto.sorting !== undefined && updateSliderDto.sorting !== null) {
+      updateData.sorting = parseInt(updateSliderDto.sorting as any, 10);
+    }
+  
+    if (Object.keys(updateData).length === 0) {
+      throw new Error('No valid fields to update');
+    }
+  
+    return await this.prisma.slider.update({
+      where: { id },
+      data: updateData,
+    });
   }
-
+  
   async remove(id: number) {
     return await this.prisma.slider.delete({
       where: { id },

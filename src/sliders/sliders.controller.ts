@@ -89,10 +89,10 @@ export class SlidersController {
     return new Slider(await this.slidersService.findOne(+id));
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateSliderDto: UpdateSliderDto) {
-  //   return this.slidersService.update(+id, updateSliderDto);
-  // }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateSliderDto: UpdateSliderDto) {
+    return this.slidersService.update(+id, updateSliderDto);
+  }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
