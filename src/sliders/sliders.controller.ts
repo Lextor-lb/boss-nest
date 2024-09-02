@@ -89,10 +89,49 @@ export class SlidersController {
     return new Slider(await this.slidersService.findOne(+id));
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSliderDto: UpdateSliderDto) {
-    return this.slidersService.update(+id, updateSliderDto);
+    @Patch(':id')
+    @UseInterceptors(AnyFilesInterceptor())
+    async update(
+      @Param('id') id: string,
+      @Body() updateSliderDto: UpdateSliderDto,
+      @UploadedFiles() files: Express.Multer.File[],
+      @Req() req,
+    ) {
+
+      let desktopImageUrl: string | null = null;
+      let mobileImageUrl: string | null = null;
+    
+      if (files && files.length > 0) {
+        const desktopImage = files.find((file) => file.fieldname === 'desktopImage');
+        const mobileImage = files.find((file) => file.fieldname === 'mobileImage');
+    
+        if (desktopImage) {
+          desktopImageUrl = await this.minioService.uploadFile(
+            process.env.MINIO_BUCKET_NAME,
+            desktopImage,
+        );
+        updateSliderDto.desktopImage = `https://${process.env.MINIO_ENDPOINT}/${process.env.MINIO_BUCKET_NAME}/${desktopImageUrl}`;
+      }
+  
+      if (mobileImage) {
+        mobileImageUrl = await this.minioService.uploadFile(
+          process.env.MINIO_BUCKET_NAME,
+          mobileImage,
+        );
+        // Set the full URL for mobile image
+        updateSliderDto.mobileImage = `https://${process.env.MINIO_ENDPOINT}/${process.env.MINIO_BUCKET_NAME}/${mobileImageUrl}`;
+      }
+    }
+  
+    if (req.body.sorting !== undefined && req.body.sorting !== null) {
+      updateSliderDto.sorting = req.body.sorting;
+    }
+  
+    const updatedSlider = await this.slidersService.update(+id, updateSliderDto);
+  
+    return updatedSlider;
   }
+  
 
   @Delete(':id')
   remove(@Param('id') id: string) {
