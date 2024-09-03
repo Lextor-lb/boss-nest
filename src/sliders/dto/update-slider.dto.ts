@@ -11,6 +11,6 @@ export class UpdateSliderDto {
 
   @IsOptional()
   @IsNotEmpty()  // Ensures that if sorting is provided, it must not be empty
-  @IsNumber()
-  sorting?: number | null;
+  @IsString()
+  sorting?: string | null;
 }
