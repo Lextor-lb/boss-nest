@@ -12,6 +12,7 @@ import { EcommerceJwtAuthGuard } from './ecommerce-jwt-auth.guard';
 import { ConfigModule } from '@nestjs/config';
 import { FirebaseService } from 'src/firebase/firebase/firebase.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { EcommerceUsersModule } from 'src/ecommerce-users/ecommerce-users.module';
 
 export const jwtSecret = 'zjP9h6ZI5LoSKCRj';
 
@@ -25,6 +26,7 @@ export const jwtSecret = 'zjP9h6ZI5LoSKCRj';
     }),
     UsersModule,
     ConfigModule,
+    EcommerceUsersModule,
   ],
   controllers: [AuthController],
   providers: [

@@ -30,7 +30,7 @@ import { FittingReportModule } from './fitting-report/fitting-report.module';
 import { EcommerceCategoriesModule } from './ecommerce-categories/ecommerce-categories.module';
 import { EcommerceProductsModule } from './ecommerce-products/ecommerce-products.module';
 import { CouponModule } from './coupon/coupon.module';
-import { OrderModule } from './order/order.module';
+// import { OrderModule } from './order/order.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { EcommerceUsersModule } from './ecommerce-users/ecommerce-users.module';
@@ -72,7 +72,7 @@ import { MinioModule } from './minio/minio.module';
     EcommerceCategoriesModule,
     EcommerceProductsModule,
     CouponModule,
-    OrderModule,
+    // OrderModule,
     FirebaseModule,
     WishlistModule,
     EcommerceUsersModule,

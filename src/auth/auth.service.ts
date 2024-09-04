@@ -51,7 +51,6 @@ export class AuthService {
   async ecommerceLogin(idToken: string) {
     try {
       const decodedToken = await this.firebaseService.verifyIdToken(idToken);
-
       const userEmail: string = decodedToken.email;
       const name: string = decodedToken.name;
 
@@ -89,10 +88,11 @@ export class AuthService {
           userId: user.id,
           email: user.email,
           issuedAt: new Date().toISOString(),
-        }), // Include email in the payload
+        }), 
         refreshToken: refreshToken,
       };
     } catch (error) {
+      console.log(error);
       throw new UnauthorizedException();
     }
   }

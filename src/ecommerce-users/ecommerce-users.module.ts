@@ -5,5 +5,6 @@ import { EcommerceUsersController } from './ecommerce-users.controller';
 @Module({
   controllers: [EcommerceUsersController],
   providers: [EcommerceUsersService],
+  exports: [EcommerceUsersService],
 })
 export class EcommerceUsersModule {}
