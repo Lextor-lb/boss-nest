@@ -29,7 +29,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
       console.log(ecommerceUser);
 
-      if(!user || !ecommerceUser){
+      if(!user && !ecommerceUser){
               throw new UnauthorizedException();
       }
       
