@@ -374,10 +374,11 @@ model VoucherRecord {
 }
 
 model EcommerceUser {
-  id         Int       @id @default(autoincrement())
-  name       String
-  phone      String?
-  email      String    @unique
+  id          Int       @id @default(autoincrement())
+  name        String
+  phone       String?
+  email       String    @unique
+  dateOfBirth DateTime?
   role       UserRole  @default(ECOMUSER)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt

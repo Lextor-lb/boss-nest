@@ -12,6 +12,9 @@ export class UpdateEcommerceUserDto {
   name?: string;
 
   @IsOptional()
+  dateOfBirth?: Date;
+
+  @IsOptional()
   @IsString()
   @MinLength(5)
   @MaxLength(20)

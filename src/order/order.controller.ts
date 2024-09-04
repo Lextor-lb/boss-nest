@@ -84,7 +84,11 @@ export class OrderController {
   @Patch('ecommerce/:id')
   @UseGuards(EcommerceJwtAuthGuard)
   @Roles(UserRole.ADMIN)
-  updateEcommerce(@Param('id') id: string, @Req() req) {
-    return this.orderService.updateEcommerce(+id, req.user.id);
+  updateEcommerce(
+    @Param('id') id: string,
+    @Req() req,
+    @Body() updateOrderDto: UpdateOrderDto,
+  ) {
+    return this.orderService.updateEcommerce(+id, req.user.id, updateOrderDto);
   }
 }

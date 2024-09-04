@@ -258,7 +258,10 @@ export class OrderService {
 
       await this.prisma.order.update({
         where: { id },
-        data: { orderStatus: OrderStatus.CANCEL },
+        data: {
+          orderStatus: OrderStatus.CANCEL,
+          cancelReason: updateOrderDto.cancelReason,
+        },
       });
 
       return { status: true, message: 'Updated Successfully!' };
@@ -302,6 +305,8 @@ export class OrderService {
 
       return { status: true, message: 'Voucher Created Successfully!' };
     }
+
+    // return updateOrderDto.orderStatus;
 
     await this.prisma.order.update({
       where: { id },
@@ -382,7 +387,11 @@ export class OrderService {
     });
   }
 
-  async updateEcommerce(id: number, ecommerceUserId: number) {
+  async updateEcommerce(
+    id: number,
+    ecommerceUserId: number,
+    updateOrderDto: UpdateOrderDto,
+  ) {
     const order = await this.prisma.order.findUnique({
       where: {
         id,
@@ -404,7 +413,10 @@ export class OrderService {
 
     await this.prisma.order.update({
       where: { id },
-      data: { orderStatus: OrderStatus.CANCEL },
+      data: {
+        orderStatus: OrderStatus.CANCEL,
+        cancelReason: updateOrderDto.cancelReason,
+      },
     });
     return { status: true, message: 'Order Cancel Successfully!' };
   }

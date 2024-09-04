@@ -14,8 +14,9 @@ ecommerce-users/:id
 ecommerce-users/:id
 ```
 
-| Arguments       | Type     | Description  |
-| :-------------- | :------- | :----------- |
-| `name`          | `string` | **Nullable** |
-| `phone`         | `string` | **Nullable** |
-| `email`         | `string` | **Nullable** |
+| Arguments     | Type     | Description  |
+| :------------ | :------- | :----------- |
+| `name`        | `string` | **Nullable** |
+| `phone`       | `string` | **Nullable** |
+| `email`       | `string` | **Nullable** |
+| `dateOfBirth` | `Date`   | **Nullable** |
