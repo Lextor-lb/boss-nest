@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Max,
@@ -20,6 +21,18 @@ export class CreateVoucherDto {
   @MaxLength(25)
   @IsUniqueVoucherCode()
   voucherCode: string;
+
+  @IsOptional()
+  @IsString()
+  customerName: string;
+
+  @IsOptional()
+  @IsString()
+  phoneNumber: string;
+
+  @IsOptional()
+  @IsNumber()
+  promotionRate: number;
 
   @IsOptional()
   @IsInt()

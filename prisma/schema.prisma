@@ -336,6 +336,7 @@ model Voucher {
   subTotal        Int
   total           Int
   remark          String?
+  promotionRate   Int?          @default(0)
 
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -346,6 +347,9 @@ model Voucher {
   createdByUserId Int?
   updatedByUser   User? @relation("UpdatedVouchers", fields: [updatedByUserId], references: [id])
   updatedByUserId Int?
+
+  customerName String?
+  phoneNumber  String?
 
   customer   Customer? @relation("customerVouchers", fields: [customerId], references: [id])
   customerId Int?
@@ -379,12 +383,12 @@ model EcommerceUser {
   phone       String?
   email       String    @unique
   dateOfBirth DateTime?
-  role       UserRole  @default(ECOMUSER)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  isArchived DateTime?
-  orders     Order[]   @relation("ecommerceUserOrder")
-  address    Address[] @relation("ecommerceUserAddress")
+  role        UserRole  @default(ECOMUSER)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isArchived  DateTime?
+  orders      Order[]   @relation("ecommerceUserOrder")
+  address     Address[] @relation("ecommerceUserAddress")
 }
 
 model Address {
@@ -467,6 +471,7 @@ model Order {
   orderStatus     OrderStatus   @default(ORDERED)
   ecommerceUserId Int
   address         Json
+  couponName      String?
   discount        Int           @default(0) // Fixed typo here
   subTotal        Int
   total           Int // Fixed typo here
@@ -560,10 +565,10 @@ enum ImageType {
 
 enum OrderStatus {
   ORDERED
-  CANCEL
-  CONFIRM
-  DELIVERY
-  COMPLETE
+  CANCELED
+  CONFIRMED
+  DELIVERED
+  COMPLETED
 }
 
 enum UserRole {

@@ -231,6 +231,7 @@ export class OrderService {
         subTotal: true,
         total: true,
         discount: true,
+        ecommerceUserId: true,
         orderRecords: { select: { productVariantId: true, salePrice: true } },
       },
     });
@@ -239,7 +240,7 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
 
-    if (updateOrderDto.orderStatus === 'CANCEL') {
+    if (updateOrderDto.orderStatus === 'CANCELED') {
       // Fetch all related OrderRecords for the order
       const orderRecords = await this.prisma.orderRecord.findMany({
         where: { orderId: id },
@@ -259,7 +260,7 @@ export class OrderService {
       await this.prisma.order.update({
         where: { id },
         data: {
-          orderStatus: OrderStatus.CANCEL,
+          orderStatus: OrderStatus.CANCELED,
           cancelReason: updateOrderDto.cancelReason,
         },
       });
@@ -267,7 +268,10 @@ export class OrderService {
       return { status: true, message: 'Updated Successfully!' };
     }
 
-    if (updateOrderDto.orderStatus === 'CONFIRM') {
+    if (updateOrderDto.orderStatus === 'CONFIRMED') {
+      const customer = await this.prisma.ecommerceUser.findUnique({
+        where: { id: order.ecommerceUserId },
+      });
       // Prepare voucher records
       const voucherRecords: voucherRecordDto[] = order.orderRecords.map(
         (record) => ({
@@ -295,12 +299,15 @@ export class OrderService {
         quantity: order.orderRecords.length,
         remark: null,
         voucherRecords,
+        customerName: customer.name,
+        phoneNumber: customer.phone,
+        promotionRate: 0,
       };
 
       await this.vouchersService.create(voucher);
       await this.prisma.order.update({
         where: { id },
-        data: { orderStatus: OrderStatus.CONFIRM },
+        data: { orderStatus: OrderStatus.CONFIRMED },
       });
 
       return { status: true, message: 'Voucher Created Successfully!' };
@@ -414,7 +421,7 @@ export class OrderService {
     await this.prisma.order.update({
       where: { id },
       data: {
-        orderStatus: OrderStatus.CANCEL,
+        orderStatus: OrderStatus.CANCELED,
         cancelReason: updateOrderDto.cancelReason,
       },
     });

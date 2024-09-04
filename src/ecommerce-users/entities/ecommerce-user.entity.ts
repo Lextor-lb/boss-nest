@@ -7,12 +7,12 @@ export class EcommerceUserEntity implements EcommerceUser {
   name: string;
   phone: string | null;
   email: string;
-
+  @Exclude()
   dateOfBirth: Date;
-
-  // @Expose()
-  // @Transform(({ obj }) => formatDate(obj.dateOfBirth), { toPlainOnly: true })
-  // fixDateOfBirth: string;
+  @Expose()
+  get birthday(): string {
+    return formatDate(this.dateOfBirth);
+  }
 
   @Exclude()
   isArchived: Date | null;
