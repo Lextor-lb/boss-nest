@@ -5,6 +5,7 @@ import { MediaEntity } from 'src/media';
 
 export class OrderDetailEntity implements Order {
   id: number;
+  couponName: string | null;
   orderCode: string;
   orderStatus: OrderStatus;
   cancelReason: string | null;

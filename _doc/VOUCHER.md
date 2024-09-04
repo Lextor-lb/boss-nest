@@ -50,6 +50,7 @@ Example json ---
     "subTotal": 2000 ,
     "total": 3000 ,
     "remark": "short note!"                  //nullable
+    "promotionRate: 5                       //nullable
     "voucherRecords": [
             {
                 "productVariantId" : 1,

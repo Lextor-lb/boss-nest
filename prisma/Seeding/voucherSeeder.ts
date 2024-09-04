@@ -15,6 +15,13 @@ export default async function seedVouchers() {
     const create = [];
     const count = faker.number.int({ min: 2, max: 5 });
     const customerIds = faker.number.int({ min: 1, max: 10 });
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerIds },
+      select: {
+        name: true,
+        phoneNumber: true,
+      },
+    });
     const voucherCode = faker.string.alphanumeric(6) + '@';
 
     vouchers.push({
@@ -27,6 +34,8 @@ export default async function seedVouchers() {
       createdAt: date,
       updatedAt: date,
       quantity: count,
+      customerName: customer?.name,
+      phoneNumber: customer?.phoneNumber,
     });
 
     await prisma.voucher.createMany({
