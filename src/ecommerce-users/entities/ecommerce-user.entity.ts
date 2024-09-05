@@ -11,6 +11,7 @@ export class EcommerceUserEntity implements EcommerceUser {
   dateOfBirth: Date;
   @Expose()
   get birthday(): string {
+    if (this.dateOfBirth === null) return null;
     return formatDate(this.dateOfBirth);
   }
 
