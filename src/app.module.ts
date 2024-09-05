@@ -37,6 +37,7 @@ import { EcommerceUsersModule } from './ecommerce-users/ecommerce-users.module';
 import { SlidersModule } from './sliders/sliders.module';
 import { AddressModule } from './address/address.module';
 import { MinioModule } from './minio/minio.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -72,7 +73,7 @@ import { MinioModule } from './minio/minio.module';
     EcommerceCategoriesModule,
     EcommerceProductsModule,
     CouponModule,
-    // OrderModule,
+    OrderModule,
     FirebaseModule,
     WishlistModule,
     EcommerceUsersModule,
