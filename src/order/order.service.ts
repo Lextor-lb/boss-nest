@@ -17,6 +17,7 @@ import { OrderDetailEntity } from './entities/orderDetail.entity';
 import { MediaEntity } from 'src/media';
 import { AddressService } from 'src/address/address.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { EcommerceUserEntity } from 'src/ecommerce-users/entities/ecommerce-user.entity';
 
 @Injectable()
 export class OrderService {
@@ -156,56 +157,59 @@ export class OrderService {
   }
 
   async findOne(id: number): Promise<any> {
-    const { orderRecords, ...order } = await this.prisma.order.findUnique({
-      where: { id, AND: this.whereCheckingNullClause },
-      select: {
-        id: true,
-        orderCode: true,
-        orderStatus: true,
-        cancelReason: true,
-        remark: true,
-        total: true,
-        address: true,
-        createdAt: true,
-        couponName: true,
-        discount: true,
-        ecommerceUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
+    const { orderRecords, ecommerceUser, ...order } =
+      await this.prisma.order.findUnique({
+        where: { id, AND: this.whereCheckingNullClause },
+        select: {
+          id: true,
+          orderCode: true,
+          orderStatus: true,
+          cancelReason: true,
+          remark: true,
+          total: true,
+          address: true,
+          createdAt: true,
+          couponName: true,
+          discount: true,
+          ecommerceUser: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              dateOfBirth: true,
+            },
           },
-        },
-        orderRecords: {
-          select: {
-            salePrice: true,
-            productVariant: {
-              select: {
-                id: true,
-                colorCode: true,
-                media: { select: { url: true } },
-                product: {
-                  select: {
-                    name: true,
-                    gender: true,
-                    productCode: true,
-                    productType: { select: { name: true } },
-                    productCategory: { select: { name: true } },
-                    productFitting: { select: { name: true } },
+          orderRecords: {
+            select: {
+              salePrice: true,
+              productVariant: {
+                select: {
+                  id: true,
+                  colorCode: true,
+                  media: { select: { url: true } },
+                  product: {
+                    select: {
+                      name: true,
+                      gender: true,
+                      productCode: true,
+                      productType: { select: { name: true } },
+                      productCategory: { select: { name: true } },
+                      productFitting: { select: { name: true } },
+                    },
                   },
+                  productSizing: { select: { name: true } },
                 },
-                productSizing: { select: { name: true } },
               },
             },
           },
         },
-      },
-    });
+      });
 
     try {
       return new OrderDetailEntity({
         ...order,
+        ecommerceUser: new EcommerceUserEntity(ecommerceUser),
         orderRecords: orderRecords.map((or) => ({
           id: or.productVariant.id,
           productName: or.productVariant.product.name,
@@ -345,6 +349,7 @@ export class OrderService {
             name: true,
             email: true,
             phone: true,
+            dateOfBirth: true,
           },
         },
         orderRecords: {
@@ -375,10 +380,11 @@ export class OrderService {
 
     // Map through each order and return it in the desired format
     return orders.map((order) => {
-      const { orderRecords, ...orderData } = order;
+      const { orderRecords, ecommerceUser, ...orderData } = order;
 
       return new OrderDetailEntity({
         ...orderData,
+        ecommerceUser: new EcommerceUserEntity(ecommerceUser),
         orderRecords: orderRecords.map((or) => ({
           id: or.productVariant.id,
           productName: or.productVariant.product.name,
