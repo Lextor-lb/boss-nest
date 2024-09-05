@@ -167,6 +167,8 @@ export class OrderService {
         total: true,
         address: true,
         createdAt: true,
+        couponName: true,
+        discount: true,
         ecommerceUser: {
           select: {
             id: true,

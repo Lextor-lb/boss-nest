@@ -16,6 +16,10 @@ export class CreateOrderDto {
   @IsUniqueOrderId()
   orderCode: string;
 
+  @IsOptional()
+  @IsString()
+  couponName: string;
+
   @IsNotEmpty()
   @IsInt()
   @IsEntityExists('address')

@@ -12,7 +12,6 @@ export class OrderDetailEntity implements Order {
   remark: string | null;
   @Exclude()
   ecommerceUserId: number;
-  @Exclude()
   discount: number;
   @Exclude()
   subTotal: number;
