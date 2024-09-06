@@ -388,6 +388,7 @@ model EcommerceUser {
   updatedAt   DateTime  @updatedAt
   isArchived  DateTime?
   orders      Order[]   @relation("ecommerceUserOrder")
+  wishLists     WishList[] @relation("ecommerceUserWishList")
   address     Address[] @relation("ecommerceUserAddress")
 }
 
@@ -497,14 +498,14 @@ model OrderRecord {
 }
 
 model WishList {
-  id         Int       @id @default(autoincrement())
-  wishlistId String    @unique
-  // ecommerceUserId Int
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime? @updatedAt
-  isArchived DateTime?
+  id              Int       @id @default(autoincrement())
+  wishlistId      String    @unique
+  ecommerceUserId Int
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @updatedAt
+  isArchived      DateTime?
 
-  // ecommerceUser   EcommerceUser    @relation("ecommerceUserWishList", fields: [ecommerceUserId], references: [id])
+  ecommerceUser   EcommerceUser    @relation("ecommerceUserWishList", fields: [ecommerceUserId], references: [id])
   wishlistRecords WishListRecord[] @relation("wishListRecords")
   ecommerceUserId Int?
 }

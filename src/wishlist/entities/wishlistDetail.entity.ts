@@ -21,23 +21,41 @@ export class WishListDetailEntity implements WishList {
 
   wishlistRecords: {
     id: number;
-    productName: string;
-    gender: string;
-    colorCode: string;
-    typeName: string;
-    categoryName: string;
-    fittingName: string;
-    sizingName: string;
-    pricing: number;
-  }[];
+    wishlistId: string;
 
-  @Exclude()
-  createdByUserId: number;
+    @Exclude()
+    ecommerceUserId: number;
+    
+    @Exclude()
+    createdAt: Date;
 
-  @Exclude()
-  updatedByUserId: number;
+    @Exclude()
+    updatedAt: Date;
 
-  constructor(partial: Partial<WishListDetailEntity>) {
-    Object.assign(this, partial);
-  }
+    @Exclude()
+    isArchived: Date | null;
+    customerName: string;
+    customerEmail: string;
+
+    wishlistRecords: {
+        id: number;
+        productName: string;
+        gender: string;
+        colorCode: string;
+        typeName: string;
+        categoryName: string;
+        fittingName: string;
+        sizingName: string;
+        pricing: number
+    }[];
+
+    @Exclude()
+    createdByUserId: number;
+
+    @Exclude()
+    updatedByUserId: number;
+
+    constructor(partial: Partial<WishListDetailEntity>){
+        Object.assign(this,partial)
+    }
 }
