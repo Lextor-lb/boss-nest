@@ -5,8 +5,8 @@ export class WishlistEntity implements WishList {
     id: number;
     wishlistId: string;
 
-    // @Exclude()
-    // ecommerceUserId: number;
+    @Exclude()
+    ecommerceUserId: number;
 
     @Exclude()
     createdAt: Date;
