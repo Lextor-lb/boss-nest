@@ -9,7 +9,6 @@ import { JwtService } from '@nestjs/jwt';
 @Controller('auth')
 @ApiTags('auth')
 export class AuthController {
-
   constructor(
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
@@ -22,11 +21,9 @@ export class AuthController {
   }
 
   @Post('EcommerceLogin')
-  ecommerceLogin(@Body() { idToken }: { idToken:string }) {
+  ecommerceLogin(@Body() { idToken }: { idToken: string }) {
     try {
-
       return this.authService.ecommerceLogin(idToken);
-
     } catch (error) {
       throw new UnauthorizedException();
     }

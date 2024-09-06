@@ -16,9 +16,23 @@ export class CreateOrderDto {
   @IsUniqueOrderId()
   orderCode: string;
 
+  @IsOptional()
+  @IsString()
+  couponName: string;
+
+  @IsNotEmpty()
+  @IsInt()
+  @IsEntityExists('address')
+  addressId: number;
+
   // @IsInt()
   @IsOptional()
   ecommerceUserId: number;
+
+  @IsOptional()
+  cancelReason: string;
+  @IsOptional()
+  remark: string;
 
   @IsOptional()
   @IsInt()

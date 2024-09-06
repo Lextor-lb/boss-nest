@@ -86,7 +86,8 @@ export class ProductBrandsService {
       where: {
         ...this.whereCheckingNullClause,
         name: {
-          contains: search || '',
+          contains: search,
+          mode: 'insensitive',
         },
       },
       skip,
@@ -94,7 +95,7 @@ export class ProductBrandsService {
       orderBy: {
         [orderBy]: orderDirection,
       },
-      include: { 
+      include: {
         media: true,
       },
     });

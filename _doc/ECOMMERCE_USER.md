@@ -14,13 +14,9 @@ ecommerce-users/:id
 ecommerce-users/:id
 ```
 
-| Arguments       | Type     | Description  |
-| :-------------- | :------- | :----------- |
-| `name`          | `string` | **Nullable** |
-| `phone`         | `string` | **Nullable** |
-| `email`         | `string` | **Nullable** |
-| `city`          | `string` | **Nullable** |
-| `township`      | `string` | **Nullable** |
-| `street`        | `string` | **Nullable** |
-| `company`       | `string` | **Nullable** |
-| `addressDetail` | `string` | **Nullable** |
+| Arguments     | Type     | Description  |
+| :------------ | :------- | :----------- |
+| `name`        | `string` | **Nullable** |
+| `phone`       | `string` | **Nullable** |
+| `email`       | `string` | **Nullable** |
+| `dateOfBirth` | `Date`   | **Nullable** |

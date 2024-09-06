@@ -7,8 +7,12 @@ import { SpecialEntity } from 'src/specials';
 
 export class VoucherEntity implements Voucher {
   id: number;
+  customerName: string | null;
+  phoneNumber: string | null;
+  promotionRate: number;
   voucherCode: string;
   discount: number;
+  discountByValue: number;
   tax: number;
   type: Types;
   paymentMethod: PaymentMethod;
@@ -18,18 +22,18 @@ export class VoucherEntity implements Voucher {
   subTotal: number;
   voucherRecords: VoucherRecordEntity[];
 
-  @Expose()
-  get customerName(): string | undefined {
-    return this.customer ? this.customer.name : undefined;
-  }
-  @Expose()
-  get phone(): string | undefined {
-    return this.customer ? this.customer.phoneNumber : undefined;
-  }
-  @Expose()
-  get royaltyDiscount(): number | undefined {
-    return this.special ? this.special.promotionRate : undefined;
-  }
+  // @Expose()
+  // get customerName(): string | undefined {
+  //   return this.customer ? this.customer.name : undefined;
+  // }
+  // @Expose()
+  // get phone(): string | undefined {
+  //   return this.customer ? this.customer.phoneNumber : undefined;
+  // }
+  // @Expose()
+  // get royaltyDiscount(): number | undefined {
+  //   return this.special ? this.special.promotionRate : undefined;
+  // }
 
   @Expose()
   get date(): string {

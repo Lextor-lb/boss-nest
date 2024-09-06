@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 import * as argon2 from 'argon2';
 
 // Initialize the Prisma Client
@@ -8,7 +8,7 @@ export default async function userSeeder() {
   // Create two dummy users
 
   const passwordSabin = await argon2.hash('password-sabin');
-  const passwordAlex = await argon2.hash('password-alex');
+  const passwordAlex = await argon2.hash('password-staff');
 
   await prisma.user.upsert({
     where: { email: 'sabin@adams.com' },
@@ -19,18 +19,20 @@ export default async function userSeeder() {
       email: 'sabin@adams.com',
       name: 'Sabin Adams',
       password: passwordSabin,
+      // role: UserRole.ADMIN,
     },
   });
 
   await prisma.user.upsert({
-    where: { email: 'alex@ruheni.com' },
+    where: { email: 'staff@staff.com' },
     update: {
       password: passwordAlex,
     },
     create: {
-      email: 'alex@ruheni.com',
+      email: 'staff@staff.com',
       name: 'Alex Ruheni',
       password: passwordAlex,
+      // role: UserRole.STAFF,
     },
   });
   await console.log('Users have been seeded');

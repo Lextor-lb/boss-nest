@@ -1,74 +1,137 @@
-( API Reference )
 
-### Feature Lists
+# Sliders API Documentation
 
-1. [Voucher](VOUCHER.md)
-1. [Product](PRODUCT.md)
-1. [Variant](PRODUCT_VARIANT.md)
-1. [Brand](PRODUCT_BRAND.md)
-1. [Type](PRODUCT_TYPE.md)
-1. [Category](PRODUCT_CATEGORY.md)
-1. [Fitting](PRODUCT_FITTING.md)
-1. [Sizing](PRODUCT_SIZING.md)
-1. [Special](SPECIAL.md)
-1. [Customer](CUSTOMER.md)
-1. [Report](REPORT.md)
-1. [Stock_Report](STOCK_REPORT.md)
-1. [Voucher_Report](VOUCHER_REPORT.md)
-1. [Brand_Report](BRAND_REPORT.md)
-1. [Type_Report](TYPE_REPORT.md)
-1. [Category_Report](CATEGORY_REPORT.md)
-1. [Fitting_Report](FITTING_REPORT.md)
-1. [Sizing_Report](SIZING_REPORT.md)
-1. [Slider](SLIDER.md)
-1. [Coupon](COUPON.md)
-1. [Customer](CUSTOMER.md)
+## Endpoints
 
-## Slider
+# Sliders API Documentation
 
+## Endpoints
 
-### Slider Index (GET)
+### Get All Sliders
 
-```
-slider/all
-```
+**URL**: `api/v1/slider`  
+**Method**: `GET`  
+**Description**: Fetches all sliders.
 
-### Slider Show (GET)
+#### Responses
 
-```
-slider/:id
-```
+- **200 OK**: Successfully fetched all sliders.
+  - `status`: `true`
+  - `message`: `"Fetched Successfully!"`
+  - `data`: Array of slider objects
 
-### Slider Create (POST)
+#### Example Response
 
-```
-slider
-```
-
-| Arguments         | Type     | Description                       |
-| :---------------- | :------- | :-------------------------------- |
-| `place1Desktop`   | `file`   | **Required** / **png, jpg, jpeg** |
-| `place1Mobile`    | `file`   | **Required** / **png, jpg, jpeg** |
-| `place2Desktop`   | `file`   | **Required** / **png, jpg, jpeg** |
-| `place2Mobile`    | `file`   | **Required** / **png, jpg, jpeg** |
-| `place3Desktop`   | `file`   | **Required** / **png, jpg, jpeg** |
-| `place3Mobile`    | `file`   | **Required** / **png, jpg, jpeg** |
-| `place4Desktop`   | `file`   | **Required** / **png, jpg, jpeg** |
-| `place4Mobile`    | `file`   | **Required** / **png, jpg, jpeg** |
-
-### Slider Update (PUT)
+```json
+{
+  "status": true,
+  "message": "Fetched Successfully!",
+  "data": [
+    {
+      "id": 1,
+      "desktopImage": "https://amt.santar.store/uploads/path_to_desktop_image.jpg",
+      "mobileImage": "https://amt.santar.store/uploads/path_to_mobile_image.jpg",
+      "sorting": "1"
+    },
+    {
+      "id": 2,
+      "desktopImage": "https://amt.santar.store/uploads/path_to_another_desktop_image.jpg",
+      "mobileImage": "https://amt.santar.store/uploads/path_to_another_mobile_image.jpg",
+      "sorting": "2"
+    }
+  ]
+}
 
 ```
-slider/:id
+
+
+### Create a New Slider
+
+**URL**: `api/v1/slider`  
+**Method**: `POST`  
+**Description**: Creates a new slider with uploaded images and sorting order.
+
+#### Request Body form data
+
+- `desktopImage`: File (required) - The desktop image for the slider.
+- `mobileImage`: File (required) - The mobile image for the slider.
+- `sorting`: string (required) - The sorting order for the slider.
+
+#### Example Request
+
+```bash
+curl -X POST "https://amt.santar.store/api/v1/slider" \
+-H "Content-Type: multipart/form-data" \
+-F "desktopImage=@path_to_desktop_image.jpg" \
+-F "mobileImage=@path_to_mobile_image.jpg" \
+-F "sorting=1"
+
 ```
 
-| Arguments         | Type     | Description                       |
-| :---------------- | :------- | :-------------------------------- |
-| `place1Desktop`   | `file`   | **Required** / **png, jpg, jpeg** |
-| `place1Mobile`    | `file`   | **Required** / **png, jpg, jpeg** |
-| `place2Desktop`   | `file`   | **Required** / **png, jpg, jpeg** |
-| `place2Mobile`    | `file`   | **Required** / **png, jpg, jpeg** |
-| `place3Desktop`   | `file`   | **Required** / **png, jpg, jpeg** |
-| `place3Mobile`    | `file`   | **Required** / **png, jpg, jpeg** |
-| `place4Desktop`   | `file`   | **Required** / **png, jpg, jpeg** |
-| `place4Mobile`    | `file`   | **Required** / **png, jpg, jpeg** |
+
+
+
+## API Documentation - Update Slider
+
+### Endpoint
+
+**PATCH** `/sliders/:id`
+
+### Description
+
+Updates a specific slider identified by its ID. This endpoint allows you to modify the slider’s mobile image, desktop image, and sorting order. All fields are optional and can be `null`, ensuring that existing values are not overwritten unless new values are provided.
+
+### Request Parameters
+
+- **Path Parameters**:
+  - `id` (integer, required): The unique identifier of the slider to be updated.
+
+### Request Body
+
+The request body should be in `multipart/form-data` format and can include any of the following optional fields:
+
+- **mobileImage** (file, optional, nullable): The image file for the mobile version of the slider. If provided, it will replace the existing mobile image.
+- **desktopImage** (file, optional, nullable): The image file for the desktop version of the slider. If provided, it will replace the existing desktop image.
+- **sorting** (string, optional, nullable): A string representing the sorting order, which will be parsed as an integer. If not provided, the existing sorting order will remain unchanged.
+
+#### Example Request Body
+
+```plaintext
+Content-Type: multipart/form-data
+
+desktopImage: <file>
+mobileImage: <file>
+sorting: "3"
+
+
+## Endpoints
+
+### Delete a Slider by ID
+
+**URL**: `api/v1/slider/:id`  
+**Method**: `DELETE`  
+**Description**: Deletes a slider by its ID.
+
+#### Path Parameters
+
+- `id`: `string` (required) - The ID of the slider to delete.
+
+#### Responses
+
+- **200 OK**: Successfully deleted the slider.
+  - `status`: `true`
+  - `message`: `"Slider deleted successfully"`
+
+- **404 Not Found**: If the slider with the specified ID is not found.
+  - `status`: `false`
+  - `message`: `"Slider not found"`
+
+#### Example Response
+
+**Success Response:**
+
+```json
+{
+  "status": true,
+  "message": "Slider deleted successfully"
+}

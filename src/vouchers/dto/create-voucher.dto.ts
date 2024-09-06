@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Max,
@@ -22,6 +23,18 @@ export class CreateVoucherDto {
   voucherCode: string;
 
   @IsOptional()
+  @IsString()
+  customerName: string;
+
+  @IsOptional()
+  @IsString()
+  phoneNumber: string;
+
+  @IsOptional()
+  @IsNumber()
+  promotionRate: number;
+
+  @IsOptional()
   @IsInt()
   @IsEntityExists('customer')
   customerId: number;
@@ -30,6 +43,10 @@ export class CreateVoucherDto {
   @Max(99)
   @IsInt()
   discount: number;
+
+  @IsOptional()
+  @IsInt()
+  discountByValue: number;
 
   @IsOptional()
   @Max(2)
@@ -75,6 +92,10 @@ export class voucherRecordDto {
   @Max(99)
   @IsInt()
   discount: number;
+
+  @IsOptional()
+  @IsInt()
+  discountByValue: number;
 
   @IsNotEmpty()
   @IsInt()

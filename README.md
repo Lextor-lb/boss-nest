@@ -35,6 +35,8 @@ Welcome to the documentation for BOSS Nation, a POS Software that will help more
 1. [Ecommerce_Product](./_doc/ECOMMERCE_PRODUCT.md)
 1. [Ecommerce_User](./_doc/ECOMMERCE_USER.md)
 1. [Order](./_doc/ORDER.md)
+1. [Slider](./_doc/SLIDER.md)
+1. [Address](./_doc/ADDRESS.md)
 
 ## License
 

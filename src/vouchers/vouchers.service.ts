@@ -63,6 +63,7 @@ export class VouchersService {
             name: true,
             gender: true,
             productCode: true,
+            discountPrice: true,
             salePrice: true,
             productBrand: { select: { name: true } },
             productType: { select: { name: true } },
@@ -83,6 +84,7 @@ export class VouchersService {
         name: productName,
         gender,
         salePrice: price,
+        discountPrice,
         productBrand: { name: productBrand },
         productType: { name: productType },
         productCategory: { name: productCategory },
@@ -93,6 +95,7 @@ export class VouchersService {
     return new BarcodeEntity({
       id,
       barcode,
+      discountPrice,
       productName,
       gender,
       productBrand,
@@ -186,6 +189,18 @@ export class VouchersService {
     voucherData: Omit<CreateVoucherDto, 'voucherRecords'>,
     voucherRecords: voucherRecordDto[],
   ) {
+    if (voucherData.customerId) {
+      const customer = await transactionClient.customer.findUnique({
+        where: { id: voucherData.customerId },
+        include: { special: { select: { promotionRate: true } } },
+      });
+      if (!customer) {
+        throw new NotFoundException('Customer not found');
+      }
+      voucherData.customerName = customer.name;
+      voucherData.phoneNumber = customer.phoneNumber;
+      voucherData.promotionRate = customer.special?.promotionRate ?? 0;
+    }
     return transactionClient.voucher.create({
       data: {
         ...voucherData,
@@ -282,42 +297,13 @@ export class VouchersService {
       where: { id },
       include: {
         voucherRecords: true,
-        customer: {
-          select: {
-            id: true,
-            name: true,
-            phoneNumber: true,
-            gender: true,
-            address: true,
-            remark: true,
-            isArchived: true,
-            ageRange: true,
-            dateOfBirth: true,
-            specialId: true,
-            createdByUserId: true,
-            updatedByUserId: true,
-            createdAt: true,
-            updatedAt: true,
-            special: { select: { promotionRate: true } },
-          },
-        },
       },
     });
 
-    const { voucherRecords, customer, ...restVoucher } = voucher;
-    const promotionRate = customer?.special?.promotionRate ?? null;
+    const { voucherRecords, ...restVoucher } = voucher;
 
     return new VoucherEntity({
       ...restVoucher,
-      customer: customer
-        ? new CustomerEntity({
-            ...customer,
-            special: promotionRate
-              ? new SpecialEntity({ promotionRate })
-              : undefined,
-          })
-        : undefined,
-      special: promotionRate ? new SpecialEntity({ promotionRate }) : undefined,
       voucherRecords: voucherRecords.map((vr) => new VoucherRecordEntity(vr)),
     });
   }

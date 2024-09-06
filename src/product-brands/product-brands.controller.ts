@@ -34,22 +34,41 @@ import {
   PaginatedProductBrand,
 } from 'src/shared/types/productBrand';
 import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
+import { RolesGuard } from 'src/auth/role-guard';
+import { UserRole } from '@prisma/client';
+import { Roles } from 'src/auth/role';
+import { EcommerceJwtAuthGuard } from 'src/auth/ecommerce-jwt-auth.guard';
+import { MinioService } from 'src/minio/minio.service';
 
 @Controller('product-brands')
 export class ProductBrandsController {
-  constructor(private readonly productBrandsService: ProductBrandsService) {}
-  @UseGuards(JwtAuthGuard)
+  constructor(
+    private readonly productBrandsService: ProductBrandsService,
+    private readonly minioService: MinioService,
+  ) {}
+
+  // @UseGuards(JwtAuthGuard, RolesGuard, EcommerceJwtAuthGuard)
   @Post()
-  @UseInterceptors(FileInterceptor('image', multerOptions))
+  // @UseGuards(JwtAuthGuard, RolesGuard, EcommerceJwtAuthGuard)
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @UseInterceptors(FileInterceptor('image'))
   async create(
+    @UploadedFile() file: Express.Multer.File,
     @Body() createProductBrandDto: CreateProductBrandDto,
-    @UploadedFile(new FileValidatorPipe()) file: Express.Multer.File,
     @Req() req,
-  ): Promise<MessageWithProductBrand> {
-    await resizeImage(file.path);
+  ): Promise<any> {
+    if (!file || !file.buffer) {
+      throw new Error('File is missing or not processed correctly');
+    }
+
+    const bucketName = process.env.MINIO_BUCKET_NAME;
+    const imageUrl = await this.minioService.uploadFile(bucketName, file);
+
+    // Continue with processing createProductBrandDto
     createProductBrandDto.createdByUserId = req.user.id;
     createProductBrandDto.updatedByUserId = req.user.id;
-    createProductBrandDto.imageFileUrl = `/uploads/${file.filename}`;
+    createProductBrandDto.imageFileUrl = imageUrl;
+
     const createdProductBrand = await this.productBrandsService.create(
       createProductBrandDto,
     );
@@ -57,11 +76,13 @@ export class ProductBrandsController {
     return {
       status: true,
       message: 'Created Successfully!',
-      data: new ProductBrandEntity(createdProductBrand),
+      data: createdProductBrand,
     };
   }
 
   @Get('all')
+  // @UseGuards(JwtAuthGuard, EcommerceJwtAuthGuard, RolesGuard)
+  // @Roles(UserRole.STAFF, UserRole.ADMIN)
   async indexAll(): Promise<FetchedProductBrand> {
     const productBrands = await this.productBrandsService.indexAll();
     return {
@@ -75,6 +96,7 @@ export class ProductBrandsController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
+  @Roles(UserRole.ADMIN)
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit?: string,
@@ -103,6 +125,7 @@ export class ProductBrandsController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
+  @Roles(UserRole.ADMIN)
   @UsePipes(new ValidateIdExistsPipe('ProductBrand'))
   async findOne(@Param('id') id: number): Promise<ProductBrandEntity> {
     const productBrand = await this.productBrandsService.findOne(id);
@@ -112,6 +135,7 @@ export class ProductBrandsController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
+  @Roles(UserRole.ADMIN)
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -138,12 +162,14 @@ export class ProductBrandsController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
+  @Roles(UserRole.ADMIN)
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.productBrandsService.remove(id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete()
+  @Roles(UserRole.ADMIN)
   async removeMany(
     @Body() removeManyProductBrandDto: RemoveManyProductBrandDto,
   ) {

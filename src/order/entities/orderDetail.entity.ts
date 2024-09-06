@@ -1,15 +1,18 @@
 import { Exclude, Expose } from 'class-transformer';
-import { Order, OrderStatus } from '@prisma/client';
+import { Order, OrderStatus, Prisma } from '@prisma/client';
 import { formatDate, formatTime } from 'src/shared/utils/formatDate';
 import { MediaEntity } from 'src/media';
+import { EcommerceUserEntity } from 'src/ecommerce-users/entities/ecommerce-user.entity';
 
 export class OrderDetailEntity implements Order {
   id: number;
+  couponName: string | null;
   orderCode: string;
   orderStatus: OrderStatus;
+  cancelReason: string | null;
+  remark: string | null;
   @Exclude()
   ecommerceUserId: number;
-  @Exclude()
   discount: number;
   @Exclude()
   subTotal: number;
@@ -20,6 +23,9 @@ export class OrderDetailEntity implements Order {
   updatedAt: Date;
   @Exclude()
   isArchived: Date | null;
+  @Exclude()
+  address: Prisma.JsonValue;
+  ecommerceUser: EcommerceUserEntity;
 
   orderRecords: {
     id: number;
@@ -44,11 +50,22 @@ export class OrderDetailEntity implements Order {
     return formatTime(this.createdAt);
   }
 
+  @Expose()
+  get customerAddress(): string {
+    return this.addressData;
+  }
+
   @Exclude()
   createdByUserId: number;
 
   @Exclude()
   updatedByUserId: number;
+
+  private get addressData() {
+    return typeof this.address === 'string'
+      ? JSON.parse(this.address)
+      : this.address;
+  }
 
   constructor(partial: Partial<OrderDetailEntity> = {}) {
     Object.assign(this, partial);

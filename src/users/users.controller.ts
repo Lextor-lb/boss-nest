@@ -9,6 +9,7 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -27,10 +28,16 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  @ApiCreatedResponse({ type: UserEntity })
-  async create(@Body() createUserDto: CreateUserDto) {
-    return new UserEntity(await this.usersService.create(createUserDto));
+  // @Post()
+  // @ApiCreatedResponse({ type: UserEntity })
+  // async create(@Body() createUserDto: CreateUserDto) {
+  //   return new UserEntity(await this.usersService.create(createUserDto));
+  // }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async findMe(@Req() req) {
+    return this.usersService.findMe(req.user.id);
   }
 
   @Get()
@@ -65,5 +72,4 @@ export class UsersController {
   async remove(@Param('id', ParseIntPipe) id: number) {
     return new UserEntity(await this.usersService.remove(id));
   }
-  
 }

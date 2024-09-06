@@ -63,7 +63,8 @@ export class ProductSizingsService {
       where: {
         ...this.whereCheckingNullClause,
         name: {
-          contains: search || '',
+          contains: search,
+          mode: 'insensitive',
         },
       },
       skip,

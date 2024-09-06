@@ -19,14 +19,16 @@ import {
   CustomerPagination,
   SearchOption,
   MessageWithCustomer,
-  FetchedCustomer,
   JwtAuthGuard,
   RemoveManyCustomerDto,
   FetchedCustomerWithAnalysis,
 } from 'src';
+import { RolesGuard } from 'src/auth/role-guard';
+import { Roles } from 'src/auth/role';
+//import { UserRole } from '@prisma/client';
 
 @Controller('customers')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
@@ -42,13 +44,15 @@ export class CustomersController {
   // }
 
   @Post()
+  //@Roles(UserRole.ADMIN)
   async create(@Body() createCustomerDto: CreateCustomerDto, @Req() req) {
     createCustomerDto.createdByUserId = req.user.id;
     createCustomerDto.updatedByUserId = req.user.id;
     return this.customersService.create(createCustomerDto);
   }
 
-  @Get("all")
+  @Get('all')
+  //@Roles(UserRole.ADMIN)
   async indexAll(): Promise<CustomerPagination> {
     try {
       const customers = await this.customersService.indexAll();
@@ -125,6 +129,7 @@ export class CustomersController {
   }
 
   @Get(':id')
+  //@Roles(UserRole.ADMIN)
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const customer = await this.customersService.findOne(id);
     if (!customer) {
@@ -135,6 +140,7 @@ export class CustomersController {
   }
 
   @Patch(':id')
+  //@Roles(UserRole.ADMIN)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
@@ -153,6 +159,7 @@ export class CustomersController {
   }
 
   @Delete(':id')
+  //@Roles(UserRole.ADMIN)
   async remove(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<MessageWithCustomer> {
@@ -165,6 +172,7 @@ export class CustomersController {
   }
 
   @Delete()
+  //@Roles(UserRole.ADMIN)
   async removeMany(@Body() removeManyCustomerDto: RemoveManyCustomerDto) {
     const result = await this.customersService.removeMany(
       removeManyCustomerDto,

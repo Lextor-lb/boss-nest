@@ -1,4 +1,3 @@
-import { Optional } from '@nestjs/common';
 import { AgeRange, Customer, CustomerGender, Voucher } from '@prisma/client';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { format } from 'date-fns';
@@ -71,14 +70,17 @@ export class CustomerEntity implements Customer {
 
   @Expose()
   get vouchersSummary(): VoucherSummary[] | undefined {
-    return this.vouchers?.map(voucher => new VoucherSummary({
-      id: voucher.id,
-      voucherCode: voucher.voucherCode,
-      qty: voucher.quantity,
-      total: voucher.total,
-      payment: voucher.paymentMethod,
-      createdAt: voucher.createdAt,
-    }));
+    return this.vouchers?.map(
+      (voucher) =>
+        new VoucherSummary({
+          id: voucher.id,
+          voucherCode: voucher.voucherCode,
+          qty: voucher.quantity,
+          total: voucher.total,
+          payment: voucher.paymentMethod,
+          createdAt: voucher.createdAt,
+        }),
+    );
   }
 
   @Exclude()

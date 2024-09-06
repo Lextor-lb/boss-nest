@@ -1,4 +1,16 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateSliderDto } from './create-slider.dto';
+import { IsOptional, IsString, IsInt, IsNumber, IsNotEmpty } from 'class-validator';
 
-export class UpdateSliderDto extends PartialType(CreateSliderDto) {}
+export class UpdateSliderDto {
+  @IsOptional()
+  @IsString()
+  mobileImage?: string | null;
+
+  @IsOptional()
+  @IsString()
+  desktopImage?: string | null;
+
+  @IsOptional()
+  @IsNotEmpty()  // Ensures that if sorting is provided, it must not be empty
+  @IsString()
+  sorting?: string | null;
+}

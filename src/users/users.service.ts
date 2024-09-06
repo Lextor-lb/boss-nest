@@ -9,15 +9,15 @@ import * as argon2 from 'argon2';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createUserDto: CreateUserDto) {
-    const hashedPassword = await argon2.hash(createUserDto.password);
+  // async create(createUserDto: CreateUserDto) {
+  //   const hashedPassword = await argon2.hash(createUserDto.password);
 
-    createUserDto.password = hashedPassword;
+  //   createUserDto.password = hashedPassword;
 
-    return this.prisma.user.create({
-      data: createUserDto,
-    });
-  }
+  //   return this.prisma.user.create({
+  //     data: createUserDto,
+  //   });
+  // }
 
   findAll() {
     return this.prisma.user.findMany();
@@ -25,6 +25,13 @@ export class UsersService {
 
   findOne(id: number) {
     return this.prisma.user.findUnique({ where: { id } });
+  }
+
+  findMe(id: number) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      select: { name: true, email: true, role: true },
+    });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {

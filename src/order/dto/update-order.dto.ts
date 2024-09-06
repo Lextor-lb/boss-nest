@@ -10,6 +10,8 @@ export class UpdateOrderDto {
   voucherCode: string;
   @IsOptional()
   createdByUserId: number;
+  @IsOptional()
+  cancelReason: string;
 
   @IsOptional()
   updatedByUserId: number;

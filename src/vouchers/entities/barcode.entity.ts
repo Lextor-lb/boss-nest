@@ -5,6 +5,7 @@ export class BarcodeEntity {
   barcode: string;
   productName: string;
   gender: Gender;
+  discountPrice: number;
   productBrand: string;
   productType: string;
   productCategory: string;

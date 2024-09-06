@@ -9,13 +9,11 @@ import { WishListDetailEntity } from './entities/wishlistDetail.entity';
 
 @Injectable()
 export class WishlistService {
-  constructor(
-    private readonly prisma: PrismaService,
-  ){}
+  constructor(private readonly prisma: PrismaService) {}
 
   whereCheckingNullClause: Prisma.WishListWhereInput = {
-    isArchived: null
-  }
+    isArchived: null,
+  };
 
   async create(createWishListWithRecord: CreateWishlistDto) {
     const {wishlistId,ecommerceUserId, productVariantIds} = createWishListWithRecord;
@@ -34,34 +32,41 @@ export class WishlistService {
         wishlistId,
         ecommerceUserId,
         wishlistRecords: {
-          create: productVariantIds.map(({ productVariantId, salePrice, createdByUserId, updatedByUserId }) => ({
-            // productVariantId,
-            salePrice,
-            createdByUserId,
-            updatedByUserId,
-            product: {
-              connect: {
-                id: productVariantId, // Connect to the product associated with the variant
-              }
-            },
-            productVariant: { // Include the missing productVariant property
-              connect: {
-                id: productVariantId, // Connect to the existing product variant
-              }
-            }
-          })),
-        }
+          create: productVariantIds.map(
+            ({
+              productVariantId,
+              salePrice,
+              createdByUserId,
+              updatedByUserId,
+            }) => ({
+              // productVariantId,
+              salePrice,
+              createdByUserId,
+              updatedByUserId,
+              product: {
+                connect: {
+                  id: productVariantId, // Connect to the product associated with the variant
+                },
+              },
+              productVariant: {
+                // Include the missing productVariant property
+                connect: {
+                  id: productVariantId, // Connect to the existing product variant
+                },
+              },
+            }),
+          ),
+        },
       },
       include: {
         wishlistRecords: {
           include: {
             product: true,
             productVariant: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
-  
 
     return createdWishlist;
   }
@@ -71,7 +76,7 @@ export class WishlistService {
       page,
       limit,
       orderBy = 'createdAt',
-      orderDirection = 'desc'
+      orderDirection = 'desc',
     } = options;
 
     const total = await this.prisma.wishList.count({
@@ -82,7 +87,7 @@ export class WishlistService {
     })
 
     const skip = (page - 1) * limit;
-    const totalPages = Math.ceil(total/limit);
+    const totalPages = Math.ceil(total / limit);
 
     const wishLists = await this.prisma.wishList.findMany({
       where: {
@@ -117,12 +122,12 @@ export class WishlistService {
             customerName: ecommerceUser.name,
             customerEmail: ecommerceUser.email
         };
-    }),
+      }),
       total,
       page,
       limit,
-      totalPages
-    }
+      totalPages,
+    };
   }
 
   async findOne(id: number, ecommerceUserId: number): Promise<any> {
@@ -142,11 +147,11 @@ export class WishlistService {
         },
       },
     });
-    
+
     if (!wishlist) {
       throw new NotFoundException(`Wishlist with id ${id} not found.`);
     }
-    
+
     return wishlist;
   }
 
@@ -156,8 +161,8 @@ export class WishlistService {
         id,
       },
       data: {
-        isArchived: new Date()
-      }
+        isArchived: new Date(),
+      },
     });
 
     return new WishlistEntity(deletedWishList);
