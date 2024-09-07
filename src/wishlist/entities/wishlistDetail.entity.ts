@@ -1,23 +1,23 @@
 import { WishList } from "@prisma/client";
 import { Exclude } from "class-transformer";
 
-export class WishListDetailEntity implements WishList{
-    id: number;
-    wishlistId: string;
+export class WishListDetailEntity implements WishList {
+  id: number;
+  wishlistId: string;
 
-    @Exclude()
-    ecommerceUserId: number;
-    
-    @Exclude()
-    createdAt: Date;
+  @Exclude()
+  ecommerceUserId: number;
 
-    @Exclude()
-    updatedAt: Date;
+  @Exclude()
+  createdAt: Date;
 
-    @Exclude()
-    isArchived: Date | null;
-    customerName: string;
-    customerEmail: string;
+  @Exclude()
+  updatedAt: Date;
+
+  @Exclude()
+  isArchived: Date | null;
+  customerName: string;
+  customerEmail: string;
 
     wishlistRecords: {
         id: number;
