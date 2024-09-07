@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { UpdateWishlistDto } from './dto/update-wishlist.dto';
 import { PrismaService } from 'src/prisma';
@@ -16,15 +16,24 @@ export class WishlistService {
   };
 
   async create(createWishListWithRecord: CreateWishlistDto) {
-    const {wishlistId,ecommerceUserId, productVariantIds} = createWishListWithRecord;
+    const { wishlistId, ecommerceUserId, productVariantIds } = createWishListWithRecord;
 
-    //Check if the ecommerceUserId exists
+    // Check if the ecommerceUserId exists
     const ecommerceUser = await this.prisma.ecommerceUser.findUnique({
       where: { id: ecommerceUserId },
     });
 
     if (!ecommerceUser) {
       throw new NotFoundException(`Ecommerce user with id ${ecommerceUserId} not found`);
+    }
+
+    // Check if a wishlist with the same wishlistId already exists
+    const existingWishlist = await this.prisma.wishList.findUnique({
+      where: { wishlistId },
+    });
+
+    if (existingWishlist) {
+      throw new ConflictException(`Wishlist with id ${wishlistId} already exists`);
     }
 
     const createdWishlist = await this.prisma.wishList.create({
@@ -39,7 +48,6 @@ export class WishlistService {
               createdByUserId,
               updatedByUserId,
             }) => ({
-              // productVariantId,
               salePrice,
               createdByUserId,
               updatedByUserId,
@@ -49,7 +57,6 @@ export class WishlistService {
                 },
               },
               productVariant: {
-                // Include the missing productVariant property
                 connect: {
                   id: productVariantId, // Connect to the existing product variant
                 },
