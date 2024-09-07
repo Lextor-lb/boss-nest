@@ -1,5 +1,5 @@
-import { WishList } from '@prisma/client';
-import { Exclude } from 'class-transformer';
+import { WishList } from "@prisma/client";
+import { Exclude } from "class-transformer";
 
 export class WishListDetailEntity implements WishList {
   id: number;
