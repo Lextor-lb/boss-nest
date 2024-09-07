@@ -19,24 +19,6 @@ export class WishListDetailEntity implements WishList {
   customerName: string;
   customerEmail: string;
 
-  wishlistRecords: {
-    id: number;
-    wishlistId: string;
-
-    @Exclude()
-    ecommerceUserId: number;
-    
-    @Exclude()
-    createdAt: Date;
-
-    @Exclude()
-    updatedAt: Date;
-
-    @Exclude()
-    isArchived: Date | null;
-    customerName: string;
-    customerEmail: string;
-
     wishlistRecords: {
         id: number;
         productName: string;
