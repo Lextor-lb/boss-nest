@@ -11,7 +11,7 @@ export class OrderRecordEntity implements OrderRecord {
   isArchived: Date | null;
 
   order: OrderEntity;
-//   productVariant: ProductVariantEntity;
+  //   productVariant: ProductVariantEntity;
 
   @Exclude()
   createdByUserId: number;

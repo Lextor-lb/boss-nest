@@ -1,31 +1,31 @@
-import { WishList } from "@prisma/client";
-import { Exclude } from "class-transformer";
+import { WishList } from '@prisma/client';
+import { Exclude } from 'class-transformer';
 
 export class WishlistEntity implements WishList {
-    id: number;
-    wishlistId: string;
+  id: number;
+  wishlistId: string;
 
-    // @Exclude()
-    // ecommerceUserId: number;
+  @Exclude()
+  ecommerceUserId: number;
 
-    @Exclude()
-    createdAt: Date;
+  @Exclude()
+  createdAt: Date;
 
-    @Exclude()
-    updatedAt: Date;
+  @Exclude()
+  updatedAt: Date;
 
-    @Exclude()
-    isArchived: Date | null;
- 
-    @Exclude()
-    createdByUserId: number;
+  @Exclude()
+  isArchived: Date | null;
 
-    @Exclude()
-    updatedByUserId: number;
-    customerName: string;
-    customerEmail: string;
+  @Exclude()
+  createdByUserId: number;
 
-    constructor(partial: Partial<WishlistEntity>){
-        Object.assign(this,partial);
-    }
+  @Exclude()
+  updatedByUserId: number;
+  customerName: string;
+  customerEmail: string;
+
+  constructor(partial: Partial<WishlistEntity>) {
+    Object.assign(this, partial);
+  }
 }

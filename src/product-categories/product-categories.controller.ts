@@ -12,6 +12,7 @@ import {
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import {
   ProductCategoriesService,
   CreateProductCategoryDto,
@@ -21,6 +22,8 @@ import {
   ProductCategoryEntity,
   SearchOption,
 } from 'src';
+import { EcommerceJwtAuthGuard } from 'src/auth/ecommerce-jwt-auth.guard';
+
 import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 import {
   FetchProductCategory,

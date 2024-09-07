@@ -5,19 +5,20 @@ import { UpdateWishlistDto } from './dto/update-wishlist.dto';
 import { SearchOption } from 'src/shared/types';
 import { JwtAuthGuard } from 'src/auth';
 import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
+import { EcommerceJwtAuthGuard } from 'src/auth/ecommerce-jwt-auth.guard';
 
 @Controller('wishlist')
 export class WishlistController {
   constructor(private readonly wishlistService: WishlistService) {}
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(EcommerceJwtAuthGuard)
   @Post()
   create(@Body() createWishlistDto: CreateWishlistDto, @Req() req) {
-    // createWishlistDto.ecommerceUserId = req.user.id;
+    createWishlistDto.ecommerceUserId = req.user.id;
     return this.wishlistService.create(createWishlistDto);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(EcommerceJwtAuthGuard)
   @Get()
   async findAll(
     @Req() req,
@@ -35,20 +36,20 @@ export class WishlistController {
       orderDirection: orderDirection || 'desc'
     };
 
-    // const ecommerceUserId = req.user.id;
-    return await this.wishlistService.findAll(searchOptions);
+    const ecommerceUserId = req.user.id;
+    return await this.wishlistService.findAll(searchOptions,ecommerceUserId);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(EcommerceJwtAuthGuard)
   @Get(':id')
   @UsePipes(new ValidateIdExistsPipe('WishList'))
   findOne(@Param('id') id: number, @Req() req) {
-    // const ecommerceUserId = req.user.id
+    const ecommerceUserId = req.user.id
 
-    return this.wishlistService.findOne(+id);
-    // return this.wishlistService.findOne(+id,ecommerceUserId);
+    return this.wishlistService.findOne(+id,ecommerceUserId);
   }
 
+  @UseGuards(EcommerceJwtAuthGuard)
    @Delete(':id')
    async remove(@Param('id', ParseIntPipe) id: number) {
     const result = await this.wishlistService.remove(id);

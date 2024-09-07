@@ -18,10 +18,10 @@ async function main() {
   await seedProductType();
   await seedProductBrand();
   await seedProductCategory();
-  await seedProduct();
+  // await seedProduct();
   await seedSpecial();
   await seedCustomer();
-  await seedVouchers();
+  // await seedVouchers();
   await console.log('Seeding Success!');
 }
 

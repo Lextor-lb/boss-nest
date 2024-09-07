@@ -23,16 +23,16 @@ export class AuthService {
   async login(email: string, password: string): Promise<AuthEntity> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
+    if (!user) {
+      throw new NotFoundException(`No user found for email: ${email}`);
+    }
+
     const token = uuidv4();
 
     const refreshToken = this.jwtService.sign(
       { id: user.id, name: user.name, email: user.email, tokenId: token },
       { expiresIn: '9999 years' },
     );
-
-    if (!user) {
-      throw new NotFoundException(`No user found for email: ${email}`);
-    }
 
     const isPasswordValid = await argon2.verify(user.password, password);
 
@@ -51,7 +51,6 @@ export class AuthService {
   async ecommerceLogin(idToken: string) {
     try {
       const decodedToken = await this.firebaseService.verifyIdToken(idToken);
-
       const userEmail: string = decodedToken.email;
       const name: string = decodedToken.name;
 
@@ -68,7 +67,13 @@ export class AuthService {
       const token = uuidv4();
 
       const refreshToken = this.jwtService.sign(
-        { id: user.id, name: user.name, email: user.email, tokenId: token },
+        {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          tokenId: token,
+          issuedAt: new Date().toISOString(),
+        },
         { expiresIn: '9999 years' },
       );
 
@@ -82,10 +87,12 @@ export class AuthService {
         accessToken: this.jwtService.sign({
           userId: user.id,
           email: user.email,
-        }), // Include email in the payload
+          issuedAt: new Date().toISOString(),
+        }), 
         refreshToken: refreshToken,
       };
     } catch (error) {
+      console.log(error);
       throw new UnauthorizedException();
     }
   }

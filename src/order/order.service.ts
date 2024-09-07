@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OrderStatus, Prisma, PrismaClient } from '@prisma/client';
@@ -17,7 +16,8 @@ import { OrderEntity } from './entities/order.entity';
 import { OrderDetailEntity } from './entities/orderDetail.entity';
 import { MediaEntity } from 'src/media';
 import { AddressService } from 'src/address/address.service';
-import { AddressEntity } from 'src/address/entities/address.entity';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { EcommerceUserEntity } from 'src/ecommerce-users/entities/ecommerce-user.entity';
 
 @Injectable()
 export class OrderService {
@@ -157,56 +157,59 @@ export class OrderService {
   }
 
   async findOne(id: number): Promise<any> {
-    const { orderRecords, ...order } = await this.prisma.order.findUnique({
-      where: { id, AND: this.whereCheckingNullClause },
-      select: {
-        id: true,
-        orderCode: true,
-        orderStatus: true,
-        total: true,
-        address: true,
-        createdAt: true,
-        ecommerceUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            // city: true,
-            // township: true,
-            // street: true,
-            // addressDetail: true,
+    const { orderRecords, ecommerceUser, ...order } =
+      await this.prisma.order.findUnique({
+        where: { id, AND: this.whereCheckingNullClause },
+        select: {
+          id: true,
+          orderCode: true,
+          orderStatus: true,
+          cancelReason: true,
+          remark: true,
+          total: true,
+          address: true,
+          createdAt: true,
+          couponName: true,
+          discount: true,
+          ecommerceUser: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              dateOfBirth: true,
+            },
           },
-        },
-        orderRecords: {
-          select: {
-            salePrice: true,
-            productVariant: {
-              select: {
-                id: true,
-                colorCode: true,
-                media: { select: { url: true } },
-                product: {
-                  select: {
-                    name: true,
-                    gender: true,
-                    productCode: true,
-                    productType: { select: { name: true } },
-                    productCategory: { select: { name: true } },
-                    productFitting: { select: { name: true } },
+          orderRecords: {
+            select: {
+              salePrice: true,
+              productVariant: {
+                select: {
+                  id: true,
+                  colorCode: true,
+                  media: { select: { url: true } },
+                  product: {
+                    select: {
+                      name: true,
+                      gender: true,
+                      productCode: true,
+                      productType: { select: { name: true } },
+                      productCategory: { select: { name: true } },
+                      productFitting: { select: { name: true } },
+                    },
                   },
+                  productSizing: { select: { name: true } },
                 },
-                productSizing: { select: { name: true } },
               },
             },
           },
         },
-      },
-    });
+      });
 
     try {
       return new OrderDetailEntity({
         ...order,
+        ecommerceUser: new EcommerceUserEntity(ecommerceUser),
         orderRecords: orderRecords.map((or) => ({
           id: or.productVariant.id,
           productName: or.productVariant.product.name,
@@ -234,6 +237,7 @@ export class OrderService {
         subTotal: true,
         total: true,
         discount: true,
+        ecommerceUserId: true,
         orderRecords: { select: { productVariantId: true, salePrice: true } },
       },
     });
@@ -242,7 +246,7 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
 
-    if (updateOrderDto.orderStatus === 'CANCEL') {
+    if (updateOrderDto.orderStatus === 'CANCELED') {
       // Fetch all related OrderRecords for the order
       const orderRecords = await this.prisma.orderRecord.findMany({
         where: { orderId: id },
@@ -261,13 +265,19 @@ export class OrderService {
 
       await this.prisma.order.update({
         where: { id },
-        data: { orderStatus: OrderStatus.CANCEL },
+        data: {
+          orderStatus: OrderStatus.CANCELED,
+          cancelReason: updateOrderDto.cancelReason,
+        },
       });
 
       return { status: true, message: 'Updated Successfully!' };
     }
 
-    if (updateOrderDto.orderStatus === 'CONFIRM') {
+    if (updateOrderDto.orderStatus === 'CONFIRMED') {
+      const customer = await this.prisma.ecommerceUser.findUnique({
+        where: { id: order.ecommerceUserId },
+      });
       // Prepare voucher records
       const voucherRecords: voucherRecordDto[] = order.orderRecords.map(
         (record) => ({
@@ -295,16 +305,21 @@ export class OrderService {
         quantity: order.orderRecords.length,
         remark: null,
         voucherRecords,
+        customerName: customer.name,
+        phoneNumber: customer.phone,
+        promotionRate: 0,
       };
 
       await this.vouchersService.create(voucher);
       await this.prisma.order.update({
         where: { id },
-        data: { orderStatus: OrderStatus.CONFIRM },
+        data: { orderStatus: OrderStatus.CONFIRMED },
       });
 
       return { status: true, message: 'Voucher Created Successfully!' };
     }
+
+    // return updateOrderDto.orderStatus;
 
     await this.prisma.order.update({
       where: { id },
@@ -321,9 +336,12 @@ export class OrderService {
       },
       select: {
         id: true,
+        cancelReason: true,
+        remark: true,
         orderCode: true,
         orderStatus: true,
         total: true,
+        address: true,
         createdAt: true,
         ecommerceUser: {
           select: {
@@ -331,10 +349,7 @@ export class OrderService {
             name: true,
             email: true,
             phone: true,
-            // city: true,
-            // township: true,
-            // street: true,
-            // addressDetail: true,
+            dateOfBirth: true,
           },
         },
         orderRecords: {
@@ -365,10 +380,11 @@ export class OrderService {
 
     // Map through each order and return it in the desired format
     return orders.map((order) => {
-      const { orderRecords, ...orderData } = order;
+      const { orderRecords, ecommerceUser, ...orderData } = order;
 
       return new OrderDetailEntity({
         ...orderData,
+        ecommerceUser: new EcommerceUserEntity(ecommerceUser),
         orderRecords: orderRecords.map((or) => ({
           id: or.productVariant.id,
           productName: or.productVariant.product.name,
@@ -386,7 +402,11 @@ export class OrderService {
     });
   }
 
-  async updateEcommerce(id: number, ecommerceUserId: number) {
+  async updateEcommerce(
+    id: number,
+    ecommerceUserId: number,
+    updateOrderDto: UpdateOrderDto,
+  ) {
     const order = await this.prisma.order.findUnique({
       where: {
         id,
@@ -408,7 +428,10 @@ export class OrderService {
 
     await this.prisma.order.update({
       where: { id },
-      data: { orderStatus: OrderStatus.CANCEL },
+      data: {
+        orderStatus: OrderStatus.CANCELED,
+        cancelReason: updateOrderDto.cancelReason,
+      },
     });
     return { status: true, message: 'Order Cancel Successfully!' };
   }

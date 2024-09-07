@@ -12,6 +12,7 @@ datasource db {
 
 model User {
   id        Int      @id @default(autoincrement())
+  role      UserRole @default(ADMIN)
   name      String?
   email     String   @unique
   password  String
@@ -335,6 +336,7 @@ model Voucher {
   subTotal        Int
   total           Int
   remark          String?
+  promotionRate   Int?          @default(0)
 
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -345,6 +347,9 @@ model Voucher {
   createdByUserId Int?
   updatedByUser   User? @relation("UpdatedVouchers", fields: [updatedByUserId], references: [id])
   updatedByUserId Int?
+
+  customerName String?
+  phoneNumber  String?
 
   customer   Customer? @relation("customerVouchers", fields: [customerId], references: [id])
   customerId Int?
@@ -373,16 +378,18 @@ model VoucherRecord {
 }
 
 model EcommerceUser {
-  id    Int     @id @default(autoincrement())
-  name  String
-  phone String?
-  email String  @unique
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  isArchived DateTime?
-  orders     Order[]    @relation("ecommerceUserOrder")
-  address    Address[]  @relation("ecommerceUserAddress")
-  wishLists  WishList[] @relation("ecommerceUserWishList")
+  id          Int       @id @default(autoincrement())
+  name        String
+  phone       String?
+  email       String    @unique
+  dateOfBirth DateTime?
+  role        UserRole  @default(ECOMUSER)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isArchived  DateTime?
+  orders      Order[]   @relation("ecommerceUserOrder")
+  wishLists     WishList[] @relation("ecommerceUserWishList")
+  address     Address[] @relation("ecommerceUserAddress")
 }
 
 model Address {
@@ -459,10 +466,13 @@ model Slider {
 
 model Order {
   id              Int           @id @default(autoincrement())
+  remark          String?
+  cancelReason    String?
   orderCode       String        @unique
   orderStatus     OrderStatus   @default(ORDERED)
   ecommerceUserId Int
   address         Json
+  couponName      String?
   discount        Int           @default(0) // Fixed typo here
   subTotal        Int
   total           Int // Fixed typo here
@@ -490,19 +500,19 @@ model OrderRecord {
 model WishList {
   id              Int       @id @default(autoincrement())
   wishlistId      String    @unique
-  // ecommerceUserId Int
+  ecommerceUserId Int
   createdAt       DateTime  @default(now())
   updatedAt       DateTime? @updatedAt
   isArchived      DateTime?
 
-  // ecommerceUser   EcommerceUser    @relation("ecommerceUserWishList", fields: [ecommerceUserId], references: [id])
+  ecommerceUser   EcommerceUser    @relation("ecommerceUserWishList", fields: [ecommerceUserId], references: [id])
   wishlistRecords WishListRecord[] @relation("wishListRecords")
 }
 
 model WishListRecord {
   id               Int      @id @default(autoincrement())
   productVariantId Int
-  productId          Int
+  productId        Int
   salePrice        Int
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -512,7 +522,7 @@ model WishListRecord {
 
   wishlist       WishList       @relation("wishListRecords", fields: [wishlistId], references: [id])
   productVariant ProductVariant @relation("wishListRecordProductVaiants", fields: [productVariantId], references: [id])
-  product Product @relation("wishListRecordProducts", fields: [productId], references: [id])
+  product        Product        @relation("wishListRecordProducts", fields: [productId], references: [id])
 }
 
 enum Gender {
@@ -555,8 +565,14 @@ enum ImageType {
 
 enum OrderStatus {
   ORDERED
-  CANCEL
-  CONFIRM
-  DELIVERY
-  COMPLETE
+  CANCELED
+  CONFIRMED
+  DELIVERED
+  COMPLETED
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+  ECOMUSER
 }

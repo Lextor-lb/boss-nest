@@ -7,8 +7,8 @@ export class CreateWishlistDto {
     @IsString()
     wishlistId: string;
 
-    // @IsOptional()
-    // ecommerceUserId: number;
+    @IsOptional()
+    ecommerceUserId: number;
 
     @IsNotEmpty()
     @IsArray()

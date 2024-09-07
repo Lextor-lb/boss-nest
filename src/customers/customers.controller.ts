@@ -19,14 +19,16 @@ import {
   CustomerPagination,
   SearchOption,
   MessageWithCustomer,
-  FetchedCustomer,
   JwtAuthGuard,
   RemoveManyCustomerDto,
   FetchedCustomerWithAnalysis,
 } from 'src';
+import { RolesGuard } from 'src/auth/role-guard';
+import { Roles } from 'src/auth/role';
+//import { UserRole } from '@prisma/client';
 
 @Controller('customers')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
@@ -42,6 +44,7 @@ export class CustomersController {
   // }
 
   @Post()
+  //@Roles(UserRole.ADMIN)
   async create(@Body() createCustomerDto: CreateCustomerDto, @Req() req) {
     createCustomerDto.createdByUserId = req.user.id;
     createCustomerDto.updatedByUserId = req.user.id;
@@ -49,59 +52,84 @@ export class CustomersController {
   }
 
   @Get('all')
-async indexAll(@Req() req): Promise<FetchedCustomerWithAnalysis> {
-  const { page, limit, search, orderBy, orderDirection } = req.query;
-  const searchOptions: SearchOption = {
-    page: parseInt(page, 10) || 1,
-    limit: limit ? parseInt(limit, 10) : 10,
-    search: search || '',
-    orderBy: orderBy || 'id',
-    orderDirection: orderDirection || 'ASC',
-  };
-
-  const { customers, analysis, page: customersPage, limit: customersLimit, total, totalPages } = await this.customersService.indexAll(searchOptions);
-
-  return {
-    status: true,
-    message: 'Fetched Successfully!',
-    data: customers,
-    analysis, // Include the analysis results in the response
-    page: customersPage,
-    limit: customersLimit,
-    total,
-    totalPages,
-  };
-}
-
-
-  @Get()
-  async findAll(@Req() req): Promise<CustomerPagination> {
+  //@Roles(UserRole.ADMIN)
+  async indexAll(): Promise<CustomerPagination> {
     try {
-      const { page, limit, search, orderBy, orderDirection } = req.query;
-      const searchOptions: SearchOption = {
-        page: parseInt(page, 10) || 1,
-        limit: limit ? parseInt(limit, 10) : 10,
-        search: search || '',
-        orderBy: orderBy || 'id',
-        orderDirection: orderDirection || 'ASC',
-      };
+      const customers = await this.customersService.indexAll();
 
-      const customers = await this.customersService.findAll(searchOptions);
-
-      return {
-        data: customers,
-        page: customers.page,
-        limit: customers.limit,
-        total: customers.total,
-        totalPages: customers.totalPages,
-      };
+      return customers
     } catch (error) {
       console.error('Error in findAll method:', error);
       throw new Error('Internal server error');
     }
   }
 
+  // @Get('all')
+  // async indexAll(@Req() req): Promise<FetchedCustomerWithAnalysis> {
+  //   const { page, limit, search, orderBy, orderDirection } = req.query;
+  //   const searchOptions: SearchOption = {
+  //     page: parseInt(page, 10) || 1,
+  //     limit: limit ? parseInt(limit, 10) : 10,
+  //     search: search || '',
+  //     orderBy: orderBy || 'id',
+  //     orderDirection: orderDirection || 'ASC',
+  //   };
+
+  //   const {
+  //     customers,
+  //     analysis,
+  //     page: customersPage,
+  //     limit: customersLimit,
+  //     total,
+  //     totalPages,
+  //   } = await this.customersService.indexAll(searchOptions);
+
+  //   return {
+  //     status: true,
+  //     message: 'Fetched Successfully!',
+  //     data: customers,
+  //     analysis, // Include the analysis results in the response
+  //     page: customersPage,
+  //     limit: customersLimit,
+  //     total,
+  //     totalPages,
+  //   };
+  // }
+
+  @Get()
+  async findAll(@Req() req): Promise<FetchedCustomerWithAnalysis> {
+    const { page, limit, search, orderBy, orderDirection } = req.query;
+    const searchOptions: SearchOption = {
+      page: parseInt(page, 10) || 1,
+      limit: limit ? parseInt(limit, 10) : 10,
+      search: search || '',
+      orderBy: orderBy || 'id',
+      orderDirection: orderDirection || 'ASC',
+    };
+
+    const {
+      customers,
+      analysis,
+      page: customersPage,
+      limit: customersLimit,
+      total,
+      totalPages,
+    } = await this.customersService.findAll(searchOptions);
+
+    return {
+      status: true,
+      message: 'Fetched Successfully!',
+      data: customers,
+      analysis, // Include the analysis results in the response
+      page: customersPage,
+      limit: customersLimit,
+      total,
+      totalPages,
+    };
+  }
+
   @Get(':id')
+  //@Roles(UserRole.ADMIN)
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const customer = await this.customersService.findOne(id);
     if (!customer) {
@@ -112,6 +140,7 @@ async indexAll(@Req() req): Promise<FetchedCustomerWithAnalysis> {
   }
 
   @Patch(':id')
+  //@Roles(UserRole.ADMIN)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
@@ -130,6 +159,7 @@ async indexAll(@Req() req): Promise<FetchedCustomerWithAnalysis> {
   }
 
   @Delete(':id')
+  //@Roles(UserRole.ADMIN)
   async remove(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<MessageWithCustomer> {
@@ -142,6 +172,7 @@ async indexAll(@Req() req): Promise<FetchedCustomerWithAnalysis> {
   }
 
   @Delete()
+  //@Roles(UserRole.ADMIN)
   async removeMany(@Body() removeManyCustomerDto: RemoveManyCustomerDto) {
     const result = await this.customersService.removeMany(
       removeManyCustomerDto,

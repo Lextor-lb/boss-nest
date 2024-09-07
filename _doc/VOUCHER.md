@@ -45,22 +45,27 @@ Example json ---
     "type": "ONLINE",                        // ONLINE, OFFLINE
     "paymentMethod" : "CARD" ,              // CARD, WALLET, CASH
     "discount": 10,                          // nullable
+    "discountByValue: " 3000                // nullable
     "tax": 5,                                // nullable
     "subTotal": 2000 ,
     "total": 3000 ,
     "remark": "short note!"                  //nullable
+    "promotionRate: 5                       //nullable
     "voucherRecords": [
             {
                 "productVariantId" : 1,
                 "salePrice": 2000
                 "cost": 2000
                 "discount" : 10              // nullable
+                "discountByValue: " 3000     // nullable
             },
              {
                 "productVariantId" : 2,
                 "cost": 2000
                 "salePrice": 2000
                 "discount" : 10              // nullable
+                "discountByValue: " 3000    // nullable
+
             }
     ]
 }

@@ -30,12 +30,14 @@ import { FittingReportModule } from './fitting-report/fitting-report.module';
 import { EcommerceCategoriesModule } from './ecommerce-categories/ecommerce-categories.module';
 import { EcommerceProductsModule } from './ecommerce-products/ecommerce-products.module';
 import { CouponModule } from './coupon/coupon.module';
-import { OrderModule } from './order/order.module';
+// import { OrderModule } from './order/order.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { EcommerceUsersModule } from './ecommerce-users/ecommerce-users.module';
 import { SlidersModule } from './sliders/sliders.module';
 import { AddressModule } from './address/address.module';
+import { MinioModule } from './minio/minio.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -77,6 +79,7 @@ import { AddressModule } from './address/address.module';
     EcommerceUsersModule,
     SlidersModule,
     AddressModule,
+    MinioModule,
   ],
   controllers: [AppController],
   providers: [AppService, FileValidatorPipe],

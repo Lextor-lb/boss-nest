@@ -70,6 +70,40 @@ curl -X POST "https://amt.santar.store/api/v1/slider" \
 
 
 
+
+## API Documentation - Update Slider
+
+### Endpoint
+
+**PATCH** `/sliders/:id`
+
+### Description
+
+Updates a specific slider identified by its ID. This endpoint allows you to modify the slider’s mobile image, desktop image, and sorting order. All fields are optional and can be `null`, ensuring that existing values are not overwritten unless new values are provided.
+
+### Request Parameters
+
+- **Path Parameters**:
+  - `id` (integer, required): The unique identifier of the slider to be updated.
+
+### Request Body
+
+The request body should be in `multipart/form-data` format and can include any of the following optional fields:
+
+- **mobileImage** (file, optional, nullable): The image file for the mobile version of the slider. If provided, it will replace the existing mobile image.
+- **desktopImage** (file, optional, nullable): The image file for the desktop version of the slider. If provided, it will replace the existing desktop image.
+- **sorting** (string, optional, nullable): A string representing the sorting order, which will be parsed as an integer. If not provided, the existing sorting order will remain unchanged.
+
+#### Example Request Body
+
+```plaintext
+Content-Type: multipart/form-data
+
+desktopImage: <file>
+mobileImage: <file>
+sorting: "3"
+
+
 ## Endpoints
 
 ### Delete a Slider by ID

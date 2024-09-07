@@ -25,6 +25,10 @@ export class CreateCustomerDto {
   @IsEnum(AgeRange)
   ageRange: AgeRange;
 
+  @IsOptional()
+  @IsString()
+  dateOfBirth?: string;
+
   @IsNotEmpty()
   @IsEnum(CustomerGender)
   gender: CustomerGender;
