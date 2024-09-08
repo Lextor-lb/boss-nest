@@ -3,9 +3,6 @@ import { IsArray, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, ValidateNested 
 import { IsEntityExists } from "src/shared/customValidation/validation";
 
 export class CreateWishlistDto {
-    @IsNotEmpty()
-    @IsString()
-    wishlistId: string;
 
     @IsOptional()
     ecommerceUserId: number;
