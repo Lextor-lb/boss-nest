@@ -9,6 +9,7 @@ import { SearchOption } from 'src';
 import { PaginatedProductType } from 'src/shared/types/productType';
 import { createEntityProps } from 'src/shared/utils/createEntityProps';
 import { ProductCategoryEntity } from 'src/product-categories/entity/product-category.entity';
+import { ProductSizingEntity } from 'src/product-sizings/entity/product-sizing.entity';
 import { ProductFittingEntity } from 'src/product-fittings/entity/product-fitting.entity';
 
 @Injectable()
@@ -76,18 +77,71 @@ export class ProductTypesService {
   async indexAllEcommerce(): Promise<any[]> {
     const productTypes = await this.prisma.productType.findMany({
       where: this.whereCheckingNullClause,
+      select: {
+        id: true,
+        name: true,
+        productCategories: {
+          select: {
+            id: true,
+            name: true,
+            ProductCategoryProductFitting: {
+              select: {
+                productFitting: {
+                  select: {
+                    ProductFittingProductSizing: {
+                      select: {
+                        productSizing: { select: { name: true, id: true } },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
-    return productTypes.map(
-      (pt) => new ProductTypeEntity(createEntityProps(pt)),
-    );
+
+    return productTypes.map((pt) => {
+      const { productCategories, ...productTypeData } = pt;
+
+      return new ProductTypeEntity({
+        ...productTypeData,
+        productCategories: productCategories.map((pc) => {
+          const productCategoryData = createEntityProps(pc);
+
+          // Extract and filter product sizings for uniqueness
+          const productSizings = pc.ProductCategoryProductFitting.flatMap(
+            (pcpf) =>
+              pcpf.productFitting.ProductFittingProductSizing.map(
+                (pfps) => pfps.productSizing,
+              ),
+          );
+
+          // Filter out duplicate sizings by 'id'
+          const uniqueProductSizings = Array.from(
+            new Map(
+              productSizings.map((sizing) => [sizing.id, sizing]),
+            ).values(),
+          );
+
+          return new ProductCategoryEntity({
+            ...productCategoryData,
+            productSizings: uniqueProductSizings.map(
+              (ps) => new ProductSizingEntity(createEntityProps(ps)),
+            ),
+          });
+        }),
+      });
+    });
   }
 
   async findAll({
     page,
     limit,
     search = '',
-    orderBy = 'createdAt',
-    orderDirection = 'desc',
+    orderBy = 'id', // Ensure 'id' is the default field to order by
+    orderDirection = 'desc', // Set to descending for LIFO (highest id first)
   }: SearchOption): Promise<PaginatedProductType> {
     const total = await this.prisma.productType.count({
       where: this.whereCheckingNullClause,
@@ -106,9 +160,10 @@ export class ProductTypesService {
       skip,
       take: limit,
       orderBy: {
-        [orderBy]: orderDirection,
+        [orderBy]: orderDirection, // Order by 'id' in descending order
       },
     });
+
     return {
       data: productTypes.map((pt) => new ProductTypeEntity(pt)),
       total,
