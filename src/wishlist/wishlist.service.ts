@@ -18,73 +18,54 @@ export class WishlistService {
   };
 
   async create(createWishListWithRecord: CreateWishlistDto) {
-    const {ecommerceUserId, productVariantIds} = createWishListWithRecord;
-
-    //Check if the ecommerceUserId exists
+    const { ecommerceUserId, productId,salePrice } = createWishListWithRecord;
+  
+    // Check if the ecommerceUserId exists
     const ecommerceUser = await this.prisma.ecommerceUser.findUnique({
       where: { id: ecommerceUserId },
     });
-
+  
     if (!ecommerceUser) {
       throw new NotFoundException(`Ecommerce user with id ${ecommerceUserId} not found`);
     }
-
+  
     let wishlistId = generateRandomId(6);
-
-    console.log(wishlistId);
-
-    //Check if a wishlist with the same wishlistId already exists
+  
+    // Check if a wishlist with the same wishlistId already exists
     const existingWishlist = await this.prisma.wishList.findUnique({
-      where: {wishlistId}
+      where: { wishlistId },
     });
-
-    if(existingWishlist){
-      throw new ConflictException(`Wishlist with id ${wishlistId} already exists.`)
+  
+    if (existingWishlist) {
+      throw new ConflictException(`Wishlist with id ${wishlistId} already exists.`);
     }
-
+  
+    // Creating the wishlist with wishlist records including the product
     const createdWishlist = await this.prisma.wishList.create({
       data: {
         wishlistId,
         ecommerceUserId,
         wishlistRecords: {
-          create: productVariantIds.map(
-            ({
-              productVariantId,
-              salePrice,
-              createdByUserId,
-              updatedByUserId,
-            }) => ({
-              // productVariantId,
-              salePrice,
-              createdByUserId,
-              updatedByUserId,
-              product: {
-                connect: {
-                  id: productVariantId, // Connect to the product associated with the variant
-                },
-              },
-              productVariant: {
-                // Include the missing productVariant property
-                connect: {
-                  id: productVariantId, // Connect to the existing product variant
-                },
-              },
-            }),
-          ),
+          create: {
+            productId,
+            salePrice,
+            // createdByUserId: createWishListWithRecord.createdByUserId || null,
+            // updatedByUserId: createWishListWithRecord.updatedByUserId || null,
+          },
         },
       },
       include: {
         wishlistRecords: {
           include: {
-            product: true,
-            productVariant: true,
+            product: true, // Include the product data
           },
         },
       },
     });
-
+  
     return createdWishlist;
   }
+  
 
   async findAll(options: SearchOption,ecommerceUserId: number): Promise<any> {
     const {
@@ -110,24 +91,23 @@ export class WishlistService {
         ecommerceUserId,
       },
       include: {
-        ecommerceUser: { select: { name: true, email: true } },
+        ecommerceUser: { 
+          select: { name: true, email: true } 
+        },
         wishlistRecords: {
           include: {
-            productVariant: {
+            product: {
               include: {
-                media: {select: {url: true}},
-                product: {
+                productType: { select: { name: true } },
+                productCategory: { select: { name: true } },
+                productFitting: { select: { name: true } },
+                productVariants: {
                   select: {
-                    name: true,
-                    discountPrice: true,
-                    gender: true,
-                    productType: { select: { name: true } },
-                    productCategory: { select: { name: true } },
-                    productFitting: { select: { name: true } },
-                    salePrice: true
+                    colorCode: true,
+                    media: true,
+                    productSizing: { select: { name: true } },
                   },
                 },
-                productSizing: { select: { name: true } },
               },
             },
           },
@@ -138,34 +118,37 @@ export class WishlistService {
       orderBy: {
         [orderBy]: orderDirection,
       },
-    });
+    });    
 
     return {
       data: wishLists.map((wish) => {
         const { wishlistRecords, ecommerceUser, ...wishListData } = wish;
   
-        const wishListDetailEntity = new WishListDetailEntity({
+        // Handling the first product variant (main photo)
+        return new WishListDetailEntity({
           ...wishListData,
           customerName: ecommerceUser.name,
           customerEmail: ecommerceUser.email,
-          wishlistRecords: wishlistRecords.map((record) => ({
-            id: record.id,
-            productName: record.productVariant.product.name,
-            image: new MediaEntity({url: record.productVariant.media.url}),
-            gender: record.productVariant.product.gender,
-            pricing: record.productVariant.product.salePrice,
-            discountPrice: record.productVariant.product.discountPrice,
-            colorCode: record.productVariant.colorCode,
-            // Related fields from Product
-            typeName: record.productVariant.product.productType.name,
-            categoryName: record.productVariant.product.productCategory.name,
-            fittingName: record.productVariant.product.productFitting.name,
-            // From ProductSizing (via ProductVariant)
-            sizingName: record.productVariant.productSizing?.name,
-          })),
-        });
+          wishlistRecords: wishlistRecords.map((record) => {
+            const mainVariant = record.product.productVariants[0]; // Take the first variant
   
-        return wishListDetailEntity;
+            return {
+              id: record.id,
+              productName: record.product.name,
+              image: new MediaEntity({ url: mainVariant.media?.url || '' }), // Fallback in case there's no media
+              gender: record.product.gender,
+              pricing: record.product.salePrice,
+              discountPrice: record.product.discountPrice,
+              colorCode: mainVariant.colorCode, // Single color from the first variant
+              // Related fields from Product
+              typeName: record.product.productType.name,
+              categoryName: record.product.productCategory.name,
+              fittingName: record.product.productFitting.name,
+              // Product Sizing
+              sizingName: mainVariant.productSizing?.name || 'N/A', // Fallback for sizing
+            };
+          }),
+        });
       }),
       total,
       page,
@@ -186,7 +169,7 @@ export class WishlistService {
       include: {
         wishlistRecords: {
           include: {
-            productVariant: true,
+            product: true,
           },
         },
       },

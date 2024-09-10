@@ -273,7 +273,6 @@ model ProductVariant {
   //One to Many inverse
   voucherRecords  VoucherRecord[]  @relation("voucherRecordproductVariants")
   orderRecords    OrderRecord[]    @relation("OrderRecordproductVariants")
-  wishlistRecords WishListRecord[] @relation("wishListRecordProductVaiants")
 }
 
 model Customer {
@@ -511,17 +510,18 @@ model WishList {
 
 model WishListRecord {
   id               Int      @id @default(autoincrement())
-  productVariantId Int
   productId        Int
   salePrice        Int
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   wishlistId       Int
 
+  createdByUserId  Int?
+  updatedByUserId  Int?
+
   isArchived DateTime?
 
   wishlist       WishList       @relation("wishListRecords", fields: [wishlistId], references: [id])
-  productVariant ProductVariant @relation("wishListRecordProductVaiants", fields: [productVariantId], references: [id])
   product        Product        @relation("wishListRecordProducts", fields: [productId], references: [id])
 }
 

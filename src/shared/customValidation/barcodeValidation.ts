@@ -66,6 +66,20 @@ class IsUniqueOrderIdConstraint implements ValidatorConstraintInterface {
   }
 }
 
+// @ValidatorConstraint({ async: true })
+// class IsUniqueProductIdConstraint implements ValidatorConstraintInterface {
+//   async validate(productVariantId: string, args: ValidationArguments) {
+//     const order = await prisma.order.findUnique({
+//       where: { orderCode },
+//     });
+//     return !order; // Return true if no order with the same orderId is found
+//   }
+
+//   defaultMessage(args: ValidationArguments) {
+//     return `${args.value} already exists. Please use another order ID.`;
+//   }
+// }
+
 export function IsUniqueVoucherCode(validationOptions?: ValidationOptions) {
   return function (object: Object, propertyName: string) {
     registerDecorator({
@@ -113,3 +127,15 @@ export function IsUniqueOrderId(validationOptions?: ValidationOptions) {
     });
   };
 }
+
+// export function IsUniqueProductId(validationOptions?: ValidationOptions) {
+//   return function (object: Object, propertyName: string) {
+//     registerDecorator({
+//       target: object.constructor,
+//       propertyName: propertyName,
+//       options: validationOptions,
+//       constraints: [],
+//       validator: IsUniqueProductIdConstraint,
+//     });
+//   };
+// }
