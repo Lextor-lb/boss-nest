@@ -88,6 +88,8 @@ export class ProductTypesService {
               select: {
                 productFitting: {
                   select: {
+                    id: true,
+                    name: true, // Include product fitting name
                     ProductFittingProductSizing: {
                       select: {
                         productSizing: { select: { name: true, id: true } },
@@ -111,25 +113,36 @@ export class ProductTypesService {
           const productCategoryData = createEntityProps(pc);
 
           // Extract and filter product sizings for uniqueness
-          const productSizings = pc.ProductCategoryProductFitting.flatMap(
-            (pcpf) =>
-              pcpf.productFitting.ProductFittingProductSizing.map(
-                (pfps) => pfps.productSizing,
-              ),
-          );
+          const productFittings = pc.ProductCategoryProductFitting.map(
+            (pcpf) => {
+              const { productFitting } = pcpf;
 
-          // Filter out duplicate sizings by 'id'
-          const uniqueProductSizings = Array.from(
-            new Map(
-              productSizings.map((sizing) => [sizing.id, sizing]),
-            ).values(),
+              // Extract the product sizings for each fitting
+              const productSizings =
+                productFitting.ProductFittingProductSizing.map(
+                  (pfps) => pfps.productSizing,
+                );
+
+              // Filter out duplicate sizings by 'id'
+              const uniqueProductSizings = Array.from(
+                new Map(
+                  productSizings.map((sizing) => [sizing.id, sizing]),
+                ).values(),
+              );
+
+              return new ProductFittingEntity({
+                id: productFitting.id,
+                name: productFitting.name,
+                productSizings: uniqueProductSizings.map(
+                  (ps) => new ProductSizingEntity(createEntityProps(ps)),
+                ),
+              });
+            },
           );
 
           return new ProductCategoryEntity({
             ...productCategoryData,
-            productSizings: uniqueProductSizings.map(
-              (ps) => new ProductSizingEntity(createEntityProps(ps)),
-            ),
+            productFittings, // Include product fittings in the category
           });
         }),
       });
