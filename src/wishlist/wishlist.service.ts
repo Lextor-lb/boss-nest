@@ -6,6 +6,8 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { WishlistEntity } from './entities/wishlist.entity';
 import { SearchOption } from 'src/shared/types';
 import { WishListDetailEntity } from './entities/wishlistDetail.entity';
+import { wishlistRecordEntity } from './entities/wishlistRecord.entity';
+import { MediaEntity } from 'src/media';
 
 @Injectable()
 export class WishlistService {
@@ -16,16 +18,17 @@ export class WishlistService {
   };
 
   async create(createWishListWithRecord: CreateWishlistDto) {
-    const { wishlistId, ecommerceUserId, productVariantIds } = createWishListWithRecord;
-
+    const { ecommerceUserId, productId,salePrice } = createWishListWithRecord;
+ 
     // Check if the ecommerceUserId exists
     const ecommerceUser = await this.prisma.ecommerceUser.findUnique({
       where: { id: ecommerceUserId },
     });
-
+  
     if (!ecommerceUser) {
       throw new NotFoundException(`Ecommerce user with id ${ecommerceUserId} not found`);
     }
+    let wishlistId = generateRandomId(6);
 
     // Check if a wishlist with the same wishlistId already exists
     const existingWishlist = await this.prisma.wishList.findUnique({
@@ -41,42 +44,26 @@ export class WishlistService {
         wishlistId,
         ecommerceUserId,
         wishlistRecords: {
-          create: productVariantIds.map(
-            ({
-              productVariantId,
-              salePrice,
-              createdByUserId,
-              updatedByUserId,
-            }) => ({
-              salePrice,
-              createdByUserId,
-              updatedByUserId,
-              product: {
-                connect: {
-                  id: productVariantId, // Connect to the product associated with the variant
-                },
-              },
-              productVariant: {
-                connect: {
-                  id: productVariantId, // Connect to the existing product variant
-                },
-              },
-            }),
-          ),
+          create: {
+            productId,
+            salePrice,
+            // createdByUserId: createWishListWithRecord.createdByUserId || null,
+            // updatedByUserId: createWishListWithRecord.updatedByUserId || null,
+          },
         },
       },
       include: {
         wishlistRecords: {
           include: {
-            product: true,
-            productVariant: true,
+            product: true, // Include the product data
           },
         },
       },
     });
-
+  
     return createdWishlist;
   }
+  
 
   async findAll(options: SearchOption,ecommerceUserId: number): Promise<any> {
     const {
@@ -99,36 +86,67 @@ export class WishlistService {
     const wishLists = await this.prisma.wishList.findMany({
       where: {
         ...this.whereCheckingNullClause,
-        ecommerceUserId
+        ecommerceUserId,
       },
       include: {
-        ecommerceUser: {select: {name: true, email: true}},
+        ecommerceUser: { 
+          select: { name: true, email: true } 
+        },
         wishlistRecords: {
           include: {
-            productVariant: true,
-            product: true
-          }
-        }
+            product: {
+              include: {
+                productType: { select: { name: true } },
+                productCategory: { select: { name: true } },
+                productFitting: { select: { name: true } },
+                productVariants: {
+                  select: {
+                    colorCode: true,
+                    media: true,
+                    productSizing: { select: { name: true } },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       skip,
       take: limit,
       orderBy: {
-        [orderBy]: orderDirection
-      }
-    });
+        [orderBy]: orderDirection,
+      },
+    });    
 
     return {
       data: wishLists.map((wish) => {
-        const { wishlistRecords,ecommerceUser, ...wishListData } = wish;
-        return {
-            ...wishListData,
-            wishlistRecords: wishlistRecords.map(record => ({
-                productVariant: record.productVariant,
-                product: record.product
-            })),
-            customerName: ecommerceUser.name,
-            customerEmail: ecommerceUser.email
-        };
+        const { wishlistRecords, ecommerceUser, ...wishListData } = wish;
+  
+        // Handling the first product variant (main photo)
+        return new WishListDetailEntity({
+          ...wishListData,
+          customerName: ecommerceUser.name,
+          customerEmail: ecommerceUser.email,
+          wishlistRecords: wishlistRecords.map((record) => {
+            const mainVariant = record.product.productVariants[0]; // Take the first variant
+  
+            return {
+              id: record.id,
+              productName: record.product.name,
+              image: new MediaEntity({ url: mainVariant.media?.url || '' }), // Fallback in case there's no media
+              gender: record.product.gender,
+              pricing: record.product.salePrice,
+              discountPrice: record.product.discountPrice,
+              colorCode: mainVariant.colorCode, // Single color from the first variant
+              // Related fields from Product
+              typeName: record.product.productType.name,
+              categoryName: record.product.productCategory.name,
+              fittingName: record.product.productFitting.name,
+              // Product Sizing
+              sizingName: mainVariant.productSizing?.name || 'N/A', // Fallback for sizing
+            };
+          }),
+        });
       }),
       total,
       page,
@@ -149,7 +167,7 @@ export class WishlistService {
       include: {
         wishlistRecords: {
           include: {
-            productVariant: true,
+            product: true,
           },
         },
       },
@@ -174,4 +192,16 @@ export class WishlistService {
 
     return new WishlistEntity(deletedWishList);
   }
+}
+
+function generateRandomId(length){
+  const char = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  const charLength = char.length;
+
+  for(let i = 0; i< length; i++){
+    result += char.charAt(Math.floor(Math.random() * charLength)).toString();
+  }
+
+  return result;
 }

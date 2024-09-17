@@ -1,5 +1,6 @@
 import { WishList } from "@prisma/client";
 import { Exclude } from "class-transformer";
+import { MediaEntity } from "src/media";
 
 export class WishListDetailEntity implements WishList {
   id: number;
@@ -22,6 +23,8 @@ export class WishListDetailEntity implements WishList {
     wishlistRecords: {
         id: number;
         productName: string;
+        image: MediaEntity;
+        discountPrice?: number;
         gender: string;
         colorCode: string;
         typeName: string;
