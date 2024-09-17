@@ -77,7 +77,7 @@ export class ProductTypesController {
     @Query('page') page: number = 1,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
-    @Query('orderBy') orderBy: string = 'createdAt',
+    @Query('orderBy') orderBy: string = 'id',
     @Query('orderDirection') orderDirection: 'asc' | 'desc' = 'desc',
   ): Promise<PaginatedProductType> {
     const searchOptions: SearchOption = {

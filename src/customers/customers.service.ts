@@ -43,7 +43,7 @@ export class CustomersService {
   // CustomerEntity[]
   async findAll(searchOptions: SearchOption): Promise<any> {
     const { page, limit, search, orderBy, orderDirection } = searchOptions;
-    const orderByField = ['id', 'name', 'createdAt'].includes(orderBy)
+    const orderByField = ['id', 'name', 'createdAt','phoneNumber','totalPrice'].includes(orderBy)
       ? orderBy
       : 'id';
     const orderDirectionValue = ['asc', 'desc'].includes(
@@ -57,10 +57,11 @@ export class CustomersService {
       const total = await this.prisma.customer.count({
         where: {
           ...this.whereCheckingNullClause,
-          name: {
-            contains: search || '',
-            mode: 'insensitive',
-          },
+          OR: [
+            { name: { contains: search || '', mode: 'insensitive'}},
+            { phoneNumber: {contains: search || '', mode: 'insensitive'}},
+            { special: {name: {contains: search || '', mode: 'insensitive'}}}
+          ]
         },
       });
 
@@ -71,10 +72,19 @@ export class CustomersService {
       const customers = await this.prisma.customer.findMany({
         where: {
           ...this.whereCheckingNullClause,
-          name: {
-            contains: search || '',
-            mode: 'insensitive',
-          },
+          OR: [
+            {
+              name: { contains: search, mode: 'insensitive' },
+            },
+            {
+              phoneNumber: { contains: search, mode: 'insensitive' },
+            },
+            {
+              special: {
+                name: { contains: search, mode: 'insensitive' },
+              },
+            },
+          ],
         },
         skip,
         take: limit,

@@ -297,6 +297,7 @@ export class VouchersService {
       where: { id },
       include: {
         voucherRecords: true,
+        createdByUser: { select: { name: true } },
       },
     });
 

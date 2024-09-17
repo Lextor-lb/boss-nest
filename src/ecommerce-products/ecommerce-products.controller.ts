@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { EcommerceProductsService } from './ecommerce-products.service';
 import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
-import { EcommerceJwtAuthGuard } from 'src/auth/ecommerce-jwt-auth.guard';
 
 @Controller('ecommerce-products')
 export class EcommerceProductsController {
@@ -24,6 +23,8 @@ export class EcommerceProductsController {
     @Query('sortGender') sortGender?: string,
     @Query('sortBrand') sortBrand?: string,
     @Query('sortType') sortType?: string,
+    @Query('sortCategory') sortCategory?: string,
+    @Query('sortSizing') sortSizing?: string,
     @Query('min') min?: number,
     @Query('max') max?: number,
     @Query('orderBy') orderBy: string = 'createdAt',
@@ -33,6 +34,8 @@ export class EcommerceProductsController {
     const sortGenderArray = sortGender ? sortGender.split(',') : [];
     const sortBrandArray = sortBrand ? sortBrand.split(',') : [];
     const sortTypeArray = sortType ? sortType.split(',') : [];
+    const sortCategoryArray = sortCategory ? sortCategory.split(',') : [];
+    const sortSizingArray = sortSizing ? sortSizing.split(',') : [];
 
     const searchOptions = {
       page,
@@ -43,6 +46,8 @@ export class EcommerceProductsController {
       sortGender: sortGenderArray,
       sortBrand: sortBrandArray,
       sortType: sortTypeArray,
+      sortCategory: sortCategoryArray,
+      sortSizing: sortSizingArray,
       min: min ? parseInt(min.toString(), 10) : null,
       max: max ? parseInt(max.toString(), 10) : null,
     };

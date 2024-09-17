@@ -140,6 +140,13 @@ export class OrderService {
       },
     });
 
+    const orderQuantities = orders.map((order) =>
+      order.orderStatus === 'ORDERED' ? 1 : 0,
+    );
+
+    // Sum up the quantities for total 'ORDERED' orders
+    const totalOrdered = orderQuantities.reduce((total, qty) => total + qty, 0);
+
     return {
       data: orders.map((order) => {
         const { ecommerceUser, ...orderData } = order;
@@ -153,6 +160,7 @@ export class OrderService {
       page,
       limit,
       totalPages,
+      totalOrdered,
     };
   }
 
