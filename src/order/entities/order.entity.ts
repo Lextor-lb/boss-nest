@@ -33,6 +33,12 @@ export class OrderEntity implements Order {
     return formatDate(this.createdAt);
   }
 
+  // @Expose()
+  // get q(): string {
+  //   return formatDate(this.createdAt);
+  // }
+
+
   @Exclude()
   createdByUserId: number;
 
