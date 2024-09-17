@@ -19,7 +19,7 @@ export class WishlistService {
 
   async create(createWishListWithRecord: CreateWishlistDto) {
     const { ecommerceUserId, productId,salePrice } = createWishListWithRecord;
-  
+ 
     // Check if the ecommerceUserId exists
     const ecommerceUser = await this.prisma.ecommerceUser.findUnique({
       where: { id: ecommerceUserId },
@@ -28,19 +28,17 @@ export class WishlistService {
     if (!ecommerceUser) {
       throw new NotFoundException(`Ecommerce user with id ${ecommerceUserId} not found`);
     }
-  
     let wishlistId = generateRandomId(6);
-  
+
     // Check if a wishlist with the same wishlistId already exists
     const existingWishlist = await this.prisma.wishList.findUnique({
       where: { wishlistId },
     });
-  
+
     if (existingWishlist) {
-      throw new ConflictException(`Wishlist with id ${wishlistId} already exists.`);
+      throw new ConflictException(`Wishlist with id ${wishlistId} already exists`);
     }
-  
-    // Creating the wishlist with wishlist records including the product
+
     const createdWishlist = await this.prisma.wishList.create({
       data: {
         wishlistId,

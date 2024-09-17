@@ -25,6 +25,8 @@ export class EcommerceProductsService {
       sortBrand = [],
       sortGender = [],
       sortType = [],
+      sortCategory = [],
+      sortSizing = [],
       min,
       max,
     } = options;
@@ -34,6 +36,8 @@ export class EcommerceProductsService {
     const genderConditions = this.parseGenderConditions(sortGender);
     const brandConditions = this.parseIntArray(sortBrand);
     const typeConditions = this.parseIntArray(sortType);
+    const categoryConditions = this.parseIntArray(sortCategory);
+    const sizingConditions = this.parseIntArray(sortSizing);
 
     const whereClause = {
       ...this.whereCheckingNullClause,
@@ -45,6 +49,16 @@ export class EcommerceProductsService {
       }),
       ...(typeConditions.length > 0 && {
         productTypeId: { in: typeConditions },
+      }),
+      ...(categoryConditions.length > 0 && {
+        productCategoryId: { in: categoryConditions },
+      }),
+      ...(sizingConditions.length > 0 && {
+        productVariants: {
+          some: {
+            productSizingId: { in: sizingConditions },
+          },
+        },
       }),
       ...(min !== null &&
         max !== null && { salePrice: { gte: min, lte: max } }),
@@ -64,7 +78,9 @@ export class EcommerceProductsService {
         salePrice: true,
         medias: true,
         productBrand: true,
-        productVariants: { select: { statusStock: true, isArchived: true } },
+        productVariants: {
+          select: { id: true, statusStock: true, isArchived: true },
+        },
       },
       skip,
       take: limit,
@@ -72,7 +88,7 @@ export class EcommerceProductsService {
     });
 
     const adjustedProducts = products.map((product) => {
-      const hasOrderedOrSoldOut = product.productVariants.some(
+      const hasOrderedOrSoldOut = product.productVariants.every(
         (variant) =>
           variant.statusStock === 'ORDERED' ||
           variant.statusStock === 'SOLDOUT' ||
@@ -80,7 +96,7 @@ export class EcommerceProductsService {
       );
       return {
         ...product,
-        productVariants: !hasOrderedOrSoldOut, // Setting true or false
+        productVariant: !hasOrderedOrSoldOut, // Setting true or false
       };
     });
 

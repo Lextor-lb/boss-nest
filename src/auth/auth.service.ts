@@ -42,7 +42,12 @@ export class AuthService {
 
     return {
       status: true,
-      user: new UserEntity({ id: user.id, name: user.name, email: user.email }),
+      user: new UserEntity({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      }),
       accessToken: this.jwtService.sign({ userId: user.id }),
       refreshToken: refreshToken,
     };
@@ -83,12 +88,13 @@ export class AuthService {
           id: user.id,
           name: user.name,
           email: user.email,
+          role: user.role,
         }),
         accessToken: this.jwtService.sign({
           userId: user.id,
           email: user.email,
           issuedAt: new Date().toISOString(),
-        }), 
+        }),
         refreshToken: refreshToken,
       };
     } catch (error) {
