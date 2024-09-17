@@ -5,8 +5,8 @@ import {
   UseGuards,
   Get,
   Param,
-  ParseIntPipe,
   UsePipes,
+  Req,
 } from '@nestjs/common';
 import { VouchersService } from './vouchers.service';
 import { CreateVoucherDto } from './dto/create-voucher.dto';
@@ -34,7 +34,8 @@ export class VouchersController {
   }
 
   @Post()
-  create(@Body() createVoucherDto: CreateVoucherDto) {
+  create(@Body() createVoucherDto: CreateVoucherDto, @Req() req) {
+    createVoucherDto.createdByUserId = req.user.id;
     return this.vouchersService.create(createVoucherDto);
   }
 

@@ -36,6 +36,8 @@ export default async function seedVouchers() {
       quantity: count,
       customerName: customer?.name,
       phoneNumber: customer?.phoneNumber,
+      createdByUserId: 1,
+      updatedByUserId: 1,
     });
 
     await prisma.voucher.createMany({

@@ -1,4 +1,4 @@
-import { Voucher, PaymentMethod, Type as Types } from '@prisma/client';
+import { Voucher, PaymentMethod, Type as Types, User } from '@prisma/client';
 import { Exclude, Expose } from 'class-transformer';
 import { formatDate, formatTime } from 'src/shared/utils';
 import { VoucherRecordEntity } from './voucherRecord.entity';
@@ -23,25 +23,12 @@ export class VoucherEntity implements Voucher {
   voucherRecords: VoucherRecordEntity[];
 
   @Exclude()
-  createdByUser: { name: string } | null; // Specify the type more accurately
+  createdByUser: { name } | undefined; // Define a proper structure for `createdByUser`
 
   @Expose()
-  get salePerson(): string | null {
-    return this.createdByUser?.name; // Use optional chaining for safe access
+  get salePerson(): string | undefined {
+    return this.createdByUser?.name; // Use optional chaining to access `name`
   }
-
-  // @Expose()
-  // get customerName(): string | undefined {
-  //   return this.customer ? this.customer.name : undefined;
-  // }
-  // @Expose()
-  // get phone(): string | undefined {
-  //   return this.customer ? this.customer.phoneNumber : undefined;
-  // }
-  // @Expose()
-  // get royaltyDiscount(): number | undefined {
-  //   return this.special ? this.special.promotionRate : undefined;
-  // }
 
   @Expose()
   get date(): string {
