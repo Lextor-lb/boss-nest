@@ -43,7 +43,7 @@ export class CustomersService {
   // CustomerEntity[]
   async findAll(searchOptions: SearchOption): Promise<any> {
     const { page, limit, search, orderBy, orderDirection } = searchOptions;
-    const orderByField = ['id', 'name', 'createdAt','phoneNumber','totalPrice'].includes(orderBy)
+    const orderByField = ['id', 'name', 'createdAt','phoneNumber'].includes(orderBy)
       ? orderBy
       : 'id';
     const orderDirectionValue = ['asc', 'desc'].includes(
@@ -114,6 +114,18 @@ export class CustomersService {
           vouchers: customer.Voucher,
         });
       });
+
+      // Sort the customers by totalPrice if requested
+      if (orderBy === 'totalPrice') {
+        modifiedCustomers.sort((a, b) => 
+        {
+          if (orderDirectionValue === 'asc') {
+            return a.totalPrice - b.totalPrice;
+          } else {
+            return b.totalPrice - a.totalPrice;
+          }
+        });
+      }
 
       // Perform the analysis
       const ageRangeCounts = {
