@@ -22,6 +22,14 @@ export class VoucherEntity implements Voucher {
   subTotal: number;
   voucherRecords: VoucherRecordEntity[];
 
+  @Exclude()
+  createdByUser: { name: string } | null; // Specify the type more accurately
+
+  @Expose()
+  get salePerson(): string | null {
+    return this.createdByUser?.name; // Use optional chaining for safe access
+  }
+
   // @Expose()
   // get customerName(): string | undefined {
   //   return this.customer ? this.customer.name : undefined;

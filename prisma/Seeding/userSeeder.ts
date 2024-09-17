@@ -7,32 +7,45 @@ const prisma = new PrismaClient();
 export default async function userSeeder() {
   // Create two dummy users
 
-  const passwordSabin = await argon2.hash('password-sabin');
-  const passwordAlex = await argon2.hash('password-staff');
+  const passwordNaingOo = await argon2.hash('SUvC2PpetyYgTZ7');
+  const passwordPMA = await argon2.hash('LcjLp9FRhUzDArm');
+  const passwordLMA = await argon2.hash('JEpb3Px2RgnpGPF');
 
   await prisma.user.upsert({
-    where: { email: 'sabin@adams.com' },
+    where: { email: 'naingOo@admin.com' },
     update: {
-      password: passwordSabin,
+      password: passwordNaingOo,
     },
     create: {
-      email: 'sabin@adams.com',
-      name: 'Sabin Adams',
-      password: passwordSabin,
-      // role: UserRole.ADMIN,
+      email: 'naingOo@admin.com',
+      name: 'NaingOo Ko Ko',
+      password: passwordNaingOo,
+      role: UserRole.ADMIN,
     },
   });
 
   await prisma.user.upsert({
-    where: { email: 'staff@staff.com' },
+    where: { email: 'phyoMinAung@admin.com' },
     update: {
-      password: passwordAlex,
+      password: passwordPMA,
     },
     create: {
       email: 'staff@staff.com',
       name: 'Alex Ruheni',
-      password: passwordAlex,
-      // role: UserRole.STAFF,
+      password: passwordPMA,
+      role: UserRole.ADMIN,
+    },
+  });
+  await prisma.user.upsert({
+    where: { email: 'lwinMoeAung@staff.com' },
+    update: {
+      password: passwordLMA,
+    },
+    create: {
+      email: 'lwinMoeAung@staff.com',
+      name: 'Lwin Moe Aung',
+      password: passwordLMA,
+      role: UserRole.STAFF,
     },
   });
   await console.log('Users have been seeded');
