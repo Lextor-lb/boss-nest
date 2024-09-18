@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseInterceptors,
@@ -18,31 +17,36 @@ import { EcommerceCategoriesService } from './ecommerce-categories.service';
 import { CreateEcommerceCategoryDto } from './dto/create-ecommerce-category.dto';
 import { UpdateEcommerceCategoryDto } from './dto/update-ecommerce-category.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { multerOptions, resizeImage } from 'src/media';
 import { FileValidatorPipe } from 'src/shared/pipes/file-validator.pipe';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { EcommerceCategoryEntity } from './entities/ecommerce-category.entity';
 import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 import { RemoveManyEcommerceCategoryDto } from './dto/removeMany-commerce-category.dto';
+import { MinioService } from 'src/minio/minio.service';
+import { RolesGuard } from 'src/auth/role-guard';
+import { UserRole } from '@prisma/client';
+import { Roles } from 'src/auth/role';
 
 @Controller('ecommerce-categories')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class EcommerceCategoriesController {
   constructor(
     private readonly ecommerceCategoriesService: EcommerceCategoriesService,
+    private readonly minioService: MinioService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
-  @UseInterceptors(FileInterceptor('image', multerOptions))
+  @Roles(UserRole.ADMIN)
+  @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() createEcommerceCategoryDto: CreateEcommerceCategoryDto,
     @Req() req,
     @UploadedFile(new FileValidatorPipe()) file: Express.Multer.File,
   ) {
-    await resizeImage(file.path);
+    const imageUrl = await this.minioService.uploadFile(file);
     createEcommerceCategoryDto.createdByUserId = req.user.id;
     createEcommerceCategoryDto.updatedByUserId = req.user.id;
-    createEcommerceCategoryDto.imageFileUrl = `/uploads/${file.filename}`;
+    createEcommerceCategoryDto.imageFileUrl = imageUrl;
 
     return await this.ecommerceCategoriesService.create(
       createEcommerceCategoryDto,
@@ -50,6 +54,7 @@ export class EcommerceCategoriesController {
   }
 
   @Get()
+  @Roles(UserRole.ADMIN)
   findAll(): Promise<EcommerceCategoryEntity[]> {
     return this.ecommerceCategoriesService.findAll();
   }
@@ -61,9 +66,9 @@ export class EcommerceCategoriesController {
     return await this.ecommerceCategoriesService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.ADMIN)
   @Put(':id')
-  @UseInterceptors(FileInterceptor('image', multerOptions))
+  @UseInterceptors(FileInterceptor('image'))
   async update(
     @Param('id', new ValidateIdExistsPipe('EcommerceCategory')) id: number,
     @Body() updateEcommerceCategoryDto: UpdateEcommerceCategoryDto,
@@ -71,8 +76,12 @@ export class EcommerceCategoriesController {
     @Req() req,
   ) {
     if (file) {
-      await resizeImage(file.path);
-      updateEcommerceCategoryDto.imageFileUrl = `/uploads/${file.filename}`;
+      const existing = await this.ecommerceCategoriesService.findOne(id);
+      const imageUrl = await this.minioService.uploadFile(
+        file,
+        existing.media.image()?.split('/').pop(),
+      );
+      updateEcommerceCategoryDto.imageFileUrl = imageUrl;
     }
     updateEcommerceCategoryDto.updatedByUserId = req.user.id;
     return await this.ecommerceCategoriesService.update(
@@ -81,13 +90,13 @@ export class EcommerceCategoriesController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.ecommerceCategoriesService.remove(id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.ADMIN)
   @Delete()
   async removeMany(
     @Body() removeManyEcommerceCategoryDto: RemoveManyEcommerceCategoryDto,

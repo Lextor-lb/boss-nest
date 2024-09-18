@@ -17,8 +17,7 @@ export class MinioController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    const bucketName = process.env.MINIO_BUCKET_NAME;
-    const fileUrl = await this.minioService.uploadFile(bucketName, file);
+    const fileUrl = await this.minioService.uploadFile(file);
 
     return { message: 'File uploaded successfully', url: fileUrl };
   }

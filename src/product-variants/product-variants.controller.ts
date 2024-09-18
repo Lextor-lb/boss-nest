@@ -21,15 +21,23 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { FileValidatorPipe } from 'src/shared/pipes/file-validator.pipe';
 import { RemoveManyProductVariantDto } from './dto/removeMany-product-variant.dto';
 import { UpdateProductVariantDto } from './dto/update-product-variant.dto';
+import { Roles } from 'src/auth/role';
+import { RolesGuard } from 'src/auth/role-guard';
+import { UserRole } from '@prisma/client';
+import { MinioService } from 'src/minio/minio.service';
+import { PrismaService } from 'src/prisma';
 
 @Controller('product-variants')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductVariantsController {
   constructor(
     private readonly productVariantsService: ProductVariantsService,
+    private readonly minioService: MinioService,
+    private readonly prisma: PrismaService,
   ) {}
   @Post()
-  @UseInterceptors(FileInterceptor('image', multerOptions))
+  @Roles(UserRole.ADMIN)
+  @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() createProductVariant: CreateProductVariantDto,
     @UploadedFile(new FileValidatorPipe()) file: Express.Multer.File, // Apply custom validation
@@ -38,8 +46,8 @@ export class ProductVariantsController {
     if (!createProductVariant.productId) {
       throw new BadRequestException('productId should not be empty');
     }
-    await resizeImage(file.path);
-    createProductVariant.imageFileUrl = `/uploads/${file.filename}`;
+    const imageUrl = await this.minioService.uploadFile(file);
+    createProductVariant.imageFileUrl = imageUrl;
     createProductVariant.createdByUserId = req.user.id;
     createProductVariant.updatedByUserId = req.user.id;
     const productVariant =
@@ -53,7 +61,8 @@ export class ProductVariantsController {
   }
 
   @Put(':id')
-  @UseInterceptors(FileInterceptor('image', multerOptions))
+  @Roles(UserRole.ADMIN)
+  @UseInterceptors(FileInterceptor('image'))
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductVariantDto: UpdateProductVariantDto,
@@ -61,8 +70,16 @@ export class ProductVariantsController {
     @Req() req,
   ): Promise<any> {
     if (file) {
-      await resizeImage(file.path);
-      updateProductVariantDto.imageFileUrl = `/uploads/${file.filename}`;
+      const existingVariant = await this.prisma.productVariant.findUnique({
+        where: { id },
+        include: { media: true },
+      });
+
+      const imageUrl = await this.minioService.uploadFile(
+        file,
+        existingVariant.media.url,
+      );
+      updateProductVariantDto.imageFileUrl = imageUrl;
     }
     updateProductVariantDto.updatedByUserId = req.user.id;
     return await this.productVariantsService.update(
@@ -77,6 +94,7 @@ export class ProductVariantsController {
   }
 
   @Delete()
+  @Roles(UserRole.ADMIN)
   async removeMany(
     @Body() removeManyProductVariantDto: RemoveManyProductVariantDto,
   ) {

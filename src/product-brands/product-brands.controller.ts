@@ -23,11 +23,9 @@ import {
   ProductBrandEntity,
   CreateProductBrandDto,
   ProductBrandsService,
-  multerOptions,
   SearchOption,
   resizeImage,
 } from 'src';
-import { FileValidatorPipe } from 'src/shared/pipes/file-validator.pipe';
 import {
   FetchedProductBrand,
   MessageWithProductBrand,
@@ -37,32 +35,26 @@ import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 import { RolesGuard } from 'src/auth/role-guard';
 import { UserRole } from '@prisma/client';
 import { Roles } from 'src/auth/role';
-import { EcommerceJwtAuthGuard } from 'src/auth/ecommerce-jwt-auth.guard';
 import { MinioService } from 'src/minio/minio.service';
+import { FileValidatorPipe } from 'src/shared/pipes/file-validator.pipe';
 
 @Controller('product-brands')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductBrandsController {
   constructor(
     private readonly productBrandsService: ProductBrandsService,
     private readonly minioService: MinioService,
   ) {}
 
-  // @UseGuards(JwtAuthGuard, RolesGuard, EcommerceJwtAuthGuard)
   @Post()
-  // @UseGuards(JwtAuthGuard, RolesGuard, EcommerceJwtAuthGuard)
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN)
   @UseInterceptors(FileInterceptor('image'))
   async create(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(new FileValidatorPipe()) file: Express.Multer.File,
     @Body() createProductBrandDto: CreateProductBrandDto,
     @Req() req,
   ): Promise<any> {
-    if (!file || !file.buffer) {
-      throw new Error('File is missing or not processed correctly');
-    }
-
-    const bucketName = process.env.MINIO_BUCKET_NAME;
-    const imageUrl = await this.minioService.uploadFile(bucketName, file);
+    const imageUrl = await this.minioService.uploadFile(file);
 
     // Continue with processing createProductBrandDto
     createProductBrandDto.createdByUserId = req.user.id;
@@ -81,8 +73,7 @@ export class ProductBrandsController {
   }
 
   @Get('all')
-  // @UseGuards(JwtAuthGuard, EcommerceJwtAuthGuard, RolesGuard)
-  // @Roles(UserRole.STAFF, UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   async indexAll(): Promise<FetchedProductBrand> {
     const productBrands = await this.productBrandsService.indexAll();
     return {
@@ -94,7 +85,6 @@ export class ProductBrandsController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get()
   @Roles(UserRole.ADMIN)
   async findAll(
@@ -123,7 +113,6 @@ export class ProductBrandsController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @Roles(UserRole.ADMIN)
   @UsePipes(new ValidateIdExistsPipe('ProductBrand'))
@@ -133,26 +122,42 @@ export class ProductBrandsController {
     return new ProductBrandEntity(productBrand);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @Roles(UserRole.ADMIN)
-  @UseInterceptors(FileInterceptor('image', multerOptions))
+  @UseInterceptors(FileInterceptor('image'))
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductBrandDto: UpdateProductBrandDto,
     @UploadedFile() file: Express.Multer.File,
     @Req() req,
   ): Promise<MessageWithProductBrand> {
+    let oldImageFileUrl: string | undefined;
+
     if (file) {
-      await resizeImage(file.path);
-      updateProductBrandDto.imageFileUrl = `/uploads/${file.filename}`;
+      // Get the old image URL (if you want to delete it later)
+      const existingBrand = await this.productBrandsService.findOne(id);
+      oldImageFileUrl = existingBrand.media.image()?.split('/').pop(); // Ensure image() is called
+
+      // Upload new image to MinIO
+      const imageUrl = await this.minioService.uploadFile(
+        file,
+        oldImageFileUrl,
+      );
+
+      // Set new image URL
+      updateProductBrandDto.imageFileUrl = imageUrl;
     }
+
+    // Update the updatedByUserId field with the current user ID
     updateProductBrandDto.updatedByUserId = req.user.id;
+
+    // Update the product brand in the database
     const updatedProductBrand = await this.productBrandsService.update(
       id,
       updateProductBrandDto,
     );
 
+    // Return success response
     return {
       status: true,
       message: 'Updated Successfully!',
@@ -160,14 +165,12 @@ export class ProductBrandsController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @Roles(UserRole.ADMIN)
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.productBrandsService.remove(id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete()
   @Roles(UserRole.ADMIN)
   async removeMany(

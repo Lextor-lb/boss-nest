@@ -3,6 +3,9 @@ import { Media } from '@prisma/client';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { IsOptional } from 'class-validator';
 
+// `https://${process.env.MINIO_ENDPOINT}/${process.env.MINIO_BUCKET_NAME}/` +
+//     resizedDesktopImagePath;
+
 export class MediaEntity implements Media {
   id: number;
   @Optional()
@@ -11,8 +14,13 @@ export class MediaEntity implements Media {
 
   @Expose({ name: 'url' })
   image(): string {
-    const BASE_URL = process.env.BASE_URL;
-    return `${BASE_URL}${this.url}`;
+    // const BASE_URL = process.env.BASE_URL;
+
+    return (
+      `https://${process.env.MINIO_ENDPOINT}/${process.env.MINIO_BUCKET_NAME}/` +
+      this.url
+    );
+    // return `${BASE_URL}${this.url}`;
   }
 
   @Exclude()

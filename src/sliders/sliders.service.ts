@@ -5,11 +5,9 @@ import { PrismaService } from 'src/prisma';
 
 @Injectable()
 export class SlidersService {
-
   constructor(private prisma: PrismaService) {}
 
- async create(createSliderDto: CreateSliderDto) {
-
+  async create(createSliderDto: CreateSliderDto) {
     return await this.prisma.slider.create({
       data: {
         mobileImage: createSliderDto.mobileImage,
@@ -17,48 +15,56 @@ export class SlidersService {
         sorting: parseInt(createSliderDto.sorting as any, 10), // Parsing sorting as an integer
       },
     });
-    
   }
 
   findAll() {
     return this.prisma.slider.findMany({
       orderBy: {
-        sorting: 'asc', 
+        sorting: 'asc',
       },
     });
   }
 
   findOne(id: number) {
-    return  this.prisma.slider.findUnique({
+    return this.prisma.slider.findUnique({
       where: { id },
     });
   }
 
   async update(id: number, updateSliderDto: UpdateSliderDto) {
     const updateData: Record<string, any> = {};
-  
-    if (updateSliderDto.mobileImage !== undefined && updateSliderDto.mobileImage !== null) {
+
+    if (
+      updateSliderDto.mobileImage !== undefined &&
+      updateSliderDto.mobileImage !== null
+    ) {
       updateData.mobileImage = updateSliderDto.mobileImage;
     }
-  
-    if (updateSliderDto.desktopImage !== undefined && updateSliderDto.desktopImage !== null) {
+
+    if (
+      updateSliderDto.desktopImage !== undefined &&
+      updateSliderDto.desktopImage !== null
+    ) {
       updateData.desktopImage = updateSliderDto.desktopImage;
     }
-  
-    if (updateSliderDto.sorting !== undefined && updateSliderDto.sorting !== null) {
+
+    if (
+      updateSliderDto.sorting !== undefined &&
+      updateSliderDto.sorting !== null
+    ) {
       updateData.sorting = parseInt(updateSliderDto.sorting as any, 10);
     }
-  
+
     if (Object.keys(updateData).length === 0) {
       throw new Error('No valid fields to update');
     }
-  
+
     return await this.prisma.slider.update({
       where: { id },
       data: updateData,
     });
   }
-  
+
   async remove(id: number) {
     return await this.prisma.slider.delete({
       where: { id },

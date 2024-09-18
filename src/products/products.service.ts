@@ -26,12 +26,14 @@ import { ProductDetailEntity } from './entity/productDetail.entity';
 import { RemoveManyProductDto } from './dto/removeMany-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { deleteFile } from 'src/shared/utils/deleteOldImageFile';
+import { MinioService } from 'src/minio/minio.service';
 
 @Injectable()
 export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mediaService: MediaService, // Inject MediaService
+    private readonly minioService: MinioService, // Inject MediaService
     private readonly productVariantsService: ProductVariantsService, // Inject ProductVariantService
   ) {}
   whereCheckingNullClause: Prisma.ProductWhereInput = {
@@ -288,7 +290,7 @@ export class ProductsService {
     try {
       const media = this.prisma.media.findUnique({ where: { id } });
 
-      if (media) deleteFile((await media).url);
+      if (media) this.minioService.deleteFile((await media).url);
       await this.mediaService.removeMedia(id);
 
       return {
