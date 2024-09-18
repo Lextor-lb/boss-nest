@@ -12,6 +12,7 @@ import {
   ParseIntPipe,
   UseInterceptors,
   UploadedFile,
+  Res,
 } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -28,6 +29,7 @@ import {
 import { RolesGuard } from 'src/auth/role-guard';
 import { Roles } from 'src/auth/role';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 //import { UserRole } from '@prisma/client';
 
 @Controller('customers')
@@ -65,6 +67,19 @@ export class CustomersController {
     return importedCustomers; // Process the imported customers if necessary
   }
 
+  @Get('export')
+  async exportCustomers(@Req() req, @Res() res: Response): Promise<void> {
+    const { page, limit, search, orderBy, orderDirection } = req.query;
+    const searchOptions: SearchOption = {
+      page: parseInt(page, 10) || 1,
+      limit: limit ? parseInt(limit, 10) : 10,
+      search: search || '',
+      orderBy: orderBy || 'id',
+      orderDirection: orderDirection || 'ASC',
+    };
+    
+    await this.customersService.exportCustomersToExcel(searchOptions, res);
+  }
 
   @Get('all')
   //@Roles(UserRole.ADMIN)

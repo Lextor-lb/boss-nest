@@ -7,7 +7,8 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { CustomerEntity } from './entities/customer.entity';
 import { SpecialEntity } from 'src/specials/entities/special.entity';
 import { RemoveManyCustomerDto } from './dto';
-import { CustomerPagination, SearchOption } from 'src/shared/types';
+import { Response } from 'express';
+import { SearchOption } from 'src/shared/types';
 
 @Injectable()
 export class CustomersService {
@@ -55,8 +56,8 @@ export class CustomersService {
       // Assuming the Excel has a structure like:
       // ID | Name | Phone Number | Email | Gender | Age Range | Special ID | Address | Remark
       if (rowNumber > 1) { // Skip header row
-        const genderValue = row.getCell(5).value.toString().toUpperCase();
-        const ageRangeValue = row.getCell(6).value.toString().toUpperCase();
+        const genderValue = row.getCell(5).value.toString();
+        const ageRangeValue = row.getCell(6).value.toString();
       
         // Validate and check if the value exists in the Gender enum
         if (!Object.values(CustomerGender).includes(genderValue as CustomerGender)) {
@@ -74,9 +75,10 @@ export class CustomersService {
           email: row.getCell(4).value ? row.getCell(4).value.toString() : null,
           gender: genderValue as CustomerGender, // Ensure valid enum assignment
           ageRange: ageRangeValue as AgeRange, // Ensure valid enum assignment
-          specialId: parseInt(row.getCell(7).value.toString(), 10),
-          address: row.getCell(8).value ? row.getCell(8).value.toString() : null,
-          remark: row.getCell(9).value ? row.getCell(9).value.toString() : null,
+          dateOfBirth: row.getCell(7).value ? new Date(row.getCell(7).value.toString()).toISOString() : null,
+          specialId: parseInt(row.getCell(8).value.toString(), 10),
+          address: row.getCell(9).value ? row.getCell(9).value.toString() : null,
+          remark: row.getCell(10).value ? row.getCell(10).value.toString() : null,
           createdByUserId: req.user.id, // Set the user's ID
           updatedByUserId: req.user.id, // Set the user's ID
         };
@@ -91,6 +93,50 @@ export class CustomersService {
     });
 
     return `${customers.length} customers have been imported successfully.`;
+  }
+
+  async exportCustomersToExcel(searchOptions: SearchOption, res: Response): Promise<void> {
+    try {
+      const customers = await this.findAll(searchOptions);  // Fetch customers from your findAll method
+
+      // Create a new workbook and worksheet
+      const workbook = new ExcelJs.Workbook();
+      const worksheet = workbook.addWorksheet('Customers');
+
+      // Define columns
+      worksheet.columns = [
+        { header: 'ID', key: 'id', width: 10 },
+        { header: 'Name', key: 'name', width: 30 },
+        { header: 'Phone Number', key: 'phoneNumber', width: 20 },
+        { header: 'Special', key: 'specialTitle', width: 15 },
+        { header: 'Total Voucher', key: 'totalVoucher', width: 15 },
+      ];
+
+      // Add rows to the worksheet
+      customers.customers.forEach((customer) => {
+        worksheet.addRow({
+          id: customer.id,
+          name: customer.name,
+          phoneNumber: customer.phoneNumber,
+          specialTitle: customer.specialTitle,
+          totalVoucher: customer.totalVoucher,
+        });
+      });
+
+      // Set the response headers for downloading the file
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      );
+      res.setHeader('Content-Disposition', 'attachment; filename=customers.xlsx');
+
+      // Write the workbook to the response stream
+      await workbook.xlsx.write(res);
+      res.end();
+    } catch (error) {
+      console.error('Error generating Excel file:', error);
+      throw new Error('Error generating Excel file');
+    }
   }
 
   // CustomerEntity[]
