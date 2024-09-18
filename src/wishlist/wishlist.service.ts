@@ -195,17 +195,26 @@ export class WishlistService {
     return wishlist;
   }
 
-  async remove(id: number) {
-    const deletedWishList = await this.prisma.wishList.update({
-      where: {
-        id,
-      },
-      data: {
-        isArchived: new Date(),
-      },
+  async remove(id: number): Promise<void> {
+    // Check if the wishlist exists
+    const wishlist = await this.prisma.wishList.findUnique({
+      where: { id },
+      include: { wishlistRecords: true },
     });
 
-    return new WishlistEntity(deletedWishList);
+    if (!wishlist) {
+      throw new NotFoundException(`WishList with ID ${id} not found`);
+    }
+
+    // Delete all related wishlist records first
+    await this.prisma.wishListRecord.deleteMany({
+      where: { wishlistId: wishlist.id },
+    });
+
+    // Now delete the wishlist itself
+    await this.prisma.wishList.delete({
+      where: { id: wishlist.id },
+    });
   }
 }
 
