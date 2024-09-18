@@ -24,7 +24,6 @@ import {
   CreateProductBrandDto,
   ProductBrandsService,
   SearchOption,
-  resizeImage,
 } from 'src';
 import {
   FetchedProductBrand,
@@ -39,7 +38,6 @@ import { MinioService } from 'src/minio/minio.service';
 import { FileValidatorPipe } from 'src/shared/pipes/file-validator.pipe';
 
 @Controller('product-brands')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductBrandsController {
   constructor(
     private readonly productBrandsService: ProductBrandsService,
@@ -47,6 +45,7 @@ export class ProductBrandsController {
   ) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @UseInterceptors(FileInterceptor('image'))
   async create(
@@ -73,7 +72,6 @@ export class ProductBrandsController {
   }
 
   @Get('all')
-  @Roles(UserRole.ADMIN)
   async indexAll(): Promise<FetchedProductBrand> {
     const productBrands = await this.productBrandsService.indexAll();
     return {
@@ -86,6 +84,7 @@ export class ProductBrandsController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   async findAll(
     @Query('page') page: number = 1,
@@ -114,6 +113,7 @@ export class ProductBrandsController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @UsePipes(new ValidateIdExistsPipe('ProductBrand'))
   async findOne(@Param('id') id: number): Promise<ProductBrandEntity> {
@@ -123,6 +123,7 @@ export class ProductBrandsController {
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @UseInterceptors(FileInterceptor('image'))
   async update(
@@ -166,12 +167,14 @@ export class ProductBrandsController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.productBrandsService.remove(id);
   }
 
   @Delete()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   async removeMany(
     @Body() removeManyProductBrandDto: RemoveManyProductBrandDto,

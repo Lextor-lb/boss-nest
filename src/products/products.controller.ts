@@ -34,9 +34,12 @@ import { RemoveManyProductDto } from './dto/removeMany-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 import { MinioService } from 'src/minio/minio.service';
+import { RolesGuard } from 'src/auth/role-guard';
+import { UserRole } from '@prisma/client';
+import { Roles } from 'src/auth/role';
 
 @Controller('products')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @UseFilters(CustomBadRequestExceptionFilter)
 export class ProductsController {
   constructor(
@@ -44,6 +47,7 @@ export class ProductsController {
     private readonly minioService: MinioService, // Inject MinioService
   ) {}
   @Post()
+  @Roles(UserRole.ADMIN)
   @UseInterceptors(AnyFilesInterceptor()) // Use AnyFilesInterceptor for multiple file uploads
   async create(
     @Body() createProductDto: CreateProductDto,
@@ -157,6 +161,7 @@ export class ProductsController {
   //   };
   // }
   @Put(':id')
+  @Roles(UserRole.ADMIN)
   @UseInterceptors(AnyFilesInterceptor()) // Use AnyFilesInterceptor for multiple file uploads
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -180,6 +185,7 @@ export class ProductsController {
   }
 
   @Get()
+  @Roles(UserRole.ADMIN)
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit?: string,
@@ -226,6 +232,7 @@ export class ProductsController {
   // }
 
   @Get(':id')
+  @Roles(UserRole.ADMIN)
   @UsePipes(new ValidateIdExistsPipe('Product'))
   async findOne(@Param('id') id: number) {
     const product = await this.productsService.findOne(id);
@@ -233,16 +240,19 @@ export class ProductsController {
   }
 
   @Delete('media/:id')
+  @Roles(UserRole.ADMIN)
   async removeProductMedia(@Param('id', ParseIntPipe) id: number) {
     return await this.productsService.removeProductMedia(id);
   }
 
   @Delete(':id')
+  @Roles(UserRole.ADMIN)
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.productsService.remove(id);
   }
 
   @Delete()
+  @Roles(UserRole.ADMIN)
   async removeMany(@Body() removeManyProductTypeDto: RemoveManyProductDto) {
     const result = await this.productsService.removeMany(
       removeManyProductTypeDto,

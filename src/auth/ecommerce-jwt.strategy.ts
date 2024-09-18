@@ -28,13 +28,17 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { jwtSecret } from './auth.module';
 import { PrismaService } from 'src/prisma';
+import { EcommerceUsersService } from 'src/ecommerce-users/ecommerce-users.service';
 
 @Injectable()
 export class EcommerceJwtStrategy extends PassportStrategy(
   Strategy,
   'ecommerce-jwt',
 ) {
-  constructor(private prisma: PrismaService) {
+  constructor(
+    private prisma: PrismaService,
+    private ecommerceUsersService: EcommerceUsersService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: jwtSecret,
@@ -47,11 +51,19 @@ export class EcommerceJwtStrategy extends PassportStrategy(
         where: { email: payload.email },
       });
 
-      if (!user) {
+      const ecommerceUser = await this.prisma.ecommerceUser.findUnique({
+        where: { email: payload.email },
+      });
+
+      if (!user && !ecommerceUser) {
         throw new UnauthorizedException();
       }
-
-      return user;
+      if (user) {
+        return user;
+      }
+      if (ecommerceUser) {
+        return ecommerceUser;
+      }
     } catch (error) {
       throw new UnauthorizedException();
     }

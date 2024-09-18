@@ -1,7 +1,11 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient, StatusStock } from '@prisma/client';
 import { CreateVoucherDto, voucherRecordDto } from './dto/create-voucher.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { VoucherEntity } from './entities/voucher.entity';
 import { VoucherRecordEntity } from './entities/voucherRecord.entity';
 import { CustomerEntity } from 'src/customers';
@@ -39,9 +43,26 @@ export class VouchersService {
     return vouchers.map((voucher) => new VoucherEntity(voucher));
   }
 
-  async barcode(barcode: string): Promise<BarcodeEntity> {
+  async barcode(barcode: string): Promise<any> {
     try {
       const productVariant = await this.getProductVariant(barcode);
+
+      if (productVariant.statusStock === StatusStock.ORDERED) {
+        return {
+          message: 'Barcode is ordered!',
+          error: 'Not Found',
+          statusCode: 404,
+        };
+      }
+
+      if (productVariant.statusStock === StatusStock.SOLDOUT) {
+        return {
+          message: 'Barcode is soldout!',
+          error: 'Not Found',
+          statusCode: 404,
+        };
+      }
+
       return this.mapToBarcodeEntity(productVariant);
     } catch (error) {
       throw new NotFoundException('Barcode not found!');
@@ -52,10 +73,11 @@ export class VouchersService {
     return await this.prisma.productVariant.findUnique({
       where: {
         barcode,
-        AND: this.whereCheckingNullClause,
+        isArchived: null,
       },
       select: {
         id: true,
+        statusStock: true,
         barcode: true,
         productSizing: { select: { name: true } },
         product: {
@@ -82,6 +104,8 @@ export class VouchersService {
       productSizing: { name: productSizing },
       product: {
         name: productName,
+        productCode,
+        statusStock,
         gender,
         salePrice: price,
         discountPrice,
@@ -94,6 +118,8 @@ export class VouchersService {
 
     return new BarcodeEntity({
       id,
+      statusStock,
+      productCode,
       barcode,
       discountPrice,
       productName,

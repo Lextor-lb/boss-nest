@@ -3,8 +3,10 @@ import { Gender } from '@prisma/client';
 export class BarcodeEntity {
   id: number;
   barcode: string;
+  productCode: string;
   productName: string;
   gender: Gender;
+  statusStock: string;
   discountPrice: number;
   productBrand: string;
   productType: string;

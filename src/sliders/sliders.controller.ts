@@ -10,15 +10,19 @@ import {
   Req,
   BadRequestException,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { SlidersService } from './sliders.service';
 import { CreateSliderDto } from './dto/create-slider.dto';
 import { UpdateSliderDto } from './dto/update-slider.dto';
 import { Slider } from './entities/slider.entity';
-import { multerOptions, PrismaService, resizeImage } from 'src';
+import { JwtAuthGuard, multerOptions, PrismaService, resizeImage } from 'src';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import * as dotenv from 'dotenv';
 import { MinioService } from 'src/minio/minio.service';
+import { RolesGuard } from 'src/auth/role-guard';
+import { UserRole } from '@prisma/client';
+import { Roles } from 'src/auth/role';
 
 dotenv.config();
 
@@ -29,7 +33,8 @@ export class SlidersController {
     private readonly minioService: MinioService,
     private readonly prisma: PrismaService,
   ) {}
-
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   @Post()
   @UseInterceptors(AnyFilesInterceptor())
   async create(
@@ -96,6 +101,8 @@ export class SlidersController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   @UseInterceptors(AnyFilesInterceptor())
   async update(
     @Param('id') id: string,
@@ -151,6 +158,8 @@ export class SlidersController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   remove(@Param('id') id: string) {
     return this.slidersService.remove(+id);
   }

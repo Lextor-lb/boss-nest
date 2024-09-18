@@ -10,7 +10,7 @@ import { EcommerceUsersService } from 'src/ecommerce-users/ecommerce-users.servi
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     private usersService: UsersService,
-    private ecommerceUsersService: EcommerceUsersService
+    private ecommerceUsersService: EcommerceUsersService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -20,31 +20,24 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   async validate(payload: { userId: number }) {
     try {
-
       const user = await this.usersService.findOne(payload.userId);
 
-      console.log(user);
+      const ecommerceUser = await this.ecommerceUsersService.findOne(
+        payload.userId,
+      );
 
-      const ecommerceUser = await this.ecommerceUsersService.findOne(payload.userId);
-
-      console.log(ecommerceUser);
-
-      if(!user && !ecommerceUser){
-              throw new UnauthorizedException();
+      if (!user) {
+        throw new UnauthorizedException();
       }
-      
 
-      // if (!user) {
-      // }
-      if(user)
-        {
-          return user;
-        }
-        if(ecommerceUser)
-        {
-          return ecommerceUser;
-        }
-
+      if (!user) {
+      }
+      if (user) {
+        return user;
+      }
+      if (ecommerceUser) {
+        return ecommerceUser;
+      }
     } catch (error) {
       throw new UnauthorizedException();
     }

@@ -26,13 +26,17 @@ import {
 } from 'src/shared/types/productSizing';
 import { SearchOption } from 'src';
 import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
+import { RolesGuard } from 'src/auth/role-guard';
+import { Roles } from 'src/auth/role';
+import { UserRole } from '@prisma/client';
 
 @Controller('product-sizings')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductSizingsController {
   constructor(private readonly productSizingsService: ProductSizingsService) {}
 
   @Post()
+  @Roles(UserRole.ADMIN)
   async createMultiple(
     @Body() createProductSizingDtos: CreateProductSizingDto[],
     @Req() req,
@@ -59,6 +63,7 @@ export class ProductSizingsController {
   }
 
   @Get('all')
+  @Roles(UserRole.ADMIN)
   async indexAll(): Promise<FetchedProductSizing> {
     const productSizings = await this.productSizingsService.indexAll();
     return {
@@ -71,6 +76,7 @@ export class ProductSizingsController {
   }
 
   @Get()
+  @Roles(UserRole.ADMIN)
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit?: string,
@@ -99,6 +105,7 @@ export class ProductSizingsController {
   }
 
   @Get(':id')
+  @Roles(UserRole.ADMIN)
   @UsePipes(new ValidateIdExistsPipe('ProductSizing'))
   async findOne(@Param('id') id: number): Promise<ProductSizingEntity> {
     const productSizing = await this.productSizingsService.findOne(id);
@@ -106,6 +113,7 @@ export class ProductSizingsController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.ADMIN)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
@@ -124,11 +132,13 @@ export class ProductSizingsController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.ADMIN)
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.productSizingsService.remove(id);
   }
 
   @Delete()
+  @Roles(UserRole.ADMIN)
   async removeMany(
     @Body() removeManyProductSizingDto: RemoveManyProductSizingDto,
   ) {

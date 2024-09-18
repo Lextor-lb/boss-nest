@@ -30,11 +30,11 @@ export const jwtSecret = 'zjP9h6ZI5LoSKCRj';
   ],
   controllers: [AuthController],
   providers: [
+    JwtStrategy,
+    JwtAuthGuard,
     EcommerceJwtStrategy,
     EcommerceJwtAuthGuard,
     AuthService,
-    JwtStrategy,
-    JwtAuthGuard,
     FirebaseService,
   ],
 })

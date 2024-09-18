@@ -28,7 +28,6 @@ import { UserRole } from '@prisma/client';
 import { Roles } from 'src/auth/role';
 
 @Controller('ecommerce-categories')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class EcommerceCategoriesController {
   constructor(
     private readonly ecommerceCategoriesService: EcommerceCategoriesService,
@@ -36,7 +35,8 @@ export class EcommerceCategoriesController {
   ) {}
 
   @Post()
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() createEcommerceCategoryDto: CreateEcommerceCategoryDto,
@@ -54,19 +54,18 @@ export class EcommerceCategoriesController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN)
   findAll(): Promise<EcommerceCategoryEntity[]> {
     return this.ecommerceCategoriesService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @UsePipes(new ValidateIdExistsPipe('EcommerceCategory'))
   async findOne(@Param('id') id: number): Promise<EcommerceCategoryEntity> {
     return await this.ecommerceCategoriesService.findOne(id);
   }
 
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   @Put(':id')
   @UseInterceptors(FileInterceptor('image'))
   async update(
@@ -90,13 +89,15 @@ export class EcommerceCategoriesController {
     );
   }
 
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.ecommerceCategoriesService.remove(id);
   }
 
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   @Delete()
   async removeMany(
     @Body() removeManyEcommerceCategoryDto: RemoveManyEcommerceCategoryDto,

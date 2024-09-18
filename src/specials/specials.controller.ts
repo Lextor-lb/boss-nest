@@ -23,18 +23,23 @@ import {
 import { SpecialEntity } from './entities';
 import { JwtAuthGuard } from 'src/auth';
 import { RemoveManySpecialDto } from './dto';
+import { RolesGuard } from 'src/auth/role-guard';
+import { Roles } from 'src/auth/role';
+import { UserRole } from '@prisma/client';
 
 @Controller('specials')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class SpecialsController {
   constructor(private readonly specialsService: SpecialsService) {}
 
   @Post()
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   async create(@Body() createSpecialDto: CreateSpecialDto) {
     return this.specialsService.create(createSpecialDto);
   }
 
   @Get('all')
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   async indexAll(): Promise<FetchedSpecial> {
     const specials = await this.specialsService.indexAll();
 
@@ -46,6 +51,7 @@ export class SpecialsController {
   }
 
   @Get()
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit?: string,
@@ -72,12 +78,14 @@ export class SpecialsController {
   }
 
   @Get(':id')
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const special = await this.specialsService.findOne(id);
     return new SpecialEntity(special);
   }
 
   @Patch(':id')
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
@@ -97,6 +105,7 @@ export class SpecialsController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   async remove(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<MessageWithSpecial> {
@@ -110,6 +119,7 @@ export class SpecialsController {
   }
 
   @Delete()
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   async removeMany(@Body() removeManySpecialDto: RemoveManySpecialDto) {
     const result = await this.specialsService.removeMany(removeManySpecialDto);
 

@@ -1,12 +1,18 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { StockReportService } from './stock-report.service';
 import { SearchOption } from 'src/shared/types';
+import { JwtAuthGuard } from 'src/auth';
+import { RolesGuard } from 'src/auth/role-guard';
+import { UserRole } from '@prisma/client';
+import { Roles } from 'src/auth/role';
 
 @Controller('stock-reports')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class StockReportController {
   constructor(private readonly stockReportService: StockReportService) {}
 
   @Get()
+  @Roles(UserRole.ADMIN)
   async getAnalysisData(
     @Query('page') page: number = 1,
     @Query('limit') limit?: string,

@@ -1,15 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { FittingReportService } from './fitting-report.service';
-import { CreateFittingReportDto } from './dto/create-fitting-report.dto';
-import { UpdateFittingReportDto } from './dto/update-fitting-report.dto';
 import { FittingReportPagination } from 'src/shared/types/fittingReport';
 import { SearchOption } from 'src/shared/types';
+import { RolesGuard } from 'src/auth/role-guard';
+import { JwtAuthGuard } from 'src/auth';
+import { Roles } from 'src/auth/role';
+import { UserRole } from '@prisma/client';
 
 @Controller('fitting-report')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class FittingReportController {
   constructor(private readonly fittingReportService: FittingReportService) {}
 
   @Get()
+  @Roles(UserRole.ADMIN)
   async getReportData(
     @Query('start') start?: string,
     @Query('end') end?: string,
@@ -17,7 +21,7 @@ export class FittingReportController {
     @Query('limit') limit?: string,
     @Query('search') search?: string,
     @Query('orderBy') orderBy: string = 'createdAt',
-    @Query('orderDirection') orderDirection?: 'asc' | 'desc'
+    @Query('orderDirection') orderDirection?: 'asc' | 'desc',
   ): Promise<FittingReportPagination> {
     const searchOptions: SearchOption = {
       page,
@@ -27,8 +31,6 @@ export class FittingReportController {
       orderDirection,
     };
 
-    return this.fittingReportService.generateReport(start,end,searchOptions);
+    return this.fittingReportService.generateReport(start, end, searchOptions);
   }
-
- 
 }

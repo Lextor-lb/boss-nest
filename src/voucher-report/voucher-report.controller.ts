@@ -1,14 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { VoucherReportService } from './voucher-report.service';
-import { CreateVoucherReportDto } from './dto/create-voucher-report.dto';
-import { UpdateVoucherReportDto } from './dto/update-voucher-report.dto';
 import { SearchOption } from 'src/shared/types';
+import { RolesGuard } from 'src/auth/role-guard';
+import { JwtAuthGuard } from 'src/auth';
+import { UserRole } from '@prisma/client';
+import { Roles } from 'src/auth/role';
 
 @Controller('voucher-report')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class VoucherReportController {
   constructor(private readonly voucherReportService: VoucherReportService) {}
 
   @Get()
+  @Roles(UserRole.ADMIN)
   async getReportData(
     @Query('page') page: number = 1,
     @Query('limit') limit?: string,
@@ -21,13 +25,14 @@ export class VoucherReportController {
       limit: limit ? parseInt(limit, 10) : 10,
       search,
       orderBy,
-      orderDirection
-    }
-  
+      orderDirection,
+    };
+
     return this.voucherReportService.generateReport(searchOptions);
   }
 
   @Get('custom')
+  @Roles(UserRole.ADMIN)
   async getCustomReportData(
     @Query('start') start: string,
     @Query('end') end: string,
@@ -42,9 +47,9 @@ export class VoucherReportController {
       limit: limit ? parseInt(limit, 10) : 10,
       search,
       orderBy,
-      orderDirection
-    }
+      orderDirection,
+    };
 
-    return this.voucherReportService.customReport(start,end,searchOptions);
+    return this.voucherReportService.customReport(start, end, searchOptions);
   }
 }

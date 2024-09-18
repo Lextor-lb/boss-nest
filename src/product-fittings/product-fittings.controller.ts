@@ -25,8 +25,12 @@ import {
 } from 'src/shared/types/productFitting';
 import { SearchOption } from 'src';
 import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
+import { Roles } from 'src/auth/role';
+import { UserRole } from '@prisma/client';
+import { RolesGuard } from 'src/auth/role-guard';
 
 @Controller('product-fittings')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @UseGuards(JwtAuthGuard)
 export class ProductFittingsController {
   constructor(
@@ -34,6 +38,7 @@ export class ProductFittingsController {
   ) {}
 
   @Post()
+  @Roles(UserRole.ADMIN)
   async create(
     @Body() createProductFittingDto: CreateProductFittingDto,
     @Req() req,
@@ -51,6 +56,7 @@ export class ProductFittingsController {
   }
 
   @Get('all')
+  @Roles(UserRole.ADMIN)
   async indexAll(): Promise<FetchProductFitting> {
     const productFittings = await this.productFittingsService.indexAll();
     return {
@@ -63,6 +69,7 @@ export class ProductFittingsController {
   }
 
   @Get()
+  @Roles(UserRole.ADMIN)
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit?: string,
@@ -89,8 +96,8 @@ export class ProductFittingsController {
       totalPages: productFittings.totalPages,
     };
   }
-  ;
   @Get(':id')
+  @Roles(UserRole.ADMIN)
   @UsePipes(new ValidateIdExistsPipe('ProductFitting'))
   async findOne(
     @Param('id', ParseIntPipe) id: number,
@@ -100,6 +107,7 @@ export class ProductFittingsController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.ADMIN)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductFittingDto: UpdateProductFittingDto,
@@ -121,6 +129,7 @@ export class ProductFittingsController {
     return await this.productFittingsService.remove(id);
   }
   @Delete()
+  @Roles(UserRole.ADMIN)
   async removeMany(
     @Body() removeManyProductFittingDto: RemoveManyProductFittingDto,
   ) {

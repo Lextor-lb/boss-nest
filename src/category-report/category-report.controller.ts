@@ -1,15 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { CategoryReportService } from './category-report.service';
-import { CreateCategoryReportDto } from './dto/create-category-report.dto';
-import { UpdateCategoryReportDto } from './dto/update-category-report.dto';
 import { CategoryReportPagination } from 'src/shared/types/categoryReport';
 import { SearchOption } from 'src/shared/types';
+import { RolesGuard } from 'src/auth/role-guard';
+import { JwtAuthGuard } from 'src/auth';
+import { Roles } from 'src/auth/role';
+import { UserRole } from '@prisma/client';
 
 @Controller('category-report')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CategoryReportController {
   constructor(private readonly categoryReportService: CategoryReportService) {}
-  
+
   @Get()
+  @Roles(UserRole.ADMIN)
   async getReportData(
     @Query('start') start?: string,
     @Query('end') end?: string,
@@ -21,12 +25,12 @@ export class CategoryReportController {
   ): Promise<CategoryReportPagination> {
     const searchOptions: SearchOption = {
       page,
-      limit: limit ? parseInt(limit,10) : 10,
+      limit: limit ? parseInt(limit, 10) : 10,
       search,
       orderBy,
-      orderDirection
-    }
+      orderDirection,
+    };
 
-    return this.categoryReportService.generateReport(start,end,searchOptions);
+    return this.categoryReportService.generateReport(start, end, searchOptions);
   }
 }

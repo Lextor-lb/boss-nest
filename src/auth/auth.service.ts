@@ -48,7 +48,13 @@ export class AuthService {
         email: user.email,
         role: user.role,
       }),
-      accessToken: this.jwtService.sign({ userId: user.id }),
+      accessToken: this.jwtService.sign({
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        issuedAt: new Date().toISOString(),
+      }),
       refreshToken: refreshToken,
     };
   }
@@ -73,7 +79,7 @@ export class AuthService {
 
       const refreshToken = this.jwtService.sign(
         {
-          id: user.id,
+          // id: user.id,
           name: user.name,
           email: user.email,
           tokenId: token,
@@ -91,9 +97,10 @@ export class AuthService {
           role: user.role,
         }),
         accessToken: this.jwtService.sign({
-          userId: user.id,
+          // userId: user.id,
           email: user.email,
           issuedAt: new Date().toISOString(),
+          role: user.role,
         }),
         refreshToken: refreshToken,
       };
@@ -114,7 +121,11 @@ export class AuthService {
     return {
       status: true,
       user: new UserEntity({ id: id, name: name, email: email }),
-      accessToken: this.jwtService.sign({ userId: id }),
+      accessToken: this.jwtService.sign({
+        userId: id,
+        name: name,
+        email: email,
+      }),
       refreshToken: newRefreshToken,
     };
   }

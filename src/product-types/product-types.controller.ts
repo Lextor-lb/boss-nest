@@ -25,12 +25,15 @@ import {
   PaginatedProductType,
 } from 'src/shared/types/productType';
 import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
+import { Roles } from 'src/auth/role';
+import { UserRole } from '@prisma/client';
 
 @Controller('product-types')
 export class ProductTypesController {
   constructor(private readonly productTypesService: ProductTypesService) {}
 
   @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.ADMIN)
   @Post()
   async create(
     @Body() createProductTypeDto: CreateProductTypeDto,
@@ -47,6 +50,7 @@ export class ProductTypesController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.ADMIN)
   @Get('all')
   async indexAll(): Promise<FetchedProductType> {
     const productTypes = await this.productTypesService.indexAll();
@@ -72,6 +76,7 @@ export class ProductTypesController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.ADMIN)
   @Get()
   async findAll(
     @Query('page') page: number = 1,
@@ -100,6 +105,7 @@ export class ProductTypesController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.ADMIN)
   @Get(':id')
   @UsePipes(new ValidateIdExistsPipe('ProductType'))
   async findOne(@Param('id') id: number): Promise<ProductTypeEntity> {
@@ -108,6 +114,7 @@ export class ProductTypesController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.ADMIN)
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -127,10 +134,12 @@ export class ProductTypesController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.productTypesService.remove(id);
   }
+  @Roles(UserRole.ADMIN)
   @Delete()
   async removeMany(@Body() removeManyProductTypeDto: RemoveManyProductTypeDto) {
     const result = await this.productTypesService.removeMany(

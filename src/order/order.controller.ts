@@ -27,6 +27,7 @@ export class OrderController {
 
   @Post()
   @UseGuards(EcommerceJwtAuthGuard)
+  @Roles(UserRole.ECOMUSER)
   create(@Body() createOrderDto: CreateOrderDto, @Req() req) {
     createOrderDto.ecommerceUserId = req.user.id;
     return this.orderService.create(createOrderDto);
@@ -34,7 +35,7 @@ export class OrderController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   async findAll(
     @Req() req,
     @Query('page') page: number = 1,
@@ -56,13 +57,14 @@ export class OrderController {
 
   @Get('ecommerce')
   @UseGuards(EcommerceJwtAuthGuard)
+  @Roles(UserRole.ECOMUSER)
   findAllEcommerce(@Req() req) {
     return this.orderService.findAllEcommerce(req.user.id);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   @UsePipes(new ValidateIdExistsPipe('Order'))
   findOne(@Param('id') id: string) {
     return this.orderService.findOne(+id);
@@ -70,7 +72,7 @@ export class OrderController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   update(
     @Param('id') id: string,
     @Body() updateOrderDto: UpdateOrderDto,
@@ -83,7 +85,7 @@ export class OrderController {
 
   @Patch('ecommerce/:id')
   @UseGuards(EcommerceJwtAuthGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ECOMUSER)
   updateEcommerce(
     @Param('id') id: string,
     @Req() req,

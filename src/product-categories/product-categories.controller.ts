@@ -23,6 +23,8 @@ import {
   SearchOption,
 } from 'src';
 import { EcommerceJwtAuthGuard } from 'src/auth/ecommerce-jwt-auth.guard';
+import { Roles } from 'src/auth/role';
+import { RolesGuard } from 'src/auth/role-guard';
 
 import { ValidateIdExistsPipe } from 'src/shared/pipes/validateIdExists.pipe';
 import {
@@ -32,13 +34,14 @@ import {
 } from 'src/shared/types/productCategory';
 
 @Controller('product-categories')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductCategoriesController {
   constructor(
     private readonly productCategoriesService: ProductCategoriesService,
   ) {}
 
   @Post()
+  @Roles(UserRole.ADMIN)
   async create(
     @Body() createProductCategoryDto: CreateProductCategoryDto,
     @Req() req,
@@ -55,6 +58,7 @@ export class ProductCategoriesController {
     };
   }
   @Get('all')
+  @Roles(UserRole.ADMIN)
   async indexAll(): Promise<FetchProductCategory> {
     const productCategories = await this.productCategoriesService.indexAll();
     return {
@@ -67,6 +71,7 @@ export class ProductCategoriesController {
   }
 
   @Get()
+  @Roles(UserRole.ADMIN)
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit?: string,
@@ -95,6 +100,7 @@ export class ProductCategoriesController {
   }
 
   @Get(':id')
+  @Roles(UserRole.ADMIN)
   @UsePipes(new ValidateIdExistsPipe('ProductCategory'))
   async findOne(@Param('id') id: number): Promise<ProductCategoryEntity> {
     const productCategory = await this.productCategoriesService.findOne(id);
@@ -102,6 +108,7 @@ export class ProductCategoriesController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.ADMIN)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductCategoryDto: UpdateProductCategoryDto,
@@ -120,11 +127,13 @@ export class ProductCategoriesController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.ADMIN)
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.productCategoriesService.remove(id);
   }
 
   @Delete()
+  @Roles(UserRole.ADMIN)
   async removeMany(
     @Body() removeManyProductCategoryDto: RemoveManyProductCategoryDto,
   ) {
