@@ -25,7 +25,6 @@ import { createEntityProps } from 'src/shared/utils/createEntityProps';
 import { ProductDetailEntity } from './entity/productDetail.entity';
 import { RemoveManyProductDto } from './dto/removeMany-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { deleteFile } from 'src/shared/utils/deleteOldImageFile';
 import { MinioService } from 'src/minio/minio.service';
 
 @Injectable()

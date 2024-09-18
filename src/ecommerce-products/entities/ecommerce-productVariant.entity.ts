@@ -1,4 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
+import { MediaEntity } from 'src/media';
 
 export class EcommerceProductVariantEntity {
   id: number;
@@ -8,12 +9,12 @@ export class EcommerceProductVariantEntity {
   media: string;
   productSizing: string;
   @Exclude()
-  mediaUrl: string;
+  mediaUrl: MediaEntity;
 
   @Expose({ name: 'mediaUrl' })
   image(): string {
-    const BASE_URL = process.env.BASE_URL;
-    return `${BASE_URL}${this.mediaUrl}`;
+    // const BASE_URL = process.env.BASE_URL;
+    return new MediaEntity({ url: this.mediaUrl.url }).image();
   }
 
   constructor(partial: Partial<EcommerceProductVariantEntity> = {}) {

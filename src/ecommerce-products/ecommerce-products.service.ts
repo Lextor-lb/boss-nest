@@ -213,7 +213,7 @@ export class EcommerceProductsService {
         return new EcommerceProductVariantEntity({
           ...productVariantData,
           productSizing: productSizing.name,
-          mediaUrl: media.url,
+          mediaUrl: new MediaEntity({ url: media.url }),
         });
       }),
     });
