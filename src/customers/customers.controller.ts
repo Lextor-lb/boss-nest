@@ -10,6 +10,8 @@ import {
   NotFoundException,
   UseGuards,
   ParseIntPipe,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -25,6 +27,7 @@ import {
 } from 'src';
 import { RolesGuard } from 'src/auth/role-guard';
 import { Roles } from 'src/auth/role';
+import { FileInterceptor } from '@nestjs/platform-express';
 //import { UserRole } from '@prisma/client';
 
 @Controller('customers')
@@ -50,6 +53,18 @@ export class CustomersController {
     createCustomerDto.updatedByUserId = req.user.id;
     return this.customersService.create(createCustomerDto);
   }
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))  // 'file' is the key of the file in the form-data
+  async importCustomers(@Req() req, @UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new Error('File is required');
+    }
+
+    const importedCustomers = await this.customersService.importCustomersFromExcel(file, req);
+    return importedCustomers; // Process the imported customers if necessary
+  }
+
 
   @Get('all')
   //@Roles(UserRole.ADMIN)

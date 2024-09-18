@@ -1,6 +1,7 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { AgeRange, CustomerGender, Prisma } from '@prisma/client';
+import * as ExcelJs from "exceljs";
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { CustomerEntity } from './entities/customer.entity';
@@ -39,6 +40,58 @@ export class CustomersService {
       special: special ? new SpecialEntity(special) : null,
     });
   }  
+
+  async importCustomersFromExcel(file: Express.Multer.File, req: any): Promise<string>{
+    if(!file || file.mimetype !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
+      throw new BadRequestException('Invalid file format. Please upload an Excel file.');
+    }
+
+    const workbook = new ExcelJs.Workbook();
+    await workbook.xlsx.load(file.buffer);
+    const worksheet = workbook.getWorksheet(1);
+
+    const customers = [];
+    worksheet.eachRow({includeEmpty: false}, (row, rowNumber) => {
+      // Assuming the Excel has a structure like:
+      // ID | Name | Phone Number | Email | Gender | Age Range | Special ID | Address | Remark
+      if (rowNumber > 1) { // Skip header row
+        const genderValue = row.getCell(5).value.toString().toUpperCase();
+        const ageRangeValue = row.getCell(6).value.toString().toUpperCase();
+      
+        // Validate and check if the value exists in the Gender enum
+        if (!Object.values(CustomerGender).includes(genderValue as CustomerGender)) {
+          throw new Error(`Invalid gender value: ${genderValue}`);
+        }
+      
+        // Validate and check if the value exists in the AgeRange enum
+        if (!Object.values(AgeRange).includes(ageRangeValue as AgeRange)) {
+          throw new Error(`Invalid age range value: ${ageRangeValue}`);
+        }
+      
+        const customerData: CreateCustomerDto = {
+          name: row.getCell(2).value.toString(),
+          phoneNumber: row.getCell(3).value.toString(),
+          email: row.getCell(4).value ? row.getCell(4).value.toString() : null,
+          gender: genderValue as CustomerGender, // Ensure valid enum assignment
+          ageRange: ageRangeValue as AgeRange, // Ensure valid enum assignment
+          specialId: parseInt(row.getCell(7).value.toString(), 10),
+          address: row.getCell(8).value ? row.getCell(8).value.toString() : null,
+          remark: row.getCell(9).value ? row.getCell(9).value.toString() : null,
+          createdByUserId: req.user.id, // Set the user's ID
+          updatedByUserId: req.user.id, // Set the user's ID
+        };
+      
+        customers.push(customerData);
+      }
+    })
+
+    // Bulk create customers in the database
+    await this.prisma.customer.createMany({
+      data: customers,
+    });
+
+    return `${customers.length} customers have been imported successfully.`;
+  }
 
   // CustomerEntity[]
   async findAll(searchOptions: SearchOption): Promise<any> {
