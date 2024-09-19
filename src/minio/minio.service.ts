@@ -21,7 +21,7 @@ export class MinioService {
   async uploadFile(
     file: Express.Multer.File,
     oldFileName?: string,
-    size: number = 2048, // Default width for resizing
+    size: number = 4096, // Default width for resizing
   ): Promise<string> {
     try {
       if (!file || !file.buffer) {
