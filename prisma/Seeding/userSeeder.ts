@@ -7,8 +7,8 @@ const prisma = new PrismaClient();
 export default async function userSeeder() {
   // Create two dummy users
 
-  const passwordNaingOo = await argon2.hash('SUvC2PpetyYgTZ7');
-  const passwordPMA = await argon2.hash('LcjLp9FRhUzDArm');
+  const passwordNaingOo = await argon2.hash('eawtrjuC4AzREHa');
+  const passwordPMA = await argon2.hash('73cdqQ3B29Q7Hm6');
   const passwordLMA = await argon2.hash('JEpb3Px2RgnpGPF');
 
   await prisma.user.upsert({

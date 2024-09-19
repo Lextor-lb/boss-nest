@@ -14,14 +14,14 @@ const prisma = new PrismaClient();
 
 async function main() {
   await userSeeder();
-  await seedProductSizing();
-  await seedProductType();
-  await seedProductBrand();
-  await seedProductCategory();
-  await seedProduct();
-  await seedSpecial();
-  await seedCustomer();
-  await seedVouchers();
+  // await seedProductSizing();
+  // await seedProductType();
+  // await seedProductBrand();
+  // await seedProductCategory();
+  // await seedProduct();
+  // await seedSpecial();
+  // await seedCustomer();
+  // await seedVouchers();
   await console.log('Seeding Success!');
 }
 
