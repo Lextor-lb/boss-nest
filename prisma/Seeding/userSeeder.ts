@@ -30,8 +30,8 @@ export default async function userSeeder() {
       password: passwordPMA,
     },
     create: {
-      email: 'staff@staff.com',
-      name: 'Alex Ruheni',
+      email: '73cdqQ3B29Q7Hm6',
+      name: 'Phyo Min Aung',
       password: passwordPMA,
       role: UserRole.ADMIN,
     },
