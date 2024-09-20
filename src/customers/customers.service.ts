@@ -1,5 +1,5 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { AgeRange, CustomerGender, Prisma } from '@prisma/client';
 import * as ExcelJs from "exceljs";
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -48,8 +48,16 @@ export class CustomersService {
     }
 
     const workbook = new ExcelJs.Workbook();
-    await workbook.xlsx.load(file.buffer);
+    try{
+      await workbook.xlsx.load(file.buffer);
+    } catch(error){
+      throw new BadRequestException('Failed to load Excel file.');
+    }
+
     const worksheet = workbook.getWorksheet(1);
+    if (!worksheet) {
+      throw new BadRequestException('No worksheet found in the uploaded file.');
+    }
 
     const customers = [];
     worksheet.eachRow({includeEmpty: false}, (row, rowNumber) => {
@@ -82,15 +90,26 @@ export class CustomersService {
           createdByUserId: req.user.id, // Set the user's ID
           updatedByUserId: req.user.id, // Set the user's ID
         };
+
+        // Validate critical fields like phoneNumber or specialId (as an example)
+      if (!customerData.name || !customerData.phoneNumber) {
+        throw new BadRequestException(`Invalid data at row ${rowNumber}: Name and Phone Number are required.`);
+      }
       
         customers.push(customerData);
       }
     })
 
-    // Bulk create customers in the database
-    await this.prisma.customer.createMany({
-      data: customers,
-    });
+    if (customers.length === 0) {
+      throw new BadRequestException('No valid customer data found in the Excel file.');
+    }
+
+    // Bulk insert customers
+    try {
+      await this.prisma.customer.createMany({ data: customers });
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to save customers to the database.');
+    }
 
     return `${customers.length} customers have been imported successfully.`;
   }
