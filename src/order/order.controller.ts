@@ -57,14 +57,12 @@ export class OrderController {
 
   @Get('ecommerce')
   @UseGuards(EcommerceJwtAuthGuard)
-  @Roles(UserRole.ECOMUSER)
   findAllEcommerce(@Req() req) {
     return this.orderService.findAllEcommerce(req.user.id);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
   @UsePipes(new ValidateIdExistsPipe('Order'))
   findOne(@Param('id') id: string) {
     return this.orderService.findOne(+id);
@@ -85,7 +83,6 @@ export class OrderController {
 
   @Patch('ecommerce/:id')
   @UseGuards(EcommerceJwtAuthGuard)
-  @Roles(UserRole.ECOMUSER)
   updateEcommerce(
     @Param('id') id: string,
     @Req() req,
