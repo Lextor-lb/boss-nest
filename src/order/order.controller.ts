@@ -68,6 +68,13 @@ export class OrderController {
     return this.orderService.findOne(+id);
   }
 
+  @Get('ecommerce/:id')
+  @UseGuards(EcommerceJwtAuthGuard)
+  @UsePipes(new ValidateIdExistsPipe('Order'))
+  findOneEcommerce(@Param('id') id: string) {
+    return this.orderService.findOne(+id);
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @Roles(UserRole.ADMIN, UserRole.STAFF)
