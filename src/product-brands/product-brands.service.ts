@@ -63,6 +63,9 @@ export class ProductBrandsService {
   async indexAll(): Promise<ProductBrandEntity[]> {
     const productBrands = await this.prisma.productBrand.findMany({
       where: this.whereCheckingNullClause,
+      orderBy: {
+        name: 'asc',
+      },
     });
     return productBrands.map(
       (pb) => new ProductBrandEntity(createEntityProps(pb)),
